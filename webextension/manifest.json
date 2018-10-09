@@ -2,5 +2,10 @@
     "name": "Polyglot",
     "version": "1.0",
     "description": "Live subtitling and translation for videos on the browser.",
-    "manifest_version": 2
+    "manifest_version": 2,
+    "background": {
+      "scripts": ["src/background.js"],
+      "persistent": false
+    },
+    "permissions": ["declarativeContent"]
   }
