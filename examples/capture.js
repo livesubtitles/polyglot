@@ -7,7 +7,11 @@ let mediaStreamNode = audioctx.createMediaStreamSource(stream);
 let scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
 scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
   // some code here, getting the audio and sending it to the APIs
-  console.log(audioProcessingEvent);
+
+  if (!vid.paused) {
+    console.log(audioProcessingEvent.inputBuffer.getChannelData(0));
+  }
 };
+
 mediaStreamNode.connect(scriptProcessingNode);
 scriptProcessingNode.connect(audioctx.destination);
