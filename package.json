@@ -1,0 +1,32 @@
+{
+  "name": "polyglot",
+  "version": "1.0.0",
+  "description": "Live subtitling and translation for videos on the browser",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/livesubtitles/polyglot.git"
+  },
+  "keywords": [
+    "extension",
+    "chrome-extension",
+    "subtitles",
+    "translation",
+    "live"
+  ],
+  "author": "livesubtitles",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/livesubtitles/polyglot/issues"
+  },
+  "homepage": "https://github.com/livesubtitles/polyglot#readme",
+  "devDependencies": {
+    "jest": "^23.6.0"
+  }
+}
