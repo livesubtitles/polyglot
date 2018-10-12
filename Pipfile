@@ -10,3 +10,5 @@ python_version = "3.5"
 
 [packages]
 flask = "*"
+google-cloud-speech = "*"
+google-cloud-translate = "*"
