@@ -1,2 +1,1 @@
-./server/Pipfile.lock
-.git-god
+*.lock
