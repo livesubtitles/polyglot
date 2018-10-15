@@ -3,7 +3,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    return "Polyglot - Live Subtitles"
+    return "Polyglot - Live Subtitles - ICL"
 
 @app.route("/pablo")
 def pablo():
