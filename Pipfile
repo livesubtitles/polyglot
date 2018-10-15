@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [requires]
-python_version = "3.7"
+python_version = "3.6"
 
 [dev-packages]
 
@@ -14,4 +14,5 @@ google-cloud-speech = "*"
 google-cloud-translate = "*"
 requests = "*"
 gunicorn = "*"
-
+flask-socketio = "*"
+gevent = "*"
