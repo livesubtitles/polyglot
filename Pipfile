@@ -12,3 +12,6 @@ python_version = "3.7"
 flask = "*"
 google-cloud-speech = "*"
 google-cloud-translate = "*"
+requests = "*"
+gunicorn = "*"
+
