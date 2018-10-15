@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [requires]
-python_version = "3.5"
+python_version = "3.6"
 
 [dev-packages]
 
@@ -13,3 +13,5 @@ flask = "*"
 google-cloud-speech = "*"
 google-cloud-translate = "*"
 flask-restful = "*"
+"httplib2" = "*"
+requests = "*"
