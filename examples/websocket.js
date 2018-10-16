@@ -6,6 +6,7 @@ sock.on('connection', function(res){
   console.log(res);
 });
 
+
 let vid = document.getElementsByTagName("video")[0];
 let stream = vid.captureStream();
 let audioctx = new AudioContext();
