@@ -30,5 +30,8 @@
     "grunt": "^1.0.3",
     "grunt-webstore-upload": "^0.9.23",
     "jest": "^23.6.0"
+  },
+  "dependencies": {
+    "socket.io": "^2.1.1"
   }
 }
