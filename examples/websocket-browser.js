@@ -7,6 +7,28 @@ sock.on('connection', function(res){
   console.log(res);
 });
 
+let vid = document.getElementsByTagName("video")[0];
+let stream = vid.captureStream();
+let audioctx = new AudioContext();
+let mediaStreamNode = audioctx.createMediaStreamSource(stream);
+// create a script processor with input of size 16384, one input (the video) and one output (the audioctx.destination)
+let scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
+scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
+  if (!vid.paused) {
+    //Send along pipeline
+    //Recieve translated text
+    //Display Text
+    //Handle grouping of chunks
+    console.log(audioProcessingEvent);
+    sock.emit("audioprocess", {
+      channelData: audioProcessingEvent.inputBuffer.getChannelData(0),
+      sampleRate: audioProcessingEvent.inputBuffer.sampleRate,
+    });
+  }
+};
+mediaStreamNode.connect(scriptProcessingNode);
+scriptProcessingNode.connect(audioctx.destination);
+
 },{"socket.io-client":31}],2:[function(require,module,exports){
 module.exports = after
 
@@ -721,7 +743,7 @@ function localstorage() {
 }
 
 }).call(this,require('_process'))
-},{"./debug":11,"_process":46}],11:[function(require,module,exports){
+},{"./debug":11,"_process":45}],11:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -1707,7 +1729,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./transport":14,"./transports/index":15,"component-emitter":8,"debug":10,"engine.io-parser":21,"indexof":27,"parseqs":29,"parseuri":30}],14:[function(require,module,exports){
+},{"./transport":14,"./transports/index":15,"component-emitter":8,"debug":10,"engine.io-parser":21,"indexof":26,"parseqs":29,"parseuri":30}],14:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -2821,7 +2843,7 @@ Polling.prototype.uri = function () {
   return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
 };
 
-},{"../transport":14,"component-inherit":9,"debug":10,"engine.io-parser":21,"parseqs":29,"xmlhttprequest-ssl":20,"yeast":41}],19:[function(require,module,exports){
+},{"../transport":14,"component-inherit":9,"debug":10,"engine.io-parser":21,"parseqs":29,"xmlhttprequest-ssl":20,"yeast":40}],19:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -3111,7 +3133,7 @@ WS.prototype.check = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../transport":14,"component-inherit":9,"debug":10,"engine.io-parser":21,"parseqs":29,"ws":43,"yeast":41}],20:[function(require,module,exports){
+},{"../transport":14,"component-inherit":9,"debug":10,"engine.io-parser":21,"parseqs":29,"ws":42,"yeast":40}],20:[function(require,module,exports){
 (function (global){
 // browser shim for xmlhttprequest module
 
@@ -3152,7 +3174,7 @@ module.exports = function (opts) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"has-cors":26}],21:[function(require,module,exports){
+},{"has-cors":25}],21:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -4110,14 +4132,7 @@ function hasBinary (obj) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":44,"isarray":25}],25:[function(require,module,exports){
-var toString = {}.toString;
-
-module.exports = Array.isArray || function (arr) {
-  return toString.call(arr) == '[object Array]';
-};
-
-},{}],26:[function(require,module,exports){
+},{"buffer":43,"isarray":27}],25:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -4136,7 +4151,7 @@ try {
   module.exports = false;
 }
 
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -4147,6 +4162,13 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
+},{}],27:[function(require,module,exports){
+var toString = {}.toString;
+
+module.exports = Array.isArray || function (arr) {
+  return toString.call(arr) == '[object Array]';
+};
+
 },{}],28:[function(require,module,exports){
 /**
  * Helpers.
@@ -5052,7 +5074,7 @@ Manager.prototype.onreconnect = function () {
   this.emitAll('reconnect', attempt);
 };
 
-},{"./on":33,"./socket":34,"backo2":4,"component-bind":7,"component-emitter":8,"debug":10,"engine.io-client":12,"indexof":27,"socket.io-parser":37}],33:[function(require,module,exports){
+},{"./on":33,"./socket":34,"backo2":4,"component-bind":7,"component-emitter":8,"debug":10,"engine.io-client":12,"indexof":26,"socket.io-parser":37}],33:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -5518,7 +5540,7 @@ Socket.prototype.binary = function (binary) {
   return this;
 };
 
-},{"./on":33,"component-bind":7,"component-emitter":8,"debug":10,"has-binary2":24,"parseqs":29,"socket.io-parser":37,"to-array":40}],35:[function(require,module,exports){
+},{"./on":33,"component-bind":7,"component-emitter":8,"debug":10,"has-binary2":24,"parseqs":29,"socket.io-parser":37,"to-array":39}],35:[function(require,module,exports){
 (function (global){
 
 /**
@@ -5742,7 +5764,7 @@ exports.removeBlobs = function(data, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./is-buffer":38,"isarray":39}],37:[function(require,module,exports){
+},{"./is-buffer":38,"isarray":27}],37:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -6161,7 +6183,7 @@ function error(msg) {
   };
 }
 
-},{"./binary":36,"./is-buffer":38,"component-emitter":8,"debug":10,"isarray":39}],38:[function(require,module,exports){
+},{"./binary":36,"./is-buffer":38,"component-emitter":8,"debug":10,"isarray":27}],38:[function(require,module,exports){
 (function (global){
 
 module.exports = isBuf;
@@ -6190,8 +6212,6 @@ function isBuf(obj) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],39:[function(require,module,exports){
-arguments[4][25][0].apply(exports,arguments)
-},{"dup":25}],40:[function(require,module,exports){
 module.exports = toArray
 
 function toArray(list, index) {
@@ -6206,7 +6226,7 @@ function toArray(list, index) {
     return array
 }
 
-},{}],41:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 'use strict';
 
 var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')
@@ -6276,7 +6296,7 @@ yeast.encode = encode;
 yeast.decode = decode;
 module.exports = yeast;
 
-},{}],42:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -6429,9 +6449,9 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],43:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 
-},{}],44:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -8210,7 +8230,7 @@ function numberIsNaN (obj) {
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-},{"base64-js":42,"ieee754":45}],45:[function(require,module,exports){
+},{"base64-js":41,"ieee754":44}],44:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
@@ -8296,7 +8316,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],46:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
