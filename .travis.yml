@@ -10,5 +10,5 @@ matrix:
        - pip install pipenv
        - pipenv install
      script:
-       - python -m unittest discover tests
+       - python -m unittest discover server/tests
   
