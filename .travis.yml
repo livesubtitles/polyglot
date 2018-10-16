@@ -3,6 +3,14 @@ matrix:
    - language: node_js
      node_js:
      - "node"
+     env:
+     - EXTENSION_ID=mhijjomcfnlglellcchncholplfifdfh
+     deploy:
+       provider: script
+       script: npm run release
+       on:
+         branch: master
+         tags: true
    - language: python
      python:
        - "3.6"
@@ -11,4 +19,4 @@ matrix:
        - pipenv install
      script:
        - python -m unittest discover server/tests
-  
+ 
