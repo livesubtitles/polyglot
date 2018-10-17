@@ -8,7 +8,6 @@ matrix:
        script: python3 publishExtension.py
        on:
          branch: master
-         tags: true
    - language: python
      python:
        - "3.6"
