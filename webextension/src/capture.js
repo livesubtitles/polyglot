@@ -1,12 +1,22 @@
+let MAX_LENGTH = 50;
+let lorem = "Lorem ipsum dolor sit amet"
 function addSubtitles(track, start, end, text) {
-  track.addCue(new VTTCue(start, end, text));
+  var prev = "";
+  if (track && track.activeCues && track.activeCues.length > 0) {
+    if (prev.length + text.length <= MAX_LENGTH) {
+      prev = track.activeCues[0].text + " ";
+    }
+    track.removeCue(track.activeCues[0]);
+  }
+  track.addCue(new VTTCue(start, end, prev + text));
 }
 
 let vid = document.getElementsByTagName("video")[0];
-// Capture track to which subtitles will be appended
 let track = vid.addTextTrack("captions", "English", "en");
 track.mode = "showing";
-addSubtitles(track, 1.5, 4, "[Test]");
+addSubtitles(track, 5.5, 45, "[Test2]");
+
+// addSubtitles(track, 1.5, 4, "[Test]");
 
 let stream = vid.captureStream();
 let audioctx = new AudioContext();
