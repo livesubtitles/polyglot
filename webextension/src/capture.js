@@ -1,4 +1,13 @@
+function addSubtitles(track, start, end, text) {
+  track.addCue(new VTTCue(start, end, text));
+}
+
 let vid = document.getElementsByTagName("video")[0];
+// Capture track to which subtitles will be appended
+let track = vid.addTextTrack("captions", "English", "en");
+track.mode = "showing";
+addSubtitles(track, 1.5, 4, "[Test]");
+
 let stream = vid.captureStream();
 let audioctx = new AudioContext();
 let mediaStreamNode = audioctx.createMediaStreamSource(stream);
