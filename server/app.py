@@ -22,6 +22,7 @@ def subtitle():
     request_body = json.loads(request.data)
     return "{\"subtitle\":\"" + get_subtitle(request_body['audio'], request_body['sampleRate']) + "\"}"
 
+# Socket connection
 @socketio.on('connect')
 def connect():
     print("New websocket connection.")
@@ -32,6 +33,8 @@ def connect():
     next_connection_id = next_connection_id += 1
     connection_lock.release()
     emit('connection', {'data': 'Connected', "connection_id": connection_id })
+
+# TODO: Implement socket disconnection on backend and frontend
 
 @socketio.on("audioprocess")
 def audioprocess(payload):
