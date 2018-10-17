@@ -1,3 +1,4 @@
 *.lock
 node_modules/
 .git-god
+speech-api.json

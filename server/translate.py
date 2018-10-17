@@ -14,6 +14,7 @@ def detectAndTranslate(textToTranslate, targetLang):
     return translate(textToTranslate, targetLang, sourceLang)
 
 def translate(textToTranslate, targetLang, sourceLang):
+    print(textToTranslate)
     payload = {'key' : apiKey, 'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
     r = requests.get((url + translation), params = payload)
     data = r.json()

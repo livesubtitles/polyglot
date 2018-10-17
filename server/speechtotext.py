@@ -7,14 +7,32 @@ import array
 import requests
 import base64
 # Imports the Google Cloud client library
-from google.cloud import speech
-from google.cloud.speech import enums
 from google.cloud.speech import types
 from translate import *
 
 # Sends request to Speech-to-Text API
-def speech_to_text(audio_file, sample_rate):
+def speech_to_text(audio_file, sample_rate, audiostreamer):
     apiKey = os.environ.get('APIKEY')
+
+
+    client = audiostreamer.client
+    print("IN SPEECH TO TEXT")
+    with audiostreamer as stream:
+        audio_generator = stream.generator()
+        requests = ( types.StreamingRecognizeRequest( audio_content=content )
+                    for content in audio_generator )
+        responses = client.streaming_recognize( stream.streaming_config, requests )
+        print( responses )
+        for response in responses:
+            print("RESPONSES")
+            print(response)
+
+    return "J'aime le fromage."
+
+
+
+
+
     audiobase64 = "" + convert_to_base64(audio_file)
     # Create request
     url = "https://speech.googleapis.com/v1/speech:recognize?key=" + apiKey
@@ -43,12 +61,14 @@ def convert_to_base64(wav_file):
 
 # Converts PCM data passed by the front end to a wav file required by the API
 def convert_to_wav(pcm_data, sample_rate):
+  sample_rate = int(sample_rate)
   temp_file = io.BytesIO()
   file = wave.open(temp_file, 'wb')
   file.setframerate(sample_rate)
   file.setnchannels(1)
   file.setsampwidth(2)
   for i in pcm_data:
+      i = float(i)
       floats = array.array('f', [i])
       samples = []
       for sample in floats:
@@ -60,8 +80,8 @@ def convert_to_wav(pcm_data, sample_rate):
   return temp_file
 
 # Gets subtitle for given audio data
-def get_subtitle(pcm_data, sample_rate):
+def get_subtitle(pcm_data, sample_rate, audiostreamer):
     #print(pcm_data)
     wav_file = convert_to_wav(pcm_data, sample_rate)
-    transcript = speech_to_text(wav_file, sample_rate)
+    transcript = speech_to_text(wav_file, sample_rate, audiostreamer)
     return translate(transcript, 'en', 'fr')
