@@ -31,6 +31,7 @@
     "jest": "^23.6.0"
   },
   "dependencies": {
+    "chrome-webstore-upload-cli": "^1.2.0",
     "socket.io": "^2.1.1"
   }
 }
