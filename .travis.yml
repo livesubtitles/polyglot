@@ -3,6 +3,8 @@ matrix:
    - language: node_js
      node_js:
      - "node"
+     install:
+       - npm install chrome-webstore-upload-cli
      deploy:
        provider: script
        script: npm run release
