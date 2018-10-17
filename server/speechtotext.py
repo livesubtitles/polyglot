@@ -13,7 +13,7 @@ from google.cloud.speech import types
 from translate import *
 
 # Sends request to Speech-to-Text API
-def speech_to_text(audio_file):
+def speech_to_text(audio_file, sample_rate):
     apiKey = os.environ.get('APIKEY')
     audiobase64 = "" + convert_to_base64(audio_file)
     # Create request
@@ -22,8 +22,8 @@ def speech_to_text(audio_file):
     body = {}
     config = {}
     config['encoding'] = 'LINEAR16'
-    config['languageCode'] = 'en-US'
-    config['sampleRateHertz'] = 44100
+    config['languageCode'] = 'fr-FR'
+    config['sampleRateHertz'] = sample_rate
     config['enableWordTimeOffsets'] = False
     body['config'] = config
     audio = {}
@@ -32,7 +32,7 @@ def speech_to_text(audio_file):
     body = json.dumps(body)
     response = requests.post(url, headers = headers, data = body)
     # Handle response
-    decoded_response = request.json()
+    decoded_response = response.json()
     print(decoded_response['results'][0]['alternatives'][0]['transcript'])
     return decoded_response['results'][0]['alternatives'][0]['transcript']
 
@@ -50,8 +50,10 @@ def convert_to_wav(pcm_data, sample_rate):
   file.setsampwidth(2)
   for i in pcm_data:
       floats = array.array('f', [i])
-      samples = [int(sample * 32767)
-                  for sample in floats]
+      samples = []
+      for sample in floats:
+          if (sample < 1 and sample > -1):
+              samples.append(int(sample * 32767))
       raw_ints = struct.pack("<%dh" % len(samples), *samples)
       file.writeframes(raw_ints)
   file.close()
@@ -59,6 +61,7 @@ def convert_to_wav(pcm_data, sample_rate):
 
 # Gets subtitle for given audio data
 def get_subtitle(pcm_data, sample_rate):
+    #print(pcm_data)
     wav_file = convert_to_wav(pcm_data, sample_rate)
-    transcript = speech_to_text(wav_file)
-    return translate(transcript, 'fr', 'en')
+    transcript = speech_to_text(wav_file, sample_rate)
+    return translate(transcript, 'en', 'fr')
