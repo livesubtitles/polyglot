@@ -1,8 +1,11 @@
 import io
+import json
 import os
 import wave
 import struct
 import array
+import requests
+import base64
 # Imports the Google Cloud client library
 from google.cloud import speech
 from google.cloud.speech import enums
@@ -12,30 +15,31 @@ from translate import *
 # Sends request to Speech-to-Text API
 def speech_to_text(audio_file):
     apiKey = os.environ.get('APIKEY')
-  # Instantiates a client
-  client = speech.SpeechClient()
-
-  # Get audio content
-  content = audio_file.getvalue()
-  audio = types.RecognitionAudio(content=content)
-
-  config = types.RecognitionConfig(
-    encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
-    sample_rate_hertz=44100,
-    language_code='en-US')
-
-  # Detects speech in the audio file
-  response = client.recognize(config, audio)
-  transcript = ""
-
-  for result in response.results:
-    print('Transcript: {}'.format(result.alternatives[0].transcript))
-    return result.alternatives[0].transcript
+    audiobase64 = "" + convert_to_base64(audio_file)
+    # Create request
+    url = "https://speech.googleapis.com/v1/speech:recognize?key=" + apiKey
+    headers = {'Accept-Encoding': 'UTF-8', 'Content-Type': 'application/json'}
+    body = {}
+    config = {}
+    config['encoding'] = 'LINEAR16'
+    config['languageCode'] = 'en-US'
+    config['sampleRateHertz'] = 44100
+    config['enableWordTimeOffsets'] = False
+    body['config'] = config
+    audio = {}
+    audio['content'] = audiobase64
+    body['audio'] = audio
+    body = json.dumps(body)
+    response = requests.post(url, headers = headers, data = body)
+    # Handle response
+    decoded_response = request.json()
+    print(decoded_response['results'][0]['alternatives'][0]['transcript'])
+    return decoded_response['results'][0]['alternatives'][0]['transcript']
 
 # Converts audio file to base64 string
 def convert_to_base64(wav_file):
-  audio_content = wav_file.read()
-  return base64.b64encode(audio_content)
+  audio_content = wav_file.getvalue()
+  return base64.b64encode(audio_content).decode('ascii')
 
 # Converts PCM data passed by the front end to a wav file required by the API
 def convert_to_wav(pcm_data, sample_rate):
@@ -57,4 +61,4 @@ def convert_to_wav(pcm_data, sample_rate):
 def get_subtitle(pcm_data, sample_rate):
     wav_file = convert_to_wav(pcm_data, sample_rate)
     transcript = speech_to_text(wav_file)
-    return translate(transcript, 'en', 'fr')
+    return translate(transcript, 'fr', 'en')
