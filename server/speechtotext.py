@@ -15,7 +15,7 @@ from translate import *
 # Sends request to Speech-to-Text API
 def speech_to_text(audio_file, sample_rate):
     apiKey = os.environ.get('APIKEY')
-    audiobase64 = "" + convert_to_base64(audio_file)
+    audiobase64 = convert_to_base64(audio_file)
     # Create request
     url = "https://speech.googleapis.com/v1/speech:recognize?key=" + apiKey
     headers = {'Accept-Encoding': 'UTF-8', 'Content-Type': 'application/json'}
@@ -61,7 +61,6 @@ def convert_to_wav(pcm_data, sample_rate):
 
 # Gets subtitle for given audio data
 def get_subtitle(pcm_data, sample_rate):
-    #print(pcm_data)
     wav_file = convert_to_wav(pcm_data, sample_rate)
     transcript = speech_to_text(wav_file, sample_rate)
     return translate(transcript, 'en', 'fr')
