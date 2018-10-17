@@ -34,3 +34,7 @@ def detect(textToTranslate):
     data = r.json()
     print (data['data']['detections'][0][0])
     return (data['data']['detections'][0][0])
+
+
+def test():
+    return detectAndTranslate("Estoy bebiendo agua.")  
