@@ -5,7 +5,7 @@ matrix:
      - "node"
      deploy:
        provider: script
-       script: python3 publishExtension.py
+       script: npm run release
        on:
          branch: master
    - language: python
