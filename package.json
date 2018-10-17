@@ -28,11 +28,10 @@
   },
   "homepage": "https://github.com/livesubtitles/polyglot#readme",
   "devDependencies": {
-    "chrome-webstore-upload-cli": "^1.2.0",
     "jest": "^23.6.0"
   },
   "dependencies": {
-    "chrome-webstore-upload-cli": "^1.2.0",
+    "chrome-webstore-upload-cli": "^1.0.0",
     "socket.io": "^2.1.1"
   }
 }
