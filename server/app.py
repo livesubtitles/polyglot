@@ -17,5 +17,9 @@ def test_connect():
     print("Connected.")
     emit('connection', {'data': 'Connected'})
 
+@socketio.on("audioprocess")
+def audioprocess(payload):
+    print("Python payload " + str( payload ))
+
 if __name__ == '__main__':
     socketio.run(app)

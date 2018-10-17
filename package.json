@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "jest"
+    "release": "webstore upload --source=webextension/ --auto-publish"
   },
   "repository": {
     "type": "git",
@@ -27,8 +28,7 @@
   },
   "homepage": "https://github.com/livesubtitles/polyglot#readme",
   "devDependencies": {
-    "grunt": "^1.0.3",
-    "grunt-webstore-upload": "^0.9.23",
+    "chrome-webstore-upload-cli": "^1.2.0",
     "jest": "^23.6.0"
   },
   "dependencies": {

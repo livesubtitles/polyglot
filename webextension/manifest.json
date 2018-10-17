@@ -2,6 +2,9 @@
     "name": "Polyglot",
     "version": "1.0",
     "description": "Live subtitling and translation for videos on the browser.",
+    "icons": { "16": "icon16.png",
+               "48": "icon48.png",
+               "128": "icon128.png" },
     "manifest_version": 2,
     "permissions": ["declarativeContent", "activeTab"],
     "background": {
