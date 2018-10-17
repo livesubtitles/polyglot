@@ -8,7 +8,6 @@
   },
   "scripts": {
     "test": "jest",
-    "release": "webstore upload --source=webextension/ --auto-publish"
   },
   "repository": {
     "type": "git",

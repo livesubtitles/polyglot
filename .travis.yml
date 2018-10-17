@@ -3,11 +3,9 @@ matrix:
    - language: node_js
      node_js:
      - "node"
-     env:
-     - EXTENSION_ID=mhijjomcfnlglellcchncholplfifdfh
      deploy:
        provider: script
-       script: npm run release
+       script: python3 publishExtension.py
        on:
          branch: master
          tags: true
