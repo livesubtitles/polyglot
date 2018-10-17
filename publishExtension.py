@@ -15,6 +15,7 @@ def update_version():
     new_version = curr_version[0] + '.' + curr_version[1] + '.' + str(int(curr_version[2]) + 1)
     
     manifest['version'] = new_version
+    
     with open('webextension/manifest.json', 'w') as outfile:
         json.dump(manifest, outfile)
 
