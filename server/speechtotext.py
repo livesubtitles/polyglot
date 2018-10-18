@@ -22,7 +22,7 @@ def speech_to_text(audio_file, sample_rate):
     body = {}
     config = {}
     config['encoding'] = 'LINEAR16'
-    config['languageCode'] = 'fr-FR'
+    config['languageCode'] = 'el-GR'
     config['sampleRateHertz'] = sample_rate
     config['enableWordTimeOffsets'] = False
     body['config'] = config
@@ -63,4 +63,4 @@ def convert_to_wav(pcm_data, sample_rate):
 def get_subtitle(pcm_data, sample_rate):
     wav_file = convert_to_wav(pcm_data, sample_rate)
     transcript = speech_to_text(wav_file, sample_rate)
-    return translate(transcript, 'en', 'fr')
+    return translate(transcript, 'en', 'el')
