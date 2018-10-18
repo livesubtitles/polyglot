@@ -37,4 +37,4 @@ def detect(textToTranslate):
 
 
 def test():
-    return detectAndTranslate("Estoy bebiendo agua.")  
+    return detectAndTranslate("Estoy bebiendo agua.", "en")  

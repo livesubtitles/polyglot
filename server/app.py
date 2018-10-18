@@ -4,6 +4,7 @@ from flask import request
 from speechtotext import *
 import json
 from flask_socketio import SocketIO, emit
+from translate import test
 
 app = Flask(__name__)
 CORS(app, resources={r"/subtitle": {"origins": "*"}})
@@ -30,6 +31,10 @@ def test_connect():
 @socketio.on("audioprocess")
 def audioprocess(payload):
     print("Python payload " + str( payload ))
+
+@app.route("/translate-test")
+def dummyTranslate():
+    return test()
 
 if __name__ == '__main__':
     socketio.run(app)
