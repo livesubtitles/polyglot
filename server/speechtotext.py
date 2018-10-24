@@ -25,6 +25,7 @@ def speech_to_text(audio_file, sample_rate, lang):
     config['languageCode'] = 'fr-FR'
     config['sampleRateHertz'] = sample_rate
     config['enableWordTimeOffsets'] = False
+    config['enableAutomaticPunctuation'] = True
     body['config'] = config
     audio = {}
     audio['content'] = audiobase64
@@ -63,4 +64,4 @@ def convert_to_wav(pcm_data, sample_rate):
 def get_subtitle(pcm_data, sample_rate, lang):
     wav_file = convert_to_wav(pcm_data, sample_rate)
     transcript = speech_to_text(wav_file, sample_rate, lang)
-    return translate(transcript, 'en', 'fr')
+    return translate(transcript, 'en', lang.split('-')[0])
