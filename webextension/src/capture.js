@@ -48,7 +48,7 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
         jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
       }
       request = JSON.stringify(jsonRequest);
-      let url = "http://127.0.0.1:5000/subtitle"
+      let url = "https://vast-plains-75205.herokuapp.com/subtitle"
       fetch(url, {method: 'post',
             headers: {
               "Content-Type": "application/json; charset=utf-8",
