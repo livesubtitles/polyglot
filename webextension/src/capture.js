@@ -1,5 +1,6 @@
 let vid = document.getElementsByTagName("video")[0];
 let track = vid.addTextTrack("captions", "English", "en");
+let language = document.getElementById('languageSelector').value;
 track.mode = "showing";
 
 let MAX_LENGTH = 70;
@@ -40,9 +41,8 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
     numOfBufferedChunks++;
     if (numOfBufferedChunks == 10) {
       numOfBufferedChunks = 0;
-      lang = 'el-GR'
       // Send request to backend
-      let request = "{\"audio\":" + "[]" + ", \"sampleRate\": " + buffersSoFar.sampleRate + ", \"lang\":\"" + lang + "\"}";
+      let request = "{\"audio\":" + "[]" + ", \"sampleRate\": " + buffersSoFar.sampleRate + ", \"lang\":\"" + language + "\"}";
       let jsonRequest = JSON.parse(request);
       for (let i = 0; i < buffersSoFar.getChannelData(0).length; i++) {
         jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
