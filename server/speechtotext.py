@@ -22,7 +22,7 @@ def speech_to_text(audio_file, sample_rate, lang):
     body = {}
     config = {}
     config['encoding'] = 'LINEAR16'
-    config['languageCode'] = 'fr-FR'
+    config['languageCode'] = lang
     config['sampleRateHertz'] = sample_rate
     config['enableWordTimeOffsets'] = False
     config['enableAutomaticPunctuation'] = True
