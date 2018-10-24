@@ -13,7 +13,7 @@ from google.cloud.speech import types
 from translate import *
 
 # Sends request to Speech-to-Text API
-def speech_to_text(audio_file, sample_rate):
+def speech_to_text(audio_file, sample_rate, lang):
     apiKey = os.environ.get('APIKEY')
     audiobase64 = convert_to_base64(audio_file)
     # Create request
@@ -22,7 +22,7 @@ def speech_to_text(audio_file, sample_rate):
     body = {}
     config = {}
     config['encoding'] = 'LINEAR16'
-    config['languageCode'] = 'el-GR'
+    config['languageCode'] = 'fr-FR'
     config['sampleRateHertz'] = sample_rate
     config['enableWordTimeOffsets'] = False
     body['config'] = config
@@ -60,7 +60,7 @@ def convert_to_wav(pcm_data, sample_rate):
   return temp_file
 
 # Gets subtitle for given audio data
-def get_subtitle(pcm_data, sample_rate):
+def get_subtitle(pcm_data, sample_rate, lang):
     wav_file = convert_to_wav(pcm_data, sample_rate)
-    transcript = speech_to_text(wav_file, sample_rate)
-    return translate(transcript, 'en', 'el')
+    transcript = speech_to_text(wav_file, sample_rate, lang)
+    return translate(transcript, 'en', 'fr')
