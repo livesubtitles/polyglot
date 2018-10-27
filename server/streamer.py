@@ -3,6 +3,7 @@ from google.cloud.speech import enums
 from google.cloud.speech import types
 from six.moves import queue
 from google.oauth2 import service_account
+import struct
 
 class AudioStreamer(object):
     def __init__( self ):
@@ -27,7 +28,9 @@ class AudioStreamer(object):
         if not self.is_rate_set:
             self.set_rate = True
             self.set_config( language_code, sample_rate )
-        self.buff.put( audio_buffer )
+
+        for bs in audio_buffer:
+            self.buff.put( bytearray(struct.pack("f", bs)) )
 
     def set_config( self, new_language_code, rate):
         config = types.RecognitionConfig(
@@ -37,7 +40,7 @@ class AudioStreamer(object):
                         )
         self.streaming_config = types.StreamingRecognitionConfig(
                                          config=config,
-                                         interim_results=False
+                                         interim_results=True
                                       )
 
     def generator( self ):
@@ -45,6 +48,7 @@ class AudioStreamer(object):
             # blocking call until we get the first chunk
             chunk = self.buff.get()
             if chunk is None:
+                print("NO CHUNKS WHERE FOUND")
                 return
             data = [chunk]
 
@@ -58,4 +62,4 @@ class AudioStreamer(object):
                 except queue.Empty:
                     break
 
-            yield data
+            yield b''.join(data)

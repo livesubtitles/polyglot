@@ -10,7 +10,7 @@ sock.on('connection', function(res){
   let audioctx = new AudioContext();
   let mediaStreamNode = audioctx.createMediaStreamSource(stream);
   // create a script processor with input of size 16384, one input (the video) and one output (the audioctx.destination)
-  let scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
+  let scriptProcessingNode = audioctx.createScriptProcessor(256, 1, 1);
   scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
     if (!vid.paused) {
       //Send along pipeline
@@ -18,8 +18,9 @@ sock.on('connection', function(res){
       //Display Text
       //Handle grouping of chunks
       console.log("AUDIOEVENT");
+      console.log(Array.prototype.slice.call(audioProcessingEvent.inputBuffer.getChannelData(0)));
       sock.emit("audioprocess", {
-        channelData: audioProcessingEvent.inputBuffer.getChannelData(0),
+        channelData: Array.prototype.slice.call(audioProcessingEvent.inputBuffer.getChannelData(0)),
         sampleRate: audioProcessingEvent.inputBuffer.sampleRate,
         connection_id: connection_id
       });

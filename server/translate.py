@@ -18,6 +18,8 @@ def translate(textToTranslate, targetLang, sourceLang):
     payload = {'key' : apiKey, 'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
     r = requests.get((url + translation), params = payload)
     data = r.json()
+    print("DATAAAA")
+    print(data)
     print (data['data']['translations'][0]['translatedText'])
     return (data['data']['translations'][0]['translatedText'])
 
