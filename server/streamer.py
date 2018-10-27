@@ -15,10 +15,12 @@ class AudioStreamer(object):
         self.client = speech.SpeechClient(credentials=credentials)
 
     def __enter__( self ):
+        print("ENTERING")
         self.closed = False
         return self
 
     def __exit__( self, type, value, traceback ):
+        print("EXITING")
         self.closed = True
         # Signal generator to terminate
         self.buff.put( None )
@@ -30,7 +32,7 @@ class AudioStreamer(object):
             self.set_config( language_code, sample_rate )
 
         for bs in audio_buffer:
-            self.buff.put( bytearray(struct.pack("f", bs)) )
+            self.buff.put( struct.pack("f", bs) )
 
     def set_config( self, new_language_code, rate):
         config = types.RecognitionConfig(
@@ -44,11 +46,11 @@ class AudioStreamer(object):
                                       )
 
     def generator( self ):
-        while not self.closed:
-            # blocking call until we get the first chunk
+          while not self.closed:
+        #     # blocking call until we get the first chunk
             chunk = self.buff.get()
             if chunk is None:
-                print("NO CHUNKS WHERE FOUND")
+                print("NO CHUNKS WERE FOUND")
                 return
             data = [chunk]
 

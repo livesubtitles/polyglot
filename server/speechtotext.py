@@ -28,8 +28,10 @@ def listen_print_loop(responses):
     final one, print a newline to preserve the finalized transcription.
     """
     num_chars_printed = 0
+    print("LISTEN PRINT LOOP")
     for response in responses:
         print("NAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN")
+        print(response)
         if not response.results:
             continue
 

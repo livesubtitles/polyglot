@@ -32,7 +32,7 @@ def connect():
     connection_lock.acquire()
     global next_connection_id
     connection_id = next_connection_id
-    connections[connection_id] = AudioStreamer()
+    connections[connection_id] = ( AudioStreamer(), False )
     next_connection_id += 1
     connection_lock.release()
     emit('connection', {'data': 'Connected', "connection_id": connection_id })
@@ -42,13 +42,17 @@ def connect():
 @socketio.on("audioprocess")
 def audioprocess(payload):
     connection_id = payload["connection_id"]
-    print( "Received payload from connection_id: " + str( connection_id ) )
+    # print( "Received payload from connection_id: " + str( connection_id ) )
     connection_lock.acquire()
-    audiostreamer = connections[connection_id]
+    ( audiostreamer, called_get_subtitle ) = connections[connection_id]
     connection_lock.release()
     audiostreamer.received_audio_buffer( payload["channelData"], payload["sampleRate"], "fr-FR" )
-    subtitle = get_subtitle(payload["channelData"], payload["sampleRate"], audiostreamer)
-    emit("subtitle", {"subtitle": subtitle})
+    if not called_get_subtitle:
+        connections[connection_id] = ( audiostreamer, True )
+        t = threading.Thread(target=get_subtitle, args=(payload["channelData"], payload["sampleRate"], audiostreamer))
+        t.start()
+
+    # emit("subtitle", {"subtitle": subtitle})
 
 if __name__ == '__main__':
     socketio.run(app)
