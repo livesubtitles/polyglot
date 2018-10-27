@@ -1,6 +1,5 @@
 let vid = document.getElementsByTagName("video")[0];
 let track = vid.addTextTrack("captions", "English", "en");
-let language = document.getElementById('languageSelector').value;
 track.mode = "showing";
 
 let MAX_LENGTH = 70;
@@ -42,13 +41,13 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
     if (numOfBufferedChunks == 10) {
       numOfBufferedChunks = 0;
       // Send request to backend
-      let request = "{\"audio\":" + "[]" + ", \"sampleRate\": " + buffersSoFar.sampleRate + ", \"lang\":\"" + language + "\"}";
+      let request = "{\"audio\":" + "[]" + ", \"sampleRate\": " + buffersSoFar.sampleRate + "}";
       let jsonRequest = JSON.parse(request);
       for (let i = 0; i < buffersSoFar.getChannelData(0).length; i++) {
         jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
       }
       request = JSON.stringify(jsonRequest);
-      let url = "https://vast-plains-75205.herokuapp.com/subtitle"
+      let url = "http://127.0.0.1:5000/subtitle"
       fetch(url, {method: 'post',
             headers: {
               "Content-Type": "application/json; charset=utf-8",
