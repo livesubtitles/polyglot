@@ -2,6 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask import request
 from speechtotext import *
+from punctuate import *
 import json
 from flask_socketio import SocketIO, emit
 from translate import test
@@ -16,7 +17,8 @@ def hello():
 
 @app.route("/pablo")
 def pablo():
-    return "GOROSTIAGAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    k = punctuate("hello world")
+    return k + "GOROSTIAGAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 
 @app.route("/subtitle", methods=['POST'])
 def subtitle():
