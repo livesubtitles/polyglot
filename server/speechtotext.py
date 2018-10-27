@@ -65,3 +65,80 @@ def get_subtitle(pcm_data, sample_rate, lang):
     wav_file = convert_to_wav(pcm_data, sample_rate)
     transcript = speech_to_text(wav_file, sample_rate, lang)
     return translate(transcript, 'en', lang.split('-')[0])
+
+
+
+
+import urllib.parse, time
+
+headers = {
+    'Ocp-Apim-Subscription-Key': '1cf34f34513d4e1d8568c5d2a4b81fec'
+}
+
+form_data = {'file': open('/Users/hanglili/Downloads/test9.wav', 'rb')}
+
+params = urllib.parse.urlencode({
+    # 'name': 'test.wav',
+    'language': 'auto',
+    # 'privacy': 'Private'
+})
+
+try:
+    url = 'https://api.videoindexer.ai/trial/Accounts/82a02c9c-734d-48d1-99e7-4e3c0f523904/Videos?accessToken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJBY2NvdW50SWQiOiI4MmEwMmM5Yy03MzRkLTQ4ZDEtOTllNy00ZTNjMGY1MjM5MDQiLCJBbGxvd0VkaXQiOiJUcnVlIiwiRXh0ZXJuYWxVc2VySWQiOiIwMGZlY2ZjZTYzOTliZDYxIiwiVXNlclR5cGUiOiJNaWNyb3NvZnQiLCJpc3MiOiJodHRwczovL3d3dy52aWRlb2luZGV4ZXIuYWkvIiwiYXVkIjoiaHR0cHM6Ly93d3cudmlkZW9pbmRleGVyLmFpLyIsImV4cCI6MTU0MDY1MjQxNCwibmJmIjoxNTQwNjQ4NTE0fQ.FnzRT7kJ3eQCF9iurt6IZbNBU-ozIAXVBEUXUmbJHR8&name=test9'
+    print ("HELLO!!!!!!!!!!")
+    r = requests.post(url, params=params, files=form_data, headers=headers)
+    print(r.url)
+    print(json.dumps(r.json(), indent=2))
+    print ("BYE!!!!!!!!!!!!!!")
+    videoId = (r.json())['id']
+    print ("The videoId is " + videoId)
+    sourceLang = None
+    while (sourceLang == None):
+        time.sleep(5)
+        url2 = 'https://api.videoindexer.ai/trial/Accounts/82a02c9c-734d-48d1-99e7-4e3c0f523904/Videos/{videoId}/Index?accessToken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJBY2NvdW50SWQiOiI4MmEwMmM5Yy03MzRkLTQ4ZDEtOTllNy00ZTNjMGY1MjM5MDQiLCJBbGxvd0VkaXQiOiJUcnVlIiwiRXh0ZXJuYWxVc2VySWQiOiIwMGZlY2ZjZTYzOTliZDYxIiwiVXNlclR5cGUiOiJNaWNyb3NvZnQiLCJpc3MiOiJodHRwczovL3d3dy52aWRlb2luZGV4ZXIuYWkvIiwiYXVkIjoiaHR0cHM6Ly93d3cudmlkZW9pbmRleGVyLmFpLyIsImV4cCI6MTU0MDY1MjQxNCwibmJmIjoxNTQwNjQ4NTE0fQ.FnzRT7kJ3eQCF9iurt6IZbNBU-ozIAXVBEUXUmbJHR8'
+        r = requests.get(url, headers=headers)
+        sourceLang = (r.json())['results'][0]['sourceLanguage']
+        print ("The source language is " , sourceLang)
+except Exception as e:
+    print("[Errno {0}] {1}".format(e.errno, e.strerror))
+
+
+# import http.client, urllib.request, urllib.parse, urllib.error, base64
+#
+# headers = {
+#     # Request headers
+# }
+
+# form_data = {'file': open('/Users/hanglili/Downloads/test.wav', 'rb')}
+
+# form_data = open('/Users/hanglili/Downloads/test.wav', 'rb')
+#
+# params = urllib.parse.urlencode({
+#     # Request parameters
+#     # 'description': '{string}',
+#     # 'partition': '{string}',
+#     # 'externalId': '{string}',
+#     # 'callbackUrl': '{string}',
+#     # 'metadata': '{string}',
+#     'language': 'auto',
+#     # 'fileName': '{string}',
+#     # 'indexingPreset': '{string}',
+#     # 'streamingPreset': 'Default',
+#     # 'linguisticModelId': '{string}',
+#     # 'privacy': '{string}',
+#     # 'externalUrl': '{string}',
+#     # 'assetId': '{string}',
+#     # 'priority': '{string}',
+# })
+
+# try:
+#     conn = http.client.HTTPSConnection('api.videoindexer.ai')
+#     conn.request("POST", "/trial/Accounts/82a02c9c-734d-48d1-99e7-4e3c0f523904/Videos?accessToken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJBY2NvdW50SWQiOiI4MmEwMmM5Yy03MzRkLTQ4ZDEtOTllNy00ZTNjMGY1MjM5MDQiLCJBbGxvd0VkaXQiOiJUcnVlIiwiRXh0ZXJuYWxVc2VySWQiOiIwMGZlY2ZjZTYzOTliZDYxIiwiVXNlclR5cGUiOiJNaWNyb3NvZnQiLCJpc3MiOiJodHRwczovL3d3dy52aWRlb2luZGV4ZXIuYWkvIiwiYXVkIjoiaHR0cHM6Ly93d3cudmlkZW9pbmRleGVyLmFpLyIsImV4cCI6MTU0MDY1MjQxNCwibmJmIjoxNTQwNjQ4NTE0fQ.FnzRT7kJ3eQCF9iurt6IZbNBU-ozIAXVBEUXUmbJHR8&name=test&%s" % params, form_data, headers)
+#     response = conn.getresponse()
+#     data = response.read()
+#     print(data)
+#     conn.close()
+# except Exception as e:
+#     print("[Errno {0}] {1}".format(e.errno, e.strerror))
+
+####################################
