@@ -34,6 +34,7 @@ def speech_to_text(audio_file, sample_rate, lang):
     response = requests.post(url, headers = headers, data = body)
     # Handle response
     decoded_response = response.json()
+    print(decoded_response)
     print(decoded_response['results'][0]['alternatives'][0]['transcript'])
     return decoded_response['results'][0]['alternatives'][0]['transcript']
 
