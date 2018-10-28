@@ -80,9 +80,15 @@ def get_subtitle(pcm_data, sample_rate):
 
 # Detects language spoken using Microsoft API
 def detect_language(audio_file):
+    microsoftKey = os.environ.get('MICROSOFTKEY')
+    microsoftId = os.environ.get('MICROSOFTID')
     headers = {
-        'Ocp-Apim-Subscription-Key': '1cf34f34513d4e1d8568c5d2a4b81fec'
+        'Ocp-Apim-Subscription-Key': microsoftKey
     }
+
+    url = 'https://api.videoindexer.ai/auth/trial/Accounts/' + microsoftId + '/AccessToken?allowEdit=true'
+    response = requests.get(url, headers=headers)
+    access_token = response.text.split("\"")[1]
 
     form_data = {'file': audio_file.getvalue()}
 
@@ -91,7 +97,7 @@ def detect_language(audio_file):
     })
 
     try:
-        url = 'https://api.videoindexer.ai/trial/Accounts/723619e4-3df6-4cef-b28b-411d0c114b48/Videos?accessToken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJBY2NvdW50SWQiOiI3MjM2MTllNC0zZGY2LTRjZWYtYjI4Yi00MTFkMGMxMTRiNDgiLCJBbGxvd0VkaXQiOiJUcnVlIiwiRXh0ZXJuYWxVc2VySWQiOiIxMTY0MTg1ODgwNzc5NzY1NTYwNzciLCJVc2VyVHlwZSI6Ikdvb2dsZSIsImlzcyI6Imh0dHBzOi8vd3d3LnZpZGVvaW5kZXhlci5haS8iLCJhdWQiOiJodHRwczovL3d3dy52aWRlb2luZGV4ZXIuYWkvIiwiZXhwIjoxNTQwNzMyMTIxLCJuYmYiOjE1NDA3MjgyMjF9.DlXXGISgPSC46KvcKZk1Gs9bDIOab6FBKV8uWBlb9mU&name=test' + str(random.randint(1, 10))
+        url = 'https://api.videoindexer.ai/trial/Accounts/'+ microsoftId + '/Videos?accessToken=' + access_token + '&name=test' + str(random.randint(1, 10))
         r = requests.post(url, params=params, files=form_data, headers=headers)
         print(r.url)
         print(json.dumps(r.json(), indent=2))
@@ -102,9 +108,8 @@ def detect_language(audio_file):
         # while (source_lang == None):
         time.sleep(15)
         print("HERE TOO")
-        url2 = 'https://api.videoindexer.ai/trial/Accounts/723619e4-3df6-4cef-b28b-411d0c114b48/Videos/' + video_id +'/Index?accessToken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJBY2NvdW50SWQiOiI3MjM2MTllNC0zZGY2LTRjZWYtYjI4Yi00MTFkMGMxMTRiNDgiLCJBbGxvd0VkaXQiOiJUcnVlIiwiRXh0ZXJuYWxVc2VySWQiOiIxMTY0MTg1ODgwNzc5NzY1NTYwNzciLCJVc2VyVHlwZSI6Ikdvb2dsZSIsImlzcyI6Imh0dHBzOi8vd3d3LnZpZGVvaW5kZXhlci5haS8iLCJhdWQiOiJodHRwczovL3d3dy52aWRlb2luZGV4ZXIuYWkvIiwiZXhwIjoxNTQwNzMyMTIxLCJuYmYiOjE1NDA3MjgyMjF9.DlXXGISgPSC46KvcKZk1Gs9bDIOab6FBKV8uWBlb9mU'
+        url2 = 'https://api.videoindexer.ai/trial/Accounts/723619e4-3df6-4cef-b28b-411d0c114b48/Videos/' + video_id +'/Index?accessToken=' + access_token
         r = requests.get(url2, headers=headers)
-        print(json.dumps(r.json()))
         source_lang = (r.json())['videos'][0]['insights']['sourceLanguage']
         print ("The source language is " , source_lang)
         return source_lang
