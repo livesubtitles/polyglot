@@ -8,6 +8,7 @@ import requests
 import base64
 import urllib.parse
 import time
+import random
 # Imports the Google Cloud client library
 from google.cloud import speech
 from google.cloud.speech import enums
@@ -90,7 +91,7 @@ def detect_language(audio_file):
     })
 
     try:
-        url = 'https://api.videoindexer.ai/trial/Accounts/723619e4-3df6-4cef-b28b-411d0c114b48/Videos?accessToken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJBY2NvdW50SWQiOiI3MjM2MTllNC0zZGY2LTRjZWYtYjI4Yi00MTFkMGMxMTRiNDgiLCJBbGxvd0VkaXQiOiJUcnVlIiwiRXh0ZXJuYWxVc2VySWQiOiIxMTY0MTg1ODgwNzc5NzY1NTYwNzciLCJVc2VyVHlwZSI6Ikdvb2dsZSIsImlzcyI6Imh0dHBzOi8vd3d3LnZpZGVvaW5kZXhlci5haS8iLCJhdWQiOiJodHRwczovL3d3dy52aWRlb2luZGV4ZXIuYWkvIiwiZXhwIjoxNTQwNjU2NDEyLCJuYmYiOjE1NDA2NTI1MTJ9.7U0pocuUFY1OsbTpxahpq7XYxeONGMNOa1wyPss3jqU&name=test'
+        url = 'https://api.videoindexer.ai/trial/Accounts/723619e4-3df6-4cef-b28b-411d0c114b48/Videos?accessToken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJBY2NvdW50SWQiOiI3MjM2MTllNC0zZGY2LTRjZWYtYjI4Yi00MTFkMGMxMTRiNDgiLCJBbGxvd0VkaXQiOiJUcnVlIiwiRXh0ZXJuYWxVc2VySWQiOiIxMTY0MTg1ODgwNzc5NzY1NTYwNzciLCJVc2VyVHlwZSI6Ikdvb2dsZSIsImlzcyI6Imh0dHBzOi8vd3d3LnZpZGVvaW5kZXhlci5haS8iLCJhdWQiOiJodHRwczovL3d3dy52aWRlb2luZGV4ZXIuYWkvIiwiZXhwIjoxNTQwNzMyMTIxLCJuYmYiOjE1NDA3MjgyMjF9.DlXXGISgPSC46KvcKZk1Gs9bDIOab6FBKV8uWBlb9mU&name=test' + str(random.randint(1, 10))
         r = requests.post(url, params=params, files=form_data, headers=headers)
         print(r.url)
         print(json.dumps(r.json(), indent=2))
@@ -101,9 +102,10 @@ def detect_language(audio_file):
         # while (source_lang == None):
         time.sleep(15)
         print("HERE TOO")
-        url2 = 'https://api.videoindexer.ai/trial/Accounts/723619e4-3df6-4cef-b28b-411d0c114b48/Videos/{video_id}/Index?accessToken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJBY2NvdW50SWQiOiI3MjM2MTllNC0zZGY2LTRjZWYtYjI4Yi00MTFkMGMxMTRiNDgiLCJBbGxvd0VkaXQiOiJUcnVlIiwiRXh0ZXJuYWxVc2VySWQiOiIxMTY0MTg1ODgwNzc5NzY1NTYwNzciLCJVc2VyVHlwZSI6Ikdvb2dsZSIsImlzcyI6Imh0dHBzOi8vd3d3LnZpZGVvaW5kZXhlci5haS8iLCJhdWQiOiJodHRwczovL3d3dy52aWRlb2luZGV4ZXIuYWkvIiwiZXhwIjoxNTQwNjU2NDEyLCJuYmYiOjE1NDA2NTI1MTJ9.7U0pocuUFY1OsbTpxahpq7XYxeONGMNOa1wyPss3jqU'
-        r = requests.get(url, headers=headers)
-        source_lang = (r.json())['results'][0]['sourceLanguage']
+        url2 = 'https://api.videoindexer.ai/trial/Accounts/723619e4-3df6-4cef-b28b-411d0c114b48/Videos/' + video_id +'/Index?accessToken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJBY2NvdW50SWQiOiI3MjM2MTllNC0zZGY2LTRjZWYtYjI4Yi00MTFkMGMxMTRiNDgiLCJBbGxvd0VkaXQiOiJUcnVlIiwiRXh0ZXJuYWxVc2VySWQiOiIxMTY0MTg1ODgwNzc5NzY1NTYwNzciLCJVc2VyVHlwZSI6Ikdvb2dsZSIsImlzcyI6Imh0dHBzOi8vd3d3LnZpZGVvaW5kZXhlci5haS8iLCJhdWQiOiJodHRwczovL3d3dy52aWRlb2luZGV4ZXIuYWkvIiwiZXhwIjoxNTQwNzMyMTIxLCJuYmYiOjE1NDA3MjgyMjF9.DlXXGISgPSC46KvcKZk1Gs9bDIOab6FBKV8uWBlb9mU'
+        r = requests.get(url2, headers=headers)
+        print(json.dumps(r.json()))
+        source_lang = (r.json())['videos'][0]['insights']['sourceLanguage']
         print ("The source language is " , source_lang)
         return source_lang
     except Exception as e:
