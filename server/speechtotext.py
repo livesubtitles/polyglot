@@ -19,7 +19,7 @@ is_first = True
 detected_lang = ""
 
 # Sends request to Speech-to-Text API
-def speech_to_text(audio_file, sample_rate):
+def speech_to_text(audio_file, sample_rate, lang):
     global is_first
     global detected_lang
     apiKey = os.environ.get('APIKEY')
@@ -72,10 +72,10 @@ def convert_to_wav(pcm_data, sample_rate):
   return temp_file
 
 # Gets subtitle for given audio data
-def get_subtitle(pcm_data, sample_rate):
+def get_subtitle(pcm_data, sample_rate, lang):
     global detected_lang
     wav_file = convert_to_wav(pcm_data, sample_rate)
-    transcript = speech_to_text(wav_file, sample_rate)
+    transcript = speech_to_text(wav_file, sample_rate, lang)
     return translate(transcript, 'en', detected_lang.split('-')[0])
 
 # Detects language spoken using Microsoft API

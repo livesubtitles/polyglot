@@ -41,7 +41,8 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
     if (numOfBufferedChunks == 10) {
       numOfBufferedChunks = 0;
       // Send request to backend
-      let request = "{\"audio\":" + "[]" + ", \"sampleRate\": " + buffersSoFar.sampleRate + "}";
+      let lang = ''
+      let request = "{\"audio\":" + "[]" + ", \"sampleRate\": " + buffersSoFar.sampleRate + ", \"lang\":\"" + lang + "\"}";
       let jsonRequest = JSON.parse(request);
       for (let i = 0; i < buffersSoFar.getChannelData(0).length; i++) {
         jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
