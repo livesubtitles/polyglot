@@ -1,5 +1,7 @@
 let vid = document.getElementsByTagName("video")[0];
 let track = vid.addTextTrack("captions", "English", "en");
+let lang = ''
+let first_detected = true;
 track.mode = "showing";
 
 let MAX_LENGTH = 70;
@@ -41,8 +43,9 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
     if (numOfBufferedChunks == 10) {
       numOfBufferedChunks = 0;
       // Send request to backend
-      let lang = ''
       let request = "{\"audio\":" + "[]" + ", \"sampleRate\": " + buffersSoFar.sampleRate + ", \"lang\":\"" + lang + "\"}";
+      lang = 'detected'
+      console.log(request);
       let jsonRequest = JSON.parse(request);
       for (let i = 0; i < buffersSoFar.getChannelData(0).length; i++) {
         jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
@@ -63,6 +66,12 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
           }
           response.json().then(function(data) {
             console.log(data.subtitle);
+            console.log(data.lang);
+            lang = data.lang;
+            if (lang != '' && first_detected) {
+              first_detected = false;
+              alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
+            }
             addSubtitles(data.subtitle);
           });
         });

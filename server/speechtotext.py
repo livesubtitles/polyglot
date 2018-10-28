@@ -76,7 +76,7 @@ def get_subtitle(pcm_data, sample_rate, lang):
     global detected_lang
     wav_file = convert_to_wav(pcm_data, sample_rate)
     transcript = speech_to_text(wav_file, sample_rate, lang)
-    return translate(transcript, 'en', detected_lang.split('-')[0])
+    return "{\"subtitle\":\"" + translate(transcript, 'en', detected_lang.split('-')[0]) + "\", \"lang\":\""+detected_lang+"\"}"
 
 # Detects language spoken using Microsoft API
 def detect_language(audio_file):
@@ -110,6 +110,7 @@ def detect_language(audio_file):
         print("HERE TOO")
         url2 = 'https://api.videoindexer.ai/trial/Accounts/723619e4-3df6-4cef-b28b-411d0c114b48/Videos/' + video_id +'/Index?accessToken=' + access_token
         r = requests.get(url2, headers=headers)
+        print(r.json())
         source_lang = (r.json())['videos'][0]['insights']['sourceLanguage']
         print ("The source language is " , source_lang)
         return source_lang
