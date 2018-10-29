@@ -21,6 +21,7 @@ def pablo():
 @app.route("/subtitle", methods=['POST'])
 def subtitle():
     request_body = json.loads(request.data)
+    print(request_body['lang'])
     return get_subtitle(request_body['audio'], request_body['sampleRate'], request_body['lang'])
 
 @socketio.on('connect')

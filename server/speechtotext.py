@@ -15,25 +15,20 @@ from google.cloud.speech import enums
 from google.cloud.speech import types
 from translate import *
 
-is_first = True
-detected_lang = ""
 
 # Sends request to Speech-to-Text API
 def speech_to_text(audio_file, sample_rate, lang):
-    global is_first
-    global detected_lang
     apiKey = os.environ.get('APIKEY')
     audiobase64 = convert_to_base64(audio_file)
-    if (is_first):
-        is_first = False
-        detected_lang = detect_language(audio_file)
+    if (lang == 'detected'):
+        return ""
     # Create request
     url = "https://speech.googleapis.com/v1/speech:recognize?key=" + apiKey
     headers = {'Accept-Encoding': 'UTF-8', 'Content-Type': 'application/json'}
     body = {}
     config = {}
     config['encoding'] = 'LINEAR16'
-    config['languageCode'] = detected_lang
+    config['languageCode'] = lang
     config['sampleRateHertz'] = sample_rate
     config['enableWordTimeOffsets'] = False
     config['enableAutomaticPunctuation'] = True
@@ -73,10 +68,11 @@ def convert_to_wav(pcm_data, sample_rate):
 
 # Gets subtitle for given audio data
 def get_subtitle(pcm_data, sample_rate, lang):
-    global detected_lang
     wav_file = convert_to_wav(pcm_data, sample_rate)
+    if (lang == ''):
+        lang = detect_language(wav_file)
     transcript = speech_to_text(wav_file, sample_rate, lang)
-    return "{\"subtitle\":\"" + translate(transcript, 'en', detected_lang.split('-')[0]) + "\", \"lang\":\""+detected_lang+"\"}"
+    return "{\"subtitle\":\"" + translate(transcript, 'en', lang.split('-')[0]) + "\", \"lang\":\""+lang+"\"}"
 
 # Detects language spoken using Microsoft API
 def detect_language(audio_file):

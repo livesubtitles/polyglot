@@ -14,6 +14,8 @@ def detectAndTranslate(textToTranslate, targetLang):
     return translate(textToTranslate, targetLang, sourceLang)
 
 def translate(textToTranslate, targetLang, sourceLang):
+    if (sourceLang == 'detected'):
+        return ""
     payload = {'key' : apiKey, 'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
     r = requests.get((url + translation), params = payload)
     data = r.json()
@@ -37,4 +39,4 @@ def detect(textToTranslate):
 
 
 def test():
-    return detectAndTranslate("Estoy bebiendo agua.", "en")  
+    return detectAndTranslate("Estoy bebiendo agua.", "en")
