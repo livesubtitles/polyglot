@@ -1,6 +1,8 @@
 let vid = document.getElementsByTagName("video")[0];
 let track = vid.addTextTrack("captions", "English", "en");
-let language = document.getElementById('languageSelector').value;
+let lang = document.getElementById('languageSelector').value;
+let first_detected = true;
+let detecting_language = false;
 track.mode = "showing";
 
 let MAX_LENGTH = 70;
@@ -41,14 +43,22 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
     numOfBufferedChunks++;
     if (numOfBufferedChunks == 10) {
       numOfBufferedChunks = 0;
+      if (!detecting_language && lang == 'detected') {
+        detecting_language = true;
+        lang = '';
+      }
       // Send request to backend
-      let request = "{\"audio\":" + "[]" + ", \"sampleRate\": " + buffersSoFar.sampleRate + ", \"lang\":\"" + language + "\"}";
+      let request = "{\"audio\":" + "[]" + ", \"sampleRate\": " + buffersSoFar.sampleRate + ", \"lang\":\"" + lang + "\"}";
+      if (lang == '') {
+        lang = 'detected';
+      }
+      console.log(request);
       let jsonRequest = JSON.parse(request);
       for (let i = 0; i < buffersSoFar.getChannelData(0).length; i++) {
         jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
       }
       request = JSON.stringify(jsonRequest);
-      let url = "https://vast-plains-75205.herokuapp.com/subtitle"
+      let url = "http://127.0.0.1:5000/subtitle"
       fetch(url, {method: 'post',
             headers: {
               "Content-Type": "application/json; charset=utf-8",
@@ -63,6 +73,14 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
           }
           response.json().then(function(data) {
             console.log(data.subtitle);
+            console.log(data.lang);
+            if (data.lang != 'detected') {
+              lang = data.lang;
+            }
+            if (lang != '' && first_detected) {
+              first_detected = false;
+              alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
+            }
             addSubtitles(data.subtitle);
           });
         });
