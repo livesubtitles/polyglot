@@ -100,15 +100,16 @@ def detect_language(audio_file):
         video_id = (r.json())['id']
         print ("The videoId is " + video_id)
         source_lang = None
-        print("HERE")
-        # while (source_lang == None):
-        time.sleep(15)
-        print("HERE TOO")
-        url2 = 'https://api.videoindexer.ai/trial/Accounts/723619e4-3df6-4cef-b28b-411d0c114b48/Videos/' + video_id +'/Index?accessToken=' + access_token
-        r = requests.get(url2, headers=headers)
-        print(r.json())
-        source_lang = (r.json())['videos'][0]['insights']['sourceLanguage']
-        print ("The source language is " , source_lang)
+        while(source_lang == None):
+            print("HERE")
+            # while (source_lang == None):
+            time.sleep(2)
+            print("HERE TOO")
+            url2 = 'https://api.videoindexer.ai/trial/Accounts/723619e4-3df6-4cef-b28b-411d0c114b48/Videos/' + video_id +'/Index?accessToken=' + access_token
+            r = requests.get(url2, headers=headers)
+            print(r.json())
+            source_lang = (r.json())['videos'][0]['insights']['sourceLanguage']
+            print ("The source language is " , source_lang)
         return source_lang
     except Exception as e:
         print("[Errno {0}] {1}".format(e.errno, e.strerror))
