@@ -1,3 +1,6 @@
+const server = "https://vast-plains-75205.herokuapp.com"
+const io = require('socket.io-client');
+const sock = io(server);
 let vid = document.getElementsByTagName("video")[0];
 let track = vid.addTextTrack("captions", "English", "en");
 let lang = document.getElementById('languageSelector').value;
@@ -20,6 +23,7 @@ function addSubtitles(text) {
   track.addCue(new VTTCue(start, end, prev + text));
 }
 
+sock.on("connect", function() {
 
 let stream = vid.captureStream();
 let audioctx = new AudioContext();
@@ -50,6 +54,7 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
       // Send request to backend
       let request = "{\"audio\":" + "[]" + ", \"sampleRate\": " + buffersSoFar.sampleRate + ", \"lang\":\"" + lang + "\"}";
       if (lang == '') {
+        detecting_language = true;
         lang = 'detected';
       }
       console.log(request);
@@ -58,7 +63,7 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
         jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
       }
       request = JSON.stringify(jsonRequest);
-      let url = "http://127.0.0.1:5000/subtitle"
+      let url = "https://vast-plains-75205.herokuapp.com/subtitle"
       fetch(url, {method: 'post',
             headers: {
               "Content-Type": "application/json; charset=utf-8",
@@ -84,8 +89,15 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
             addSubtitles(data.subtitle);
           });
         });
+
+      }
     }
-  }
-};
-mediaStreamNode.connect(scriptProcessingNode);
-scriptProcessingNode.connect(audioctx.destination);
+  };
+  mediaStreamNode.connect(scriptProcessingNode);
+  scriptProcessingNode.connect(audioctx.destination);
+
+});
+
+sock.on("subtitle", function(subtitle) {
+  addSubtitles(subtitle.subtitle);
+});
