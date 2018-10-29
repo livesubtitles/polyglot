@@ -2,7 +2,6 @@ import requests
 import os
 
 # Set endpoints
-translation = ''
 detection = 'detect'
 languages = 'languages'
 
@@ -17,13 +16,13 @@ def translate(textToTranslate, targetLang, sourceLang):
     if (sourceLang == 'detected'):
         return ""
     payload = {'key' : apiKey, 'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
-    r = requests.get((url + translation), params = payload)
+    r = requests.get(url, params = payload)
     data = r.json()
     try:
         res = data['data']['translations'][0]['translatedText']
-        print(res)
+        print("Translation: {}".format( res ))
     except KeyError as exc:
-        print(exc)
+        print("Exception with key: {}".format( exc ))
         res = ""
     return res
 
