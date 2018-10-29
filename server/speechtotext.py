@@ -13,7 +13,7 @@ import random
 from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
-from translate import *
+from server.translate import *
 
 
 # Sends request to Speech-to-Text API
