@@ -1,6 +1,6 @@
 let vid = document.getElementsByTagName("video")[0];
 let track = vid.addTextTrack("captions", "English", "en");
-let lang = ''
+let lang = document.getElementById('languageSelector').value;
 let first_detected = true;
 let detecting_language = false;
 track.mode = "showing";

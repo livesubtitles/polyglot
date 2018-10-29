@@ -102,7 +102,6 @@ def detect_language(audio_file):
         source_lang = None
         while(source_lang == None):
             print("HERE")
-            # while (source_lang == None):
             time.sleep(2)
             print("HERE TOO")
             url2 = 'https://api.videoindexer.ai/trial/Accounts/723619e4-3df6-4cef-b28b-411d0c114b48/Videos/' + video_id +'/Index?accessToken=' + access_token
