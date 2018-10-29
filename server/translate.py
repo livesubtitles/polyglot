@@ -14,11 +14,18 @@ def detectAndTranslate(textToTranslate, targetLang):
     return translate(textToTranslate, targetLang, sourceLang)
 
 def translate(textToTranslate, targetLang, sourceLang):
+    if (sourceLang == 'detected'):
+        return ""
     payload = {'key' : apiKey, 'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
     r = requests.get((url + translation), params = payload)
     data = r.json()
-    print (data['data']['translations'][0]['translatedText'])
-    return (data['data']['translations'][0]['translatedText'])
+    try:
+        res = data['data']['translations'][0]['translatedText']
+        print(res)
+    except KeyError as exc:
+        print(exc)
+        res = ""
+    return res
 
 
 def getLanguages():
@@ -37,4 +44,4 @@ def detect(textToTranslate):
 
 
 def test():
-    return detectAndTranslate("Estoy bebiendo agua.", "en")  
+    return detectAndTranslate("Estoy bebiendo agua.", "en")

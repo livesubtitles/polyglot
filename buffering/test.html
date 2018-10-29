@@ -1,0 +1,57 @@
+<h3>Video buffering test file</h3>
+
+<script src="shaka-player/dist/shaka-player.compiled.js"></script>
+
+<div>
+  <video id="srcVid" style="width:600px;" playsinline controls loop muted>
+    <source src="chrome.webm">
+    <p>Didn't work :(</p>
+  </video>
+  <video id="destVid" style="width:600px" playsinline controls muted>
+  </video>
+</div>
+
+<script>
+// ---- Capture Video Streams ---- //
+const sourceVideo = document.getElementById('srcVid');
+const destVideo = document.getElementById('destVid');
+
+// ---- Create Recorder from Stream ---- //
+var blobBuffer = [];
+var stream = sourceVideo.captureStream();
+var recorder = new MediaRecorder(stream);
+
+sourceVideo.onplay  = function() { recorder.start(500); }
+sourceVideo.onpause = function() { recorder.stop();     }
+
+recorder.ondataavailable = function(data) { readBlobToBuffer(data.data); }
+
+// ---- Create Media Source for new video ---- //
+var destSourceBuffer = null;
+var destSource = new MediaSource();
+destVideo.src = URL.createObjectURL(destSource);
+
+destSource.addEventListener("sourceopen", function() {
+    destSourceBuffer = destSource.addSourceBuffer('video/webm; codecs="vorbis,vp8"');
+    
+    /*destSourceBuffer.onupdateend = function() {
+        if (blobBuffer.length) {
+            console.log(destSourceBuffer);
+            destSourceBuffer.appendBuffer(blobBuffer.shift());
+        }
+    } */
+});
+
+// ---- Helper functions ---- //
+function readBlobToBuffer(blob) {
+    var fileReader = new FileReader();
+
+    fileReader.onloadend = function(event) {
+        var arrayBuffer = event.target.result;
+        blobBuffer.push(arrayBuffer);
+    }
+
+    fileReader.readAsArrayBuffer(blob);
+}
+
+</script>

@@ -14,14 +14,11 @@ socketio = SocketIO(app)
 def hello():
     return "Polyglot - Live Subtitles - ICL"
 
-@app.route("/pablo")
-def pablo():
-    return "GOROSTIAGAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-
 @app.route("/subtitle", methods=['POST'])
 def subtitle():
     request_body = json.loads(request.data)
-    return "{\"subtitle\":\"" + get_subtitle(request_body['audio'], request_body['sampleRate'], request_body['lang']) + "\"}"
+    print(request_body['lang'])
+    return get_subtitle(request_body['audio'], request_body['sampleRate'], request_body['lang'])
 
 @socketio.on('connect')
 def test_connect():
@@ -30,7 +27,14 @@ def test_connect():
 
 @socketio.on("audioprocess")
 def audioprocess(payload):
-    print("Python payload " + str( payload ))
+    print(payload["sampleRate"])
+    print(type(payload["sampleRate"]))
+    print(payload["lang"])
+    print(type(payload["lang"]))
+    print(payload["audio"][0:5])
+    print(type(payload["audio"]))
+    subtitle = get_subtitle(payload['audio'], payload['sampleRate'], payload['lang'])
+    emit("subtitle", { "subtitle": subtitle })
 
 @app.route("/translate-test")
 def dummyTranslate():
