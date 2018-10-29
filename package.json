@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "jest",
+    "build": "babel webextension/src -d build/src",
     "release": "python3 update_version.py & webstore upload --source=webextension/ --extension-id=$extensionID --client-id=$clientID --client-scret=$clientSecret --refresh-token=$refreshTok --auto-publish"
   },
   "repository": {
@@ -28,9 +29,12 @@
   },
   "homepage": "https://github.com/livesubtitles/polyglot#readme",
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
     "jest": "^23.6.0"
   },
   "dependencies": {
+    "browserify": "^16.2.3",
     "chrome-webstore-upload-cli": "^1.0.0",
     "socket.io": "^2.1.1"
   }

@@ -1,12 +1,17 @@
-const server = "https://vast-plains-75205.herokuapp.com"
-const io = require('socket.io-client');
-const sock = io(server);
+// const server = "https://vast-plains-75205.herokuapp.com"
+// const io = require('socket.io-client');
+// const sock = io(server);
 let vid = document.getElementsByTagName("video")[0];
 let track = vid.addTextTrack("captions", "English", "en");
-let lang = document.getElementById('languageSelector').value;
+let lang = '';
+if (localStorage.getItem("selectedLanguage") != null) {
+  lang = localStorage.getItem("selectedLanguage");
+}
 let first_detected = true;
 let detecting_language = false;
 track.mode = "showing";
+
+
 
 let MAX_LENGTH = 70;
 let lorem = "Lorem ipsum dolor sit amet"
@@ -23,13 +28,20 @@ function addSubtitles(text) {
   track.addCue(new VTTCue(start, end, prev + text));
 }
 
-sock.on("connect", function() {
+export default function updateSelectedLanguage() {
+  if (localStorage.getItem("selectedLanguage") != null) {
+    lang = localStorage.getItem("selectedLanguage");
+  }
+}
+
+// sock.on("connect", function() {
 
 let stream = vid.captureStream();
 let audioctx = new AudioContext();
 let mediaStreamNode = audioctx.createMediaStreamSource(stream);
 let numOfBufferedChunks = 0;
 let buffersSoFar = "";
+maxBufferChunk = 25;
 // create a script processor with input of size 16384, one input (the video) and one output (the audioctx.destination)
 let scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
 scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
@@ -45,8 +57,9 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
       buffersSoFar = mergedBuffer;
    }
     numOfBufferedChunks++;
-    if (numOfBufferedChunks == 10) {
+    if (numOfBufferedChunks == maxBufferChunk) {
       numOfBufferedChunks = 0;
+      maxBufferChunk = 10;
       if (!detecting_language && lang == 'detected') {
         detecting_language = true;
         lang = '';
@@ -63,7 +76,7 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
         jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
       }
       request = JSON.stringify(jsonRequest);
-      let url = "https://vast-plains-75205.herokuapp.com/subtitle"
+      let url = "http://127.0.0.1:5000/subtitle"
       fetch(url, {method: 'post',
             headers: {
               "Content-Type": "application/json; charset=utf-8",
@@ -96,8 +109,8 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
   mediaStreamNode.connect(scriptProcessingNode);
   scriptProcessingNode.connect(audioctx.destination);
 
-});
+// });
 
-sock.on("subtitle", function(subtitle) {
-  addSubtitles(subtitle.subtitle);
-});
+// sock.on("subtitle", function(subtitle) {
+//   addSubtitles(subtitle.subtitle);
+// });

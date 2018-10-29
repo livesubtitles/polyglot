@@ -98,7 +98,7 @@ def detect_language(audio_file):
     })
 
     try:
-        url = 'https://api.videoindexer.ai/trial/Accounts/'+ microsoftId + '/Videos?accessToken=' + access_token + '&name=test' + str(random.randint(1, 10))
+        url = 'https://api.videoindexer.ai/trial/Accounts/'+ microsoftId + '/Videos?accessToken=' + access_token + '&name=test' + str(random.randint(1, 100))
         r = requests.post(url, params=params, files=form_data, headers=headers)
         print(r.url)
         print(json.dumps(r.json(), indent=2))
@@ -109,7 +109,7 @@ def detect_language(audio_file):
             print("HERE")
             time.sleep(2)
             print("HERE TOO")
-            url2 = 'https://api.videoindexer.ai/trial/Accounts/723619e4-3df6-4cef-b28b-411d0c114b48/Videos/' + video_id +'/Index?accessToken=' + access_token
+            url2 = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId + '/Videos/' + video_id +'/Index?accessToken=' + access_token
             r = requests.get(url2, headers=headers)
             print(r.json())
             source_lang = (r.json())['videos'][0]['insights']['sourceLanguage']
