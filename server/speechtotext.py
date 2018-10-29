@@ -13,7 +13,7 @@ import random
 from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
-from translate import *
+from server.translate import *
 
 
 # Sends request to Speech-to-Text API
@@ -40,9 +40,13 @@ def speech_to_text(audio_file, sample_rate, lang):
     response = requests.post(url, headers = headers, data = body)
     # Handle response
     decoded_response = response.json()
-    print(decoded_response)
-    print(decoded_response['results'][0]['alternatives'][0]['transcript'])
-    return decoded_response['results'][0]['alternatives'][0]['transcript']
+    try:
+        res = decoded_response['results'][0]['alternatives'][0]['transcript']
+        print(res)
+    except KeyError as exc:
+        print(exc)
+        res = ""
+    return res
 
 # Converts audio file to base64 string
 def convert_to_base64(wav_file):
