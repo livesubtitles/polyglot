@@ -1,10 +1,10 @@
 from flask import Flask
 from flask_cors import CORS
 from flask import request
-from speechtotext import *
+from server.speechtotext import get_subtitle
 import json
 from flask_socketio import SocketIO, emit
-from translate import test
+from server.translate import test
 
 app = Flask(__name__)
 CORS(app, resources={r"/subtitle": {"origins": "*"}})

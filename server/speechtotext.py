@@ -10,7 +10,7 @@ import base64
 from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
-from translate import *
+from server.translate import *
 
 # Sends request to Speech-to-Text API
 def speech_to_text(audio_file, sample_rate, lang):
