@@ -20,7 +20,7 @@ def create_wav_from_stream(stream_url):
 		for i in range(1, 5):
 			f.write(stream_data.read(100000))
 
-	audio_stream.close()
+	stream_data.close()
 
 	FFmpeg(
     	inputs={'audio.ts': ['-ac', '1']},
@@ -38,4 +38,3 @@ def create_wav_from_stream(stream_url):
 	sample_rate = output.decode('utf-8').split('=')[1]
 
 	text = stt.speech_to_text(wav_mem_file, sample_rate, stt.detect_language(wav_mem_file))
-
