@@ -1,6 +1,6 @@
 let vid = document.getElementsByTagName("video")[0];
 let track = vid.addTextTrack("captions", "English", "en");
-let lang = document.getElementById('languageSelector').value;
+let lang = '';
 let first_detected = true;
 let detecting_language = false;
 track.mode = "showing";
@@ -50,6 +50,7 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
       // Send request to backend
       let request = "{\"audio\":" + "[]" + ", \"sampleRate\": " + buffersSoFar.sampleRate + ", \"lang\":\"" + lang + "\"}";
       if (lang == '') {
+        detecting_language = true;
         lang = 'detected';
       }
       console.log(request);
