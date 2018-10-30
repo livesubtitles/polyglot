@@ -18,7 +18,7 @@ class _StreamWorker(Thread):
 		self.buff = buff
 		self.stream_data = stream_data
 		self.streaming = True
-		Thread.__init__(self)
+		super(self)
 
 	def run(self):
 		while self.streaming:
@@ -37,7 +37,7 @@ class Streamer(object):
 	def __init__(self, stream_url):
 		self.stream_url = stream_url
 		self.buff = queue.Queue()
-        self.worker = None
+		self.worker = None
 		self.sample_rate = None
 
 	def get_sample_rate(self):
@@ -55,8 +55,8 @@ class Streamer(object):
 				f.write(data)
 
 		FFmpeg(
-    		inputs={'audio.ts': ['-ac', '1']},
-    		outputs={'audio.wav': ['-ac', '1']}
+				inputs={'audio.ts': ['-ac', '1']},
+				outputs={'audio.wav': ['-ac', '1']}
 		).run()
 
 		with open("audio.wav", "rb") as f:
@@ -72,17 +72,8 @@ class Streamer(object):
 
 		return io.BytesIO(content)
 
-	def stream(self, stream_data):
-		print("Getting data...")
-		while streaming:
-			data = stream_data.read(BYTES_TO_READ)
-			if data != '':
-				self.buff.put(data)
-
-		stream_data.close()
-
-	def get_audio_stream(self, available_streams):
-        try:
+	def _get_audio_stream(self, available_streams):
+		try:
 			available_streams = streamlink.streams(self.stream_url)
 		except Exception:
             #Streamlink is unavailable on this website
@@ -90,15 +81,15 @@ class Streamer(object):
 
         if not available_streams.contains_key('audio_only'):
             #Could not find audio only stream, handle video stream
-            return None
+			return None
 
 		return available_streams['audio_only']
 
 	def start(self):
-		audio_stream = self.get_audio_stream(available_streams)
+		audio_stream = self._get_audio_stream(available_streams)
 
-        if audio_stream == None:
-            return None
+		if audio_stream == None:
+			return None
 
 		stream_data = audio_stream.open()
 
