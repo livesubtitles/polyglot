@@ -79,7 +79,7 @@ class Streamer(object):
             #Streamlink is unavailable on this website
 			return None
 
-		if not available_streams.contains_key('audio_only'):
+		if not available_streams.has_key('audio_only'):
             #Could not find audio only stream, handle video stream
 			return None
 
