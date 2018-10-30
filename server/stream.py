@@ -81,22 +81,24 @@ class Streamer(object):
 
 		stream_data.close()
 
-	def get_audio(self, available_streams):
-		try:
-			audio_stream = available_streams['audio_only']
-		except KeyError:
-			#Handle video using available_streams['worst']
-			exit()
-
-		return audio_stream
-
-	def start(self):
-		try:
+	def get_audio_stream(self, available_streams):
+        try:
 			available_streams = streamlink.streams(self.stream_url)
 		except Exception:
-			raise
+            #Streamlink is unavailable on this website
+			return None
 
-		audio_stream = self.get_audio(available_streams)
+        if not available_streams.contains_key('audio_only'):
+            #Could not find audio only stream, handle video stream
+            return None
+
+		return available_streams['audio_only']
+
+	def start(self):
+		audio_stream = self.get_audio_stream(available_streams)
+
+        if audio_stream == None:
+            return None
 
 		stream_data = audio_stream.open()
 
