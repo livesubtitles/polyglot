@@ -48,11 +48,13 @@ class Streamer(object):
 		return self.sample_rate
 
 	def get_data(self, num_segments):
+		print("before open")
 
 		with open("audio.ts", "ab") as f:
 			for x in range(num_segments):
 				data = self.buff.get()
 				f.write(data)
+		print("after open")
 
 		FFmpeg(
 				inputs={'audio.ts': ['-ac', '1']},
@@ -76,10 +78,12 @@ class Streamer(object):
 		try:
 			available_streams = streamlink.streams(self.stream_url)
 		except Exception:
+			print("e1")
             #Streamlink is unavailable on this website
 			return None
 
 		if "audio_only" not in available_streams:
+			print("e2")
             #Could not find audio only stream, handle video stream
 			return None
 
@@ -95,6 +99,7 @@ class Streamer(object):
 
 		self.worker = _StreamWorker(self.buff, stream_data)
 		self.worker.start()
+		return "Success"
 
 	def stop(self):
 		self.worker.stop_queue_worker()

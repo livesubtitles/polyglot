@@ -1,13 +1,14 @@
 from flask import Flask
 from flask_cors import CORS
 from flask import request
-from server.speechtotext import get_subtitle
+from server.speechtotext import *
 import json
 from flask_socketio import SocketIO, emit
 from server.translate import test
+from server.stream import *
 
 app = Flask(__name__)
-CORS(app, resources={r"/subtitle": {"origins": "*"}})
+CORS(app, resources={r"/subtitle": {"origins": "*"}, "/stream": {"origins": "*"}})
 socketio = SocketIO(app)
 
 @app.route("/")
@@ -35,6 +36,22 @@ def audioprocess(payload):
     print(type(payload["audio"]))
     subtitle = get_subtitle(payload['audio'], payload['sampleRate'], payload['lang'])
     emit("subtitle", { "subtitle": subtitle })
+
+@app.route("/stream", methods=['POST'])
+def stream():
+    url = json.loads(request.data)['url']
+    lang = json.loads(request.data)['lang']
+    print(url)
+    print(lang)
+    streamer = Streamer(url)
+    response = streamer.start()
+    if (response == None):
+        return "{\"subtitle\": \"none\", \"lang\": \"\"}"
+    else:
+        audio = streamer.get_data(5)
+        sample_rate = streamer.get_sample_rate()
+        print(sample_rate)
+        return get_subtitle_with_wav(audio, sample_rate, "fr-FR")
 
 @app.route("/translate-test")
 def dummyTranslate():

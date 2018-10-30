@@ -79,6 +79,11 @@ def get_subtitle(pcm_data, sample_rate, lang):
     transcript = speech_to_text(wav_file, sample_rate, lang)
     return "{\"subtitle\":\"" + translate(transcript, 'en', lang.split('-')[0]) + "\", \"lang\":\""+lang+"\"}"
 
+def get_subtitle_with_wav(wav_file, sample_rate, lang):
+    if (lang == ''):
+        lang = detect_language(wav_file)
+    transcript = speech_to_text(wav_file, sample_rate, lang)
+    return "{\"subtitle\":\"" + translate(transcript, 'en', lang.split('-')[0]) + "\", \"lang\":\""+lang+"\"}"
 # Detects language spoken using Microsoft API
 def detect_language(audio_file):
     microsoftKey = os.environ.get('MICROSOFTKEY')
