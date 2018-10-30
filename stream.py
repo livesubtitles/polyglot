@@ -3,22 +3,42 @@ import os
 import subprocess
 import streamlink
 import wave
+import sys
+import time
 import server.speechtotext as stt
 import server.translate as trn
 from ffmpy import FFmpeg
 from six.moves import queue
 from threading import Thread
 
-class Streamer(object):
+BYTES_TO_READ = 100000
 
-	BYTES_TO_READ = 100000
+class _StreamWorker(Thread):
+	def __init__(self, buff, stream_data):
+		self.buff = buff
+		self.stream_data = stream_data
+		self.streaming = True
+		Thread.__init__(self)
+
+	def run(self):
+		while self.streaming:
+			data = self.stream_data.read(BYTES_TO_READ)
+			if data != '':
+				print("Getting data...")
+				self.buff.put(data)
+
+		self.stream_data.close()
+
+	def stop_queue_worker(self):
+		self.streaming = False
+
+class Streamer(object):
 
 	def __init__(self, stream_url):
 		self.stream_url = stream_url
 		self.buff = queue.Queue()
 		self.streaming = False
 		self.sample_rate = None
-
 
 	def get_sample_rate(self):
 		"""
@@ -53,9 +73,10 @@ class Streamer(object):
 		return io.BytesIO(content)
 
 	def stream(self, stream_data):
+		print("Getting data...")
 		while streaming:
 			data = stream_data.read(BYTES_TO_READ)
-			if data !== '':
+			if data != '':
 				self.buff.put(data)
 
 		stream_data.close()
@@ -67,6 +88,8 @@ class Streamer(object):
 			#Handle video using available_streams['worst']
 			exit()
 
+		return audio_stream
+
 	def start(self):
 		try:
 			available_streams = streamlink.streams(self.stream_url)
@@ -77,10 +100,14 @@ class Streamer(object):
 
 		stream_data = audio_stream.open()
 
-		t = Thread(target=self.stream, args=(stream_data))
+		#t = Thread(target=self.stream, args=(stream_data))
+		q = _StreamWorker(self.buff, stream_data)
 
 		self.streaming = True
-		t.start()
+		q.start()
 
 	def stop(self):
 		self.streaming = False
+
+streamer = Streamer("https://www.twitch.tv/fedmyster")
+streamer.start()
