@@ -28,4 +28,3 @@ print(ff.cmd)
 #print(speechtotext.speech_to_text(content, 48000, "es"))
 
 fd.close()
-
