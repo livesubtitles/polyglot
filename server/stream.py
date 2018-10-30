@@ -93,7 +93,7 @@ class Streamer(object):
 		audio_stream = self._get_audio_stream()
 
 		if audio_stream == None:
-			raise Exception("Streamlink Unavailable")
+			return None  # TODO: Raise exception
 
 		stream_data = audio_stream.open()
 
