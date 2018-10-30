@@ -35,7 +35,7 @@ let audioctx = new AudioContext();
 let mediaStreamNode = audioctx.createMediaStreamSource(stream);
 let numOfBufferedChunks = 0;
 let buffersSoFar = "";
-maxBufferChunk = 25;
+let maxBufferChunk = 25;
 // create a script processor with input of size 16384, one input (the video) and one output (the audioctx.destination)
 let scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
 scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
