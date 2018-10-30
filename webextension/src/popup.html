@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <style>
-      button {
-        height: 30px;
-        width: 100px;
-        outline: none;
-      }
-    </style>
-  </head>
-  <body>
-    <select id="languageSelector" onchange="updateLanguage(this)">
+
+<head>
+  <style>
+    button {
+      height: 30px;
+      width: 100px;
+      outline: none;
+    }
+  </style>
+</head>
+
+<body>
+  <select id="languageSelector">
       <option value="">Auto</option>
       <option value="af-ZA">Afrikaans</option>
       <option value="am-ET">Amharic</option>
@@ -36,7 +38,9 @@
       <option value="ja-JP">Japanese</option>
       <option value="ko-KR">Korean</option>
     </select>
-    <button id="translateButton">Translate!</button>
-    <script src="popup.js"></script>
-  </body>
+  <button id="translateButton">Translate!</button>
+  <script src="popup.js"></script>
+
+</body>
+
 </html>

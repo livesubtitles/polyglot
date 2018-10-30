@@ -2,7 +2,7 @@
 // const io = require('socket.io-client');
 // const sock = io(server);
 let vid = document.getElementsByTagName("video")[0];
-let track = vid.addTextTrack("captions", "English", "en");
+let track = vid && vid.addTextTrack("captions", "English", "en");
 let lang = '';
 if (localStorage.getItem("selectedLanguage") != null) {
   lang = localStorage.getItem("selectedLanguage");
@@ -28,12 +28,6 @@ function addSubtitles(text) {
   track.addCue(new VTTCue(start, end, prev + text));
 }
 
-export default function updateSelectedLanguage() {
-  if (localStorage.getItem("selectedLanguage") != null) {
-    lang = localStorage.getItem("selectedLanguage");
-  }
-}
-
 // sock.on("connect", function() {
 
 let stream = vid.captureStream();
@@ -45,6 +39,7 @@ maxBufferChunk = 25;
 // create a script processor with input of size 16384, one input (the video) and one output (the audioctx.destination)
 let scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
 scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
+  lang = localStorage.getItem("selectedLanguage");
   if (!vid.paused) {
     if (numOfBufferedChunks == 0) {
       buffersSoFar = audioProcessingEvent.inputBuffer;
@@ -92,13 +87,13 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
           response.json().then(function(data) {
             console.log(data.subtitle);
             console.log(data.lang);
-            if (data.lang != 'detected') {
-              lang = data.lang;
+            // TODO: Change 'detected' to 'detecting'
+            if (localStorage.getItem("selectedLanguage") == 'auto') {
+                if (data.lang !== 'detected') {
+                  localStorage.setItem("selectedLanguage", data.lang);
+                }
             }
-            if (lang != '' && first_detected) {
-              first_detected = false;
-              alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
-            }
+
             addSubtitles(data.subtitle);
           });
         });

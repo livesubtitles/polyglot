@@ -1,8 +1,11 @@
-import updateSelectedLanguage from './capture.js';
 
+let languageSelector = document.getElementById('languageSelector');
+
+languageSelector.onchange = () => {
+  updateLanguage(languageSelector);
+}
 function updateLanguage(selectLanguage) {
   localStorage.setItem("selectedLanguage", selectLanguage.value);
-  updateSelectedLanguage();
 }
 
 let translateButton = document.getElementById('translateButton');
