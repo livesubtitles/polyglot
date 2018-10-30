@@ -72,7 +72,7 @@ class Streamer(object):
 
 		return io.BytesIO(content)
 
-	def _get_audio_stream(self, available_streams):
+	def _get_audio_stream(self):
 		try:
 			available_streams = streamlink.streams(self.stream_url)
 		except Exception:
@@ -86,7 +86,7 @@ class Streamer(object):
 		return available_streams['audio_only']
 
 	def start(self):
-		audio_stream = self._get_audio_stream(available_streams)
+		audio_stream = self._get_audio_stream()
 
 		if audio_stream == None:
 			return None
