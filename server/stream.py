@@ -18,7 +18,7 @@ class _StreamWorker(Thread):
 		self.buff = buff
 		self.stream_data = stream_data
 		self.streaming = True
-		super(self)
+		Thread.__init__(self)
 
 	def run(self):
 		while self.streaming:
