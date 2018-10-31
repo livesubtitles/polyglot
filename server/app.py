@@ -53,7 +53,7 @@ def stream():
     audio = streamer.get_data(5)
     sample_rate = streamer.get_sample_rate()
     print(sample_rate)
-    return get_subtitle_with_wav(audio, sample_rate, "fr-FR")
+    return get_subtitle_with_wav(audio, sample_rate, lang)
 
 @app.route("/stream-subtitle", methods=['POST'])
 def stream_subtitle():
@@ -63,7 +63,7 @@ def stream_subtitle():
     audio = streamer.get_data(5)
     sample_rate = streamer.get_sample_rate()
     print(sample_rate)
-    return get_subtitle_with_wav(audio, sample_rate, "fr-FR")
+    return get_subtitle_with_wav(audio, sample_rate, lang)
 
 @app.route("/translate-test")
 def dummyTranslate():
