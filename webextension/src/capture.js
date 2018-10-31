@@ -39,6 +39,9 @@ let maxBufferChunk = 25;
 // create a script processor with input of size 16384, one input (the video) and one output (the audioctx.destination)
 let scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
 scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
+  if (localStorage.getItem("selectedLanguage") === null) {
+    localStorage.setItem("selectedLanguage", '');
+  }
   lang = localStorage.getItem("selectedLanguage");
   if (!vid.paused) {
     if (numOfBufferedChunks == 0) {
@@ -71,7 +74,7 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
         jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
       }
       request = JSON.stringify(jsonRequest);
-      let url = "http://127.0.0.1:5000/subtitle"
+      let url = "https://vast-plains-75205.herokuapp.com/subtitle"
       fetch(url, {method: 'post',
             headers: {
               "Content-Type": "application/json; charset=utf-8",
@@ -88,7 +91,7 @@ scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
             console.log(data.subtitle);
             console.log(data.lang);
             // TODO: Change 'detected' to 'detecting'
-            if (localStorage.getItem("selectedLanguage") == 'auto') {
+            if (localStorage.getItem("selectedLanguage") == '') {
                 if (data.lang !== 'detected') {
                   localStorage.setItem("selectedLanguage", data.lang);
                 }
