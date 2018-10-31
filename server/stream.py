@@ -63,21 +63,21 @@ class Streamer(object):
 				data = self.buff.get()
 				f.write(data)
 
-		_transcode_audio()
+		self._transcode_audio()
 
 		with open(OUTPUT_WAV_FILE, "rb") as f:
 			content = f.read()
 
-		_set_sample_rate()
-		_clear_files()
+		self._set_sample_rate()
+		self._clear_files()
 
 		return io.BytesIO(content)
 
-	def _transcode_audio():
+	def _transcode_audio(self):
 		in_args = None
 		out_args = None
 
-		if self.type == StreamDataType.AUDIO:
+		if self.data_type == StreamDataType.AUDIO:
 			in_args  = ['-ac', '1']
 			out_args = in_args
 		else:
@@ -88,13 +88,13 @@ class Streamer(object):
 			outputs={OUTPUT_WAV_FILE:out_args}
 		).run()
 
-	def _set_sample_rate():
+	def _set_sample_rate(self):
 		if not self.sample_rate:
 			wav = wave.open(OUTPUT_WAV_FILE, "rb")
 			self.sample_rate = wav.getframerate()
 			wav.close()
 
-	def _clear_files():
+	def _clear_files(self):
 		os.remove(TEMP_INPUT_FILE)
 		os.remove(OUTPUT_WAV_FILE)
 
@@ -128,6 +128,3 @@ class Streamer(object):
 
 	def stop(self):
 		self.worker.stop_queue_worker()
-
-streamer = Streamer("https://www.youtube.com/watch?v=mV8jp1N2fSw")
-streamer.start()
