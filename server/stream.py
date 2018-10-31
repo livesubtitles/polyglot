@@ -12,7 +12,8 @@ from six.moves import queue
 from threading import Thread
 from enum import Enum
 
-BYTES_TO_READ = 100000
+BYTES_TO_READ_AUDIO = 100000
+BYTES_TO_READ_VIDEO = 1000000
 AUDIO_STREAM_KEY = 'audio_only'
 VIDEO_STREAM_KEY = 'worst'
 TEMP_INPUT_FILE = "temp.ts"
@@ -23,15 +24,16 @@ class StreamDataType(Enum):
 	VIDEO = 1
 
 class _StreamWorker(Thread):
-	def __init__(self, buff, stream_data):
+	def __init__(self, buff, stream_data, data_type):
 		self.buff = buff
 		self.stream_data = stream_data
 		self.streaming = True
+		self.size_bytes = BYTES_TO_READ_AUDIO if data_type == StreamDataType.AUDIO else BYTES_TO_READ_VIDEO
 		Thread.__init__(self)
 
 	def run(self):
 		while self.streaming:
-			data = self.stream_data.read(BYTES_TO_READ)
+			data = self.stream_data.read(self.size_bytes)
 			if data != '':
 				print("Getting data...")
 				self.buff.put( data )
@@ -134,7 +136,7 @@ class Streamer(object):
 		print(audio_stream)
 		stream_data = audio_stream.open()
 
-		self.worker = _StreamWorker(self.buff, stream_data)
+		self.worker = _StreamWorker(self.buff, stream_data, self.data_type)
 		self.worker.start()
 
 	def stop(self):
