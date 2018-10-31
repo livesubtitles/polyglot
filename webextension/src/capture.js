@@ -1,6 +1,3 @@
-// const server = "https://vast-plains-75205.herokuapp.com"
-// const io = require('socket.io-client');
-// const sock = io(server);
 let vid = document.getElementsByTagName("video")[0];
 let track = vid.addTextTrack("captions", "English", "en");
 let lang = '';
@@ -25,6 +22,7 @@ function sleep(ms) {
 }
 
 async function sendStreamlinkRequest() {
+  urlStream = "http://127.0.0.1:8000/stream-subtitle"
   while (!vid.paused) {
     let request = JSON.stringify(JSON.parse("{\"url\":\"" + pageUrl + "\", \"lang\":\"" + lang + "\"}"));
     fetch(urlStream, {method: 'post',
@@ -49,15 +47,12 @@ async function sendStreamlinkRequest() {
             first_detected = false;
             alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
           }
-          console.log(data.subtitle);
           addSubtitles(data.subtitle);
         });
       });
       await sleep(3000);
   }
 }
-
-// sock.on("connect", function() {
 
 let urlStream = "http://127.0.0.1:8000/stream"
 let pageUrl = window.location.href;
@@ -130,6 +125,7 @@ function capture() {
         if (lang == '') {
           detecting_language = true;
           lang = 'detected';
+          vid.pause();
         }
         console.log(request);
         let jsonRequest = JSON.parse(request);
@@ -137,7 +133,7 @@ function capture() {
           jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
         }
         request = JSON.stringify(jsonRequest);
-        let url = "https://vast-plains-75205.herokuapp.com/subtitle"
+        let url = "http://127.0.0.1:8000/subtitle"
         fetch(url, {method: 'post',
               headers: {
                 "Content-Type": "application/json; charset=utf-8",
@@ -159,6 +155,7 @@ function capture() {
               if (lang != '' && first_detected && lang != 'detected') {
                 first_detected = false;
                 alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
+                vid.play();
               }
               addSubtitles(data.subtitle);
             });
@@ -170,9 +167,3 @@ function capture() {
     mediaStreamNode.connect(scriptProcessingNode);
     scriptProcessingNode.connect(audioctx.destination);
 }
-
-// });
-
-// sock.on("subtitle", function(subtitle) {
-  // addSubtitles(subtitle.subtitle);
-// });

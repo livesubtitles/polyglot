@@ -8,8 +8,9 @@ from server.translate import test
 from server.stream import *
 
 app = Flask(__name__)
-CORS(app, resources={r"/subtitle": {"origins": "*"}, "/stream": {"origins": "*"}})
+CORS(app, resources={r"/subtitle": {"origins": "*"}, "/stream": {"origins": "*"}, "/stream-subtitle": {"origins": "*"}})
 socketio = SocketIO(app)
+streamer = None
 
 @app.route("/")
 def hello():
@@ -39,19 +40,30 @@ def audioprocess(payload):
 
 @app.route("/stream", methods=['POST'])
 def stream():
+    global streamer
     url = json.loads(request.data)['url']
     lang = json.loads(request.data)['lang']
     print(url)
     print(lang)
     streamer = Streamer(url)
-    response = streamer.start()
-    if (response == None):
+    try:
+        streamer.start()
+    except Exception:
         return "{\"subtitle\": \"none\", \"lang\": \"\"}"
-    else:
-        audio = streamer.get_data(5)
-        sample_rate = streamer.get_sample_rate()
-        print(sample_rate)
-        return get_subtitle_with_wav(audio, sample_rate, "fr-FR")
+    audio = streamer.get_data(5)
+    sample_rate = streamer.get_sample_rate()
+    print(sample_rate)
+    return get_subtitle_with_wav(audio, sample_rate, "fr-FR")
+
+@app.route("/stream-subtitle", methods=['POST'])
+def stream_subtitle():
+    global streamer
+    lang = json.loads(request.data)['lang']
+    print(lang)
+    audio = streamer.get_data(5)
+    sample_rate = streamer.get_sample_rate()
+    print(sample_rate)
+    return get_subtitle_with_wav(audio, sample_rate, "fr-FR")
 
 @app.route("/translate-test")
 def dummyTranslate():

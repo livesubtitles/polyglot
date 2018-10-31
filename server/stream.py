@@ -93,13 +93,12 @@ class Streamer(object):
 		audio_stream = self._get_audio_stream()
 
 		if audio_stream == None:
-			return None  # TODO: Raise exception
+			raise Exception("Streamlink Unavailable")  # TODO: Raise exception
 
 		stream_data = audio_stream.open()
 
 		self.worker = _StreamWorker(self.buff, stream_data)
 		self.worker.start()
-		return "Success"
 
 	def stop(self):
 		self.worker.stop_queue_worker()
