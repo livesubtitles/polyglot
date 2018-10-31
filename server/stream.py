@@ -77,7 +77,7 @@ class Streamer(object):
 		in_args = None
 		out_args = None
 
-		if self.type == StreamDataType.AUDIO:
+		if self.data_type == StreamDataType.AUDIO:
 			in_args  = ['-ac', '1']
 			out_args = in_args
 		else:
