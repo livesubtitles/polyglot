@@ -5,8 +5,8 @@ import streamlink
 import wave
 import sys
 import time
-import speechtotext as stt
-import translate as trn
+import server.speechtotext as stt
+import server.translate as trn
 from ffmpy import FFmpeg
 from six.moves import queue
 from threading import Thread
@@ -27,7 +27,6 @@ class _StreamWorker(Thread):
 		self.buff = buff
 		self.stream_data = stream_data
 		self.streaming = True
-		self.data_type = data_type
 		Thread.__init__(self)
 
 	def run(self):
