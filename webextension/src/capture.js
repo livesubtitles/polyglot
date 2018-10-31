@@ -5,6 +5,8 @@ let first_detected = true;
 let detecting_language = false;
 track.mode = "showing";
 
+let lang_global = '';
+
 let MAX_LENGTH = 70;
 let lorem = "Lorem ipsum dolor sit amet"
 function addSubtitles(text) {
@@ -97,20 +99,44 @@ const languageKey = "selectedLanguage";
 
 function getLanguage() {
   let language = '';
-  chrome.storage.sync.get([languageKey], function(result) {
-    console.log(result);
-    console.log('Value currently is ' + result.languageKey);
-    language = result.languageKey;
-  });
-  return language;
-}
+  let url = "http://127.0.0.1:8000/get-language"
+  fetch(url, {method: 'get',
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        }})
+  .then(
+    function(response) {
+      if (response.status !== 200) {
+        console.log('Looks like there was a problem. Status Code: ' +
+          response.status);
+        return;
+      }
+      response.text().then(function (text) {
+        language = text;
+        lang = text;
+        console.log("Got language " + text);
+      });
+    });
+    return language;
+  }
 
-function setLanguage(lang) {
-  console.log('Setting language' + lang);
-  chrome.storage.sync.set({languageKey: lang}, function() {
-    console.log('Value is set to ' + lang);
-  });
-}
+function setLanguage(lang_local) {
+  lang = lang_local;
+  let url = "http://127.0.0.1:8000/set-language"
+  fetch(url, {method: 'post',
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+      body: lang_local})
+  .then(
+    function(response) {
+      if (response.status !== 200) {
+        console.log('Looks like there was a problem. Status Code: ' +
+          response.status);
+        return;
+      }
+    });
+  }
 
 function capture() {
   let stream = vid.captureStream();
@@ -123,11 +149,11 @@ function capture() {
   scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
     // ----
 
-
-    if (getLanguage("selectedLanguage") === null) {
+    getLanguage("selectedLanguage");
+    if (lang === undefined) {
       setLanguage('');
     }
-    lang = getLanguage("selectedLanguage");
+    getLanguage("selectedLanguage");
     // ----
     if (!vid.paused) {
       if (numOfBufferedChunks == 0) {
