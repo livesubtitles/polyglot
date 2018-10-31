@@ -126,3 +126,4 @@ def detect_language(audio_file):
         return source_lang
     except Exception as e:
         print("[Errno {0}] {1}".format(e.errno, e.strerror))
+        return "en-US"
