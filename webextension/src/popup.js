@@ -33,6 +33,7 @@ let translateButton = document.getElementById('translateButton');
        if (!clicked) {
          console.log("Clicked");
          clicked = true;
+         setLanguage(languageSelector.value);
          chrome.tabs.executeScript({file: "src/capture.js"});
        } else {
          setLanguage(languageSelector.value);

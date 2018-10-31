@@ -27,7 +27,7 @@ def subtitle():
 @app.route("/set-language", methods=['POST'])
 def select_language():
     global language
-    language = str(request.data)
+    language = str(request.data).split('\'')[1]
     print(language)
     return "Success"
 
