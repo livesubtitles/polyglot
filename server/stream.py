@@ -5,19 +5,29 @@ import streamlink
 import wave
 import sys
 import time
-import server.speechtotext as stt
-import server.translate as trn
+import speechtotext as stt
+import translate as trn
 from ffmpy import FFmpeg
 from six.moves import queue
 from threading import Thread
+from enum import Enum
 
 BYTES_TO_READ = 100000
+AUDIO_STREAM_KEY = 'audio_only'
+VIDEO_STREAM_KEY = 'worst'
+TEMP_INPUT_FILE = "temp.ts"
+OUTPUT_WAV_FILE = "audio.wav"
+
+class StreamDataType(Enum):
+	AUDIO = 0
+	VIDEO = 1
 
 class _StreamWorker(Thread):
 	def __init__(self, buff, stream_data):
 		self.buff = buff
 		self.stream_data = stream_data
 		self.streaming = True
+		self.data_type = data_type
 		Thread.__init__(self)
 
 	def run(self):
@@ -25,7 +35,7 @@ class _StreamWorker(Thread):
 			data = self.stream_data.read(BYTES_TO_READ)
 			if data != '':
 				print("Getting data...")
-				self.buff.put(data)
+				self.buff.put( data )
 
 		self.stream_data.close()
 
@@ -39,6 +49,7 @@ class Streamer(object):
 		self.buff = queue.Queue()
 		self.worker = None
 		self.sample_rate = None
+		self.data_type = None
 
 	def get_sample_rate(self):
 		"""
@@ -48,46 +59,62 @@ class Streamer(object):
 		return self.sample_rate
 
 	def get_data(self, num_segments):
-		print("before open")
-
-		with open("audio.ts", "ab") as f:
+		with open(TEMP_INPUT_FILE, "ab") as f:
 			for x in range(num_segments):
 				data = self.buff.get()
 				f.write(data)
-		print("after open")
 
-		FFmpeg(
-				inputs={'audio.ts': ['-ac', '1']},
-				outputs={'audio.wav': ['-ac', '1']}
-		).run()
+		_transcode_audio()
 
-		with open("audio.wav", "rb") as f:
+		with open(OUTPUT_WAV_FILE, "rb") as f:
 			content = f.read()
 
+		_set_sample_rate()
+		_clear_files()
+
+		return io.BytesIO(content)
+
+	def _transcode_audio():
+		in_args = None
+		out_args = None
+
+		if self.type == StreamDataType.AUDIO:
+			in_args  = ['-ac', '1']
+			out_args = in_args
+		else:
+			out_args = ['-vn','-acodec','copy']
+
+		FFmpeg(
+			inputs={TEMP_INPUT_FILE:in_args},
+			outputs={OUTPUT_WAV_FILE:out_args}
+		).run()
+
+	def _set_sample_rate():
 		if not self.sample_rate:
-			wav = wave.open("audio.wav", "rb")
+			wav = wave.open(OUTPUT_WAV_FILE, "rb")
 			self.sample_rate = wav.getframerate()
 			wav.close()
 
-		os.remove("audio.ts")
-		os.remove("audio.wav")
-
-		return io.BytesIO(content)
+	def _clear_files():
+		os.remove(TEMP_INPUT_FILE)
+		os.remove(OUTPUT_WAV_FILE)
 
 	def _get_audio_stream(self):
 		try:
 			available_streams = streamlink.streams(self.stream_url)
 		except Exception:
-			print("e1")
             #Streamlink is unavailable on this website
 			return None
 
-		if "audio_only" not in available_streams:
-			print("e2")
-            #Could not find audio only stream, handle video stream
-			return None
+		if AUDIO_STREAM_KEY not in available_streams:
+			# video stream
+			self.data_type = StreamDataType.VIDEO
+			res = available_streams[VIDEO_STREAM_KEY]
+		else:
+			self.data_type = StreamDataType.AUDIO
+			res = available_streams[AUDIO_STREAM_KEY]
 
-		return available_streams['audio_only']
+		return res
 
 	def start(self):
 		audio_stream = self._get_audio_stream()
@@ -102,3 +129,6 @@ class Streamer(object):
 
 	def stop(self):
 		self.worker.stop_queue_worker()
+
+streamer = Streamer("https://www.youtube.com/watch?v=mV8jp1N2fSw")
+streamer.start()
