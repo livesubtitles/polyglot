@@ -96,8 +96,9 @@ fetch(urlStream, {method: 'post',
 const languageKey = "selectedLanguage";
 
 function getLanguage() {
-  let language = null;
+  let language = '';
   chrome.storage.sync.get([languageKey], function(result) {
+    console.log(result);
     console.log('Value currently is ' + result.languageKey);
     language = result.languageKey;
   });
@@ -105,6 +106,7 @@ function getLanguage() {
 }
 
 function setLanguage(lang) {
+  console.log('Setting language' + lang);
   chrome.storage.sync.set({languageKey: lang}, function() {
     console.log('Value is set to ' + lang);
   });
@@ -121,7 +123,7 @@ function capture() {
   scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
     // ----
 
-    
+
     if (getLanguage("selectedLanguage") === null) {
       setLanguage('');
     }
