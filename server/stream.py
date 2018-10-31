@@ -49,6 +49,7 @@ class Streamer(object):
 		self.worker = None
 		self.sample_rate = None
 		self.data_type = None
+		print("**** INITIALISED STREAMER ***** ")
 
 	def get_sample_rate(self):
 		"""
@@ -97,13 +98,19 @@ class Streamer(object):
 			wav.close()
 
 	def _clear_files(self):
-		os.remove(TEMP_INPUT_FILE)
-		os.remove(OUTPUT_WAV_FILE)
+		try:
+			os.remove(TEMP_INPUT_FILE)
+		except Exception:
+			pass
+		try:
+			os.remove(OUTPUT_WAV_FILE)
+		except Exception:
+			pass
 
 	def _get_audio_stream(self):
 		try:
 			available_streams = streamlink.streams(self.stream_url)
-		except Exception:
+		except Exception as exe:
             #Streamlink is unavailable on this website
 			return None
 
@@ -118,13 +125,20 @@ class Streamer(object):
 		return res
 
 	def start(self):
+		print("**** EXECUTING START *****")
+
 		self._clear_files()
 
+		print("**** AFTER CLEARING FILES **** ")
+
 		audio_stream = self._get_audio_stream()
+		print("**** AFTER GETTING AUDIO STREAM **** ")
 
 		if audio_stream == None:
 			raise Exception("Streamlink Unavailable")
 
+		print("********* HIT **********")
+		print(audio_stream)
 		stream_data = audio_stream.open()
 
 		self.worker = _StreamWorker(self.buff, stream_data)

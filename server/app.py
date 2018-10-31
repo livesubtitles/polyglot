@@ -50,6 +50,7 @@ def stream():
         streamer.start()
     except Exception:
         return "{\"subtitle\": \"none\", \"lang\": \"\"}"
+
     audio = streamer.get_data(5)
     sample_rate = streamer.get_sample_rate()
     print(sample_rate)
