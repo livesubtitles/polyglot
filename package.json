@@ -29,12 +29,9 @@
   },
   "homepage": "https://github.com/livesubtitles/polyglot#readme",
   "devDependencies": {
-<<<<<<< Updated upstream
-=======
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "gulp": "^4.0.0",
->>>>>>> Stashed changes
     "jest": "^23.6.0"
   },
   "dependencies": {
