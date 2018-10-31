@@ -82,17 +82,14 @@ class Streamer(object):
 		return io.BytesIO(content)
 
 	def _transcode_audio(self):
-		in_args = None
-		out_args = None
 
-		if self.data_type == StreamDataType.AUDIO:
-			in_args  = ['-ac', '1']
-			out_args = in_args
-		else:
-			out_args = ['-vn','-f', 'wav']
+		out_args = ['-ac', '1']
+
+		if self.data_type == StreamDataType.VIDEO:
+			out_args.extend(['-vn','-f','wav'])
 
 		ff = FFmpeg(
-			inputs={TEMP_INPUT_FILE:in_args},
+			inputs={TEMP_INPUT_FILE:None},
 			outputs={OUTPUT_WAV_FILE:out_args}
 		)
 
@@ -130,7 +127,7 @@ class Streamer(object):
 		else:
 			self.data_type = StreamDataType.AUDIO
 			res = available_streams[AUDIO_STREAM_KEY]
-			print("****** FOUND AUDIO STREAM")
+			print("****** FOUND AUDIO STREAM ******")
 		return res
 
 	def start(self):
