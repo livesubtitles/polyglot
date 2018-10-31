@@ -97,15 +97,13 @@ class Streamer(object):
 			self.sample_rate = wav.getframerate()
 			wav.close()
 
+	def _remove_if_present(file):
+		if os.path.isfile(file):
+			os.remove(file)
+
 	def _clear_files(self):
-		try:
-			os.remove(TEMP_INPUT_FILE)
-		except Exception:
-			pass
-		try:
-			os.remove(OUTPUT_WAV_FILE)
-		except Exception:
-			pass
+		_remove_if_present(TEMP_INPUT_FILE)
+		_remove_if_present(OUTPUT_WAV_FILE)
 
 	def _get_audio_stream(self):
 		try:
