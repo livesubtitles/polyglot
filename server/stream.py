@@ -128,6 +128,3 @@ class Streamer(object):
 
 	def stop(self):
 		self.worker.stop_queue_worker()
-
-streamer = Streamer("https://www.youtube.com/watch?v=mV8jp1N2fSw")
-streamer.start()
