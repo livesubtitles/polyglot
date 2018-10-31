@@ -1,9 +1,17 @@
+const languageKey = "selectedLanguage";
+
+function setLanguage(lang) {
+  chrome.storage.sync.set({languageKey: lang}, function() {
+    console.log('Value is set to ' + lang);
+  });
+}
+
 let languageSelector = document.getElementById('languageSelector');
  languageSelector.onchange = () => {
   updateLanguage(languageSelector);
 }
 function updateLanguage(selectLanguage) {
-  localStorage.setItem("selectedLanguage", selectLanguage.value);
+  setLanguage(selectLanguage.value);
 }
 
 let translateButton = document.getElementById('translateButton');

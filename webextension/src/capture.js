@@ -91,7 +91,24 @@ fetch(urlStream, {method: 'post',
         sendStreamlinkRequest();
       }
       });
-});
+  });
+
+const languageKey = "selectedLanguage";
+
+function getLanguage() {
+  let language = null;
+  chrome.storage.sync.get([languageKey], function(result) {
+    console.log('Value currently is ' + result.languageKey);
+    language = result.languageKey;
+  });
+  return language;
+}
+
+function setLanguage(lang) {
+  chrome.storage.sync.set({languageKey: lang}, function() {
+    console.log('Value is set to ' + lang);
+  });
+}
 
 function capture() {
   let stream = vid.captureStream();
@@ -103,10 +120,12 @@ function capture() {
   let scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
   scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
     // ----
-    if (localStorage.getItem("selectedLanguage") === null) {
-      localStorage.setItem("selectedLanguage", '');
+
+    
+    if (getLanguage("selectedLanguage") === null) {
+      setLanguage('');
     }
-    lang = localStorage.getItem("selectedLanguage");
+    lang = getLanguage("selectedLanguage");
     // ----
     if (!vid.paused) {
       if (numOfBufferedChunks == 0) {
@@ -162,7 +181,7 @@ function capture() {
                 first_detected = false;
                 alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
                 // ---
-              	localStorage.setItem("selectedLanguage", data.lang);
+              	setLanguage(data.lang);
 		// ---
 
                 vid.play();
