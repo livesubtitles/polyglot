@@ -81,7 +81,7 @@ class Streamer(object):
 			in_args  = ['-ac', '1']
 			out_args = in_args
 		else:
-			out_args = ['-vn','-acodec','copy']
+			out_args = ['-vn','-f', 'wav']
 
 		FFmpeg(
 			inputs={TEMP_INPUT_FILE:in_args},
@@ -119,7 +119,7 @@ class Streamer(object):
 		audio_stream = self._get_audio_stream()
 
 		if audio_stream == None:
-			raise Exception("Streamlink Unavailable")  # TODO: Raise exception
+			raise Exception("Streamlink Unavailable")
 
 		stream_data = audio_stream.open()
 
