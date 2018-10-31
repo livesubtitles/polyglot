@@ -24,11 +24,11 @@ class StreamDataType(Enum):
 	VIDEO = 1
 
 class _StreamWorker(Thread):
-	def __init__(self, buff, stream_data, data_type):
+	def __init__(self, buff, stream_data, size_bytes):
 		self.buff = buff
 		self.stream_data = stream_data
 		self.streaming = True
-		self.size_bytes = BYTES_TO_READ_AUDIO if data_type == StreamDataType.AUDIO else BYTES_TO_READ_VIDEO
+		self.size_bytes = size_bytes
 		Thread.__init__(self)
 
 	def run(self):
@@ -136,7 +136,9 @@ class Streamer(object):
 		print(audio_stream)
 		stream_data = audio_stream.open()
 
-		self.worker = _StreamWorker(self.buff, stream_data, self.data_type)
+		size_bytes = BYTES_TO_READ_AUDIO if self.data_type == StreamDataType.AUDIO else BYTES_TO_READ_VIDEO
+
+		self.worker = _StreamWorker(self.buff, stream_data, size_bytes)
 		self.worker.start()
 
 	def stop(self):
