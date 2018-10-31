@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "jest",
+    "build": "babel webextension/src -d build/src && gulp",
     "release": "python3 update_version.py & webstore upload --source=webextension/ --extension-id=$extensionID --client-id=$clientID --client-scret=$clientSecret --refresh-token=$refreshTok --auto-publish"
   },
   "repository": {
@@ -28,6 +29,9 @@
   },
   "homepage": "https://github.com/livesubtitles/polyglot#readme",
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "gulp": "^4.0.0",
     "jest": "^23.6.0"
   },
   "dependencies": {
