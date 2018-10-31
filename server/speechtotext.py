@@ -110,7 +110,7 @@ def detect_language(audio_file):
         video_id = (r.json())['id']
         print ("The videoId is " + video_id)
         source_lang = None
-        while(source_lang == None):
+        while(source_lang == None or source_lang == 'en-US'):
             print("HERE")
             time.sleep(2)
             print("HERE TOO")
