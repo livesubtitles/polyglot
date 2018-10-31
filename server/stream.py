@@ -83,10 +83,12 @@ class Streamer(object):
 		else:
 			out_args = ['-vn','-f', 'wav']
 
-		FFmpeg(
+		ff = FFmpeg(
 			inputs={TEMP_INPUT_FILE:in_args},
 			outputs={OUTPUT_WAV_FILE:out_args}
-		).run()
+		)
+
+		ff.run()
 
 	def _set_sample_rate(self):
 		if not self.sample_rate:
@@ -116,6 +118,8 @@ class Streamer(object):
 		return res
 
 	def start(self):
+		self._clear_files()
+
 		audio_stream = self._get_audio_stream()
 
 		if audio_stream == None:
