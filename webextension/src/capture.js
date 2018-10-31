@@ -102,6 +102,12 @@ function capture() {
   // create a script processor with input of size 16384, one input (the video) and one output (the audioctx.destination)
   let scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
   scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
+    // ----
+    if (localStorage.getItem("selectedLanguage") === null) {
+      localStorage.setItem("selectedLanguage", '');
+    }
+    lang = localStorage.getItem("selectedLanguage");
+    // ----
     if (!vid.paused) {
       if (numOfBufferedChunks == 0) {
         buffersSoFar = audioProcessingEvent.inputBuffer;
@@ -155,6 +161,10 @@ function capture() {
               if (lang != '' && first_detected && lang != 'detected') {
                 first_detected = false;
                 alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
+                // ---
+              	localStorage.setItem("selectedLanguage", data.lang);
+		// ---
+
                 vid.play();
               }
               addSubtitles(data.subtitle);
