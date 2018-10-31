@@ -123,19 +123,14 @@ class Streamer(object):
 		return res
 
 	def start(self):
-		print("**** EXECUTING START *****")
 
 		self._clear_files()
 
-		print("**** AFTER CLEARING FILES **** ")
-
 		audio_stream = self._get_audio_stream()
-		print("**** AFTER GETTING AUDIO STREAM **** ")
 
 		if audio_stream == None:
 			raise Exception("Streamlink Unavailable")
 
-		print("********* HIT **********")
 		print(audio_stream)
 		stream_data = audio_stream.open()
 
