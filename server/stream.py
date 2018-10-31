@@ -99,15 +99,18 @@ class Streamer(object):
 			self.sample_rate = wav.getframerate()
 			wav.close()
 
+	@staticmethod
 	def _remove_if_present(file):
+		print(os.path.isfile(file))
 		if os.path.isfile(file):
 			os.remove(file)
 
 	def _clear_files(self):
-		_remove_if_present(TEMP_INPUT_FILE)
-		_remove_if_present(OUTPUT_WAV_FILE)
+		Streamer._remove_if_present(TEMP_INPUT_FILE)
+		Streamer._remove_if_present(OUTPUT_WAV_FILE)
 
 	def _get_audio_stream(self):
+		print("***** Getting audio stream ******")
 		try:
 			available_streams = streamlink.streams(self.stream_url)
 		except Exception as exe:
@@ -118,25 +121,35 @@ class Streamer(object):
 			# video stream
 			self.data_type = StreamDataType.VIDEO
 			res = available_streams[VIDEO_STREAM_KEY]
+			print("***** FOUND VIDEO STREAM *****")
 		else:
 			self.data_type = StreamDataType.AUDIO
 			res = available_streams[AUDIO_STREAM_KEY]
-
+			print("****** FOUND AUDIO STREAM")
 		return res
 
 	def start(self):
 
+		print("**** BEFORE CLEARING FILES ****")
+
 		self._clear_files()
+
+		print("**** AFTER CLEARING FILES ****")
 
 		audio_stream = self._get_audio_stream()
 
 		if audio_stream == None:
 			raise Exception("Streamlink Unavailable")
 
-		print(audio_stream)
+		print("**** OPENING AUDIO STREAM ****")
+
 		stream_data = audio_stream.open()
 
+		print("**** CALCULATING BYTES TO READ ****")
+
 		size_bytes = BYTES_TO_READ_AUDIO if self.data_type == StreamDataType.AUDIO else BYTES_TO_READ_VIDEO
+
+		print("**** CREATING STREAM WORKER ****")
 
 		self.worker = _StreamWorker(self.buff, stream_data, size_bytes)
 		self.worker.start()
