@@ -15,12 +15,46 @@ function addSubtitles(text) {
   let end = 100000;
   var prev = "";
   if (track && track.activeCues && track.activeCues.length > 0) {
-    // if (track.activeCues[0].text.length + text.length <= MAX_LENGTH) {
-    //   prev = track.activeCues[0].text + " ";
-    // }
     track.removeCue(track.activeCues[0]);
   }
   track.addCue(new VTTCue(start, end, prev + text));
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function sendStreamlinkRequest() {
+  while (!vid.paused) {
+    let request = JSON.stringify(JSON.parse("{\"url\":\"" + pageUrl + "\", \"lang\":\"" + lang + "\"}"));
+    fetch(urlStream, {method: 'post',
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+          },
+        body: request})
+    .then(
+      function(response) {
+        if (response.status !== 200) {
+          console.log('Looks like there was a problem. Status Code: ' +
+            response.status);
+          return;
+        }
+        response.json().then(function(data) {
+          console.log(data.subtitle);
+          console.log(data.lang);
+          if (data.lang != 'detected') {
+            lang = data.lang;
+          }
+          if (lang != '' && first_detected) {
+            first_detected = false;
+            alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
+          }
+          console.log(data.subtitle);
+          addSubtitles(data.subtitle);
+        });
+      });
+      await sleep(3000);
+  }
 }
 
 // sock.on("connect", function() {
@@ -59,35 +93,7 @@ fetch(urlStream, {method: 'post',
           alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
         }
         addSubtitles(data.subtitle);
-        while (!vid.paused) {
-          let request = JSON.parse({'url': pageUrl, 'lang': lang});
-          fetch(urlStream, {method: 'post',
-                headers: {
-                  "Content-Type": "application/json; charset=utf-8",
-                },
-              body: request})
-          .then(
-            function(response) {
-              if (response.status !== 200) {
-                console.log('Looks like there was a problem. Status Code: ' +
-                  response.status);
-                return;
-              }
-              response.json().then(function(data) {
-                console.log(data.subtitle);
-                console.log(data.lang);
-                if (data.lang != 'detected') {
-                  lang = data.lang;
-                }
-                if (lang != '' && first_detected) {
-                  first_detected = false;
-                  alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
-                }
-                console.log(data.subtitle);
-                addSubtitles(data.subtitle);
-              });
-            });
-        }
+        sendStreamlinkRequest();
       }
       });
 });
