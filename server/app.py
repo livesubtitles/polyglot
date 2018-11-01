@@ -8,9 +8,11 @@ from server.translate import test
 from server.stream import *
 
 app = Flask(__name__)
-CORS(app, resources={r"/subtitle": {"origins": "*"}, "/stream": {"origins": "*"}, "/stream-subtitle": {"origins": "*"}})
+CORS(app, resources={r"/subtitle": {"origins": "*"}, "/stream": {"origins": "*"}, "/stream-subtitle": {"origins": "*"}
+, "/set-language": {"origins": "*"}, "/get-language": {"origins": "*"}})
 socketio = SocketIO(app)
 streamer = None
+language = ""
 
 @app.route("/")
 def hello():
@@ -21,6 +23,20 @@ def subtitle():
     request_body = json.loads(request.data)
     print(request_body['lang'])
     return get_subtitle(request_body['audio'], request_body['sampleRate'], request_body['lang'])
+
+@app.route("/set-language", methods=['POST'])
+def select_language():
+    global language
+    language = str(request.data).split('\'')[1]
+    print(language)
+    return "Success"
+
+@app.route("/get-language", methods=['GET'])
+def get_language():
+    global language
+    print ("Returning " + language)
+    return language
+
 
 @socketio.on('connect')
 def test_connect():
@@ -48,6 +64,7 @@ def stream():
     streamer = Streamer(url)
     try:
         streamer.start()
+        audio = streamer.get_data(5)
     except Exception:
         return "{\"subtitle\": \"none\", \"lang\": \"\"}"
 

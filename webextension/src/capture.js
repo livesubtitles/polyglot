@@ -5,6 +5,8 @@ let first_detected = true;
 let detecting_language = false;
 track.mode = "showing";
 
+let lang_global = '';
+
 let MAX_LENGTH = 70;
 let lorem = "Lorem ipsum dolor sit amet"
 function addSubtitles(text) {
@@ -91,7 +93,50 @@ fetch(urlStream, {method: 'post',
         sendStreamlinkRequest();
       }
       });
-});
+  });
+
+const languageKey = "selectedLanguage";
+
+function getLanguage() {
+  let language = '';
+  let url = "http://127.0.0.1:8000/get-language"
+  fetch(url, {method: 'get',
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        }})
+  .then(
+    function(response) {
+      if (response.status !== 200) {
+        console.log('Looks like there was a problem. Status Code: ' +
+          response.status);
+        return;
+      }
+      response.text().then(function (text) {
+        language = text;
+        lang = text;
+        console.log("Got language " + text);
+      });
+    });
+    return language;
+  }
+
+function setLanguage(lang_local) {
+  lang = lang_local;
+  let url = "http://127.0.0.1:8000/set-language"
+  fetch(url, {method: 'post',
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+      body: lang_local})
+  .then(
+    function(response) {
+      if (response.status !== 200) {
+        console.log('Looks like there was a problem. Status Code: ' +
+          response.status);
+        return;
+      }
+    });
+  }
 
 function capture() {
   let stream = vid.captureStream();
@@ -102,6 +147,14 @@ function capture() {
   // create a script processor with input of size 16384, one input (the video) and one output (the audioctx.destination)
   let scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
   scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
+    // ----
+
+    getLanguage("selectedLanguage");
+    if (lang === undefined) {
+      setLanguage('');
+    }
+    getLanguage("selectedLanguage");
+    // ----
     if (!vid.paused) {
       if (numOfBufferedChunks == 0) {
         buffersSoFar = audioProcessingEvent.inputBuffer;
@@ -155,6 +208,10 @@ function capture() {
               if (lang != '' && first_detected && lang != 'detected') {
                 first_detected = false;
                 alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
+                // ---
+              	setLanguage(data.lang);
+		// ---
+
                 vid.play();
               }
               addSubtitles(data.subtitle);

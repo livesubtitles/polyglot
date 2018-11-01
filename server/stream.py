@@ -64,7 +64,12 @@ class Streamer(object):
 				data = self.buff.get()
 				f.write(data)
 
-		self._transcode_audio()
+		try:
+			self._transcode_audio()
+		except Exception as e:
+			raise Exception("Streamlink Unavailable")
+
+		# self._transcode_audio()
 
 		with open(OUTPUT_WAV_FILE, "rb") as f:
 			content = f.read()
