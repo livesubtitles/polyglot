@@ -1,8 +1,12 @@
+const localUrl = "http://127.0.0.1:8000"
+const herokuUrl = "https://vast-plains-75205.herokuapp.com"
+const baseUrl = herokuUrl
+
 const languageKey = "selectedLanguage";
 let languageSelector = document.getElementById('languageSelector');
 
 function setLanguage(lang) {
-  let url = "http://127.0.0.1:8000/set-language"
+  let url = baseUrl + "/set-language"
   fetch(url, {method: 'post',
         headers: {
           "Content-Type": "application/json; charset=utf-8",

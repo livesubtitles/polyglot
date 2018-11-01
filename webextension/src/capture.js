@@ -1,3 +1,7 @@
+const localUrl = "http://127.0.0.1:8000"
+const herokuUrl = "https://vast-plains-75205.herokuapp.com"
+const baseUrl = herokuUrl
+
 let vid = document.getElementsByTagName("video")[0];
 let track = vid.addTextTrack("captions", "English", "en");
 let lang = '';
@@ -24,7 +28,7 @@ function sleep(ms) {
 }
 
 async function sendStreamlinkRequest() {
-  urlStream = "http://127.0.0.1:8000/stream-subtitle"
+  urlStream = baseUrl + "/stream-subtitle"
   while (!vid.paused) {
     let request = JSON.stringify(JSON.parse("{\"url\":\"" + pageUrl + "\", \"lang\":\"" + lang + "\"}"));
     fetch(urlStream, {method: 'post',
@@ -56,7 +60,7 @@ async function sendStreamlinkRequest() {
   }
 }
 
-let urlStream = "http://127.0.0.1:8000/stream"
+let urlStream = baseUrl + "/stream"
 let pageUrl = window.location.href;
 vid.pause();
 let request = JSON.stringify(JSON.parse("{\"url\":\"" + pageUrl + "\", \"lang\":\"" + lang + "\"}"));
@@ -99,7 +103,7 @@ const languageKey = "selectedLanguage";
 
 function getLanguage() {
   let language = '';
-  let url = "http://127.0.0.1:8000/get-language"
+  let url = baseUrl + "/get-language"
   fetch(url, {method: 'get',
         headers: {
           "Content-Type": "application/json; charset=utf-8",
@@ -122,7 +126,7 @@ function getLanguage() {
 
 function setLanguage(lang_local) {
   lang = lang_local;
-  let url = "http://127.0.0.1:8000/set-language"
+  let url = baseUrl + "/set-language"
   fetch(url, {method: 'post',
         headers: {
           "Content-Type": "application/json; charset=utf-8",
@@ -186,7 +190,7 @@ function capture() {
           jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
         }
         request = JSON.stringify(jsonRequest);
-        let url = "http://127.0.0.1:8000/subtitle"
+        let url = baseUrl + "/subtitle"
         fetch(url, {method: 'post',
               headers: {
                 "Content-Type": "application/json; charset=utf-8",
