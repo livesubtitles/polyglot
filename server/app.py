@@ -51,7 +51,7 @@ def stream():
     except Exception:
         return "{\"subtitle\": \"none\", \"lang\": \"\"}"
 
-    audio = streamer.get_data(5)
+    audio = streamer.get_data(3)
     sample_rate = streamer.get_sample_rate()
     print(sample_rate)
     return get_subtitle_with_wav(audio, sample_rate, lang)
@@ -61,7 +61,7 @@ def stream_subtitle():
     global streamer
     lang = json.loads(request.data)['lang']
     print(lang)
-    audio = streamer.get_data(5)
+    audio = streamer.get_data(3)
     sample_rate = streamer.get_sample_rate()
     print(sample_rate)
     return get_subtitle_with_wav(audio, sample_rate, lang)
