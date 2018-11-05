@@ -58,7 +58,7 @@ class Streamer(object):
 		"""
 		return self.sample_rate
 
-	def get_data(self, num_segments):
+	def get_data(self, num_segments=3):
 		with open(TEMP_INPUT_FILE, "ab") as f:
 			for x in range(num_segments):
 				data = self.buff.get()

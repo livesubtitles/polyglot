@@ -6,55 +6,61 @@ import struct
 import array
 import requests
 import base64
-import urllib.parse
-import time
-import random
+
 # Imports the Google Cloud client library
 from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
 from server.translate import *
 
-
-# Sends request to Speech-to-Text API
-def speech_to_text(audio_file, sample_rate, lang):
-    apiKey = os.environ.get('APIKEY')
-    audiobase64 = convert_to_base64(audio_file)
-    if (lang == 'detected'):
-        return ""
-    # Create request
+# Sets up and sends an HTTP request to Google speech-to-text
+def _send_stt_request(apiKey, lang, sample_rate, audiobase64):
     url = "https://speech.googleapis.com/v1/speech:recognize?key=" + apiKey
     headers = {'Accept-Encoding': 'UTF-8', 'Content-Type': 'application/json'}
-    body = {}
+    
     config = {}
     config['encoding'] = 'LINEAR16'
     config['languageCode'] = lang
     config['sampleRateHertz'] = sample_rate
     config['enableWordTimeOffsets'] = False
     config['enableAutomaticPunctuation'] = True
-    body['config'] = config
+
     audio = {}
     audio['content'] = audiobase64
+
+    body = {}
+    body['config'] = config
     body['audio'] = audio
     body = json.dumps(body)
+
     response = requests.post(url, headers = headers, data = body)
-    # Handle response
-    decoded_response = response.json()
+    return response.json()
+
+# Initiates and handles response from speech-to-text API
+def _speech_to_text(audio_file, sample_rate, lang):
+    apiKey = os.environ.get('APIKEY')
+    audiobase64 = _convert_to_base64(audio_file)
+    
+    if (lang == 'detected'):
+        return ""
+
+    json_response = _send_stt_request(apiKey, lang, sample_rate, audiobase64)
+
     try:
-        res = decoded_response['results'][0]['alternatives'][0]['transcript']
-        print(res)
+        result = json_response['results'][0]['alternatives'][0]['transcript']
+        print(result)
     except KeyError as exc:
         print(exc)
-        res = ""
-    return res
+        result = ""
+    return result
 
 # Converts audio file to base64 string
-def convert_to_base64(wav_file):
+def _convert_to_base64(wav_file):
   audio_content = wav_file.getvalue()
   return base64.b64encode(audio_content).decode('ascii')
 
 # Converts PCM data passed by the front end to a wav file required by the API
-def convert_to_wav(pcm_data, sample_rate):
+def _convert_to_wav(pcm_data, sample_rate):
   temp_file = io.BytesIO()
   file = wave.open(temp_file, 'wb')
   file.setframerate(sample_rate)
@@ -71,59 +77,14 @@ def convert_to_wav(pcm_data, sample_rate):
   file.close()
   return temp_file
 
+
+########### PUBLIC FUNCTIONS ###########
+
+# Main speech to text function. Given the wav audio data returns the transcript
+def get_text(wav_file, sample_rate, lang):
+    return _speech_to_text(wav_file, sample_rate, lang)
+
 # Gets subtitle for given audio data
-def get_subtitle(pcm_data, sample_rate, lang):
-    wav_file = convert_to_wav(pcm_data, sample_rate)
-    if (lang == ''):
-        lang = detect_language(wav_file)
-    transcript = speech_to_text(wav_file, sample_rate, lang)
-    return "{\"subtitle\":\"" + translate(transcript, 'en', lang.split('-')[0]) + "\", \"lang\":\""+lang+"\"}"
-
-def get_subtitle_with_wav(wav_file, sample_rate, lang):
-    if (lang == ''):
-        lang = detect_language(wav_file)
-    transcript = speech_to_text(wav_file, sample_rate, lang)
-    return "{\"subtitle\":\"" + translate(transcript, 'en', lang.split('-')[0]) + "\", \"lang\":\""+lang+"\"}"
-# Detects language spoken using Microsoft API
-def detect_language(audio_file):
-    microsoftKey = os.environ.get('MICROSOFTKEY')
-    microsoftId = os.environ.get('MICROSOFTID')
-    headers = {
-        'Ocp-Apim-Subscription-Key': microsoftKey
-    }
-
-    url = 'https://api.videoindexer.ai/auth/trial/Accounts/' + microsoftId + '/AccessToken?allowEdit=true'
-    response = requests.get(url, headers=headers)
-    access_token = response.text.split("\"")[1]
-
-    form_data = {'file': audio_file.getvalue()}
-
-    params = urllib.parse.urlencode({
-        'language': 'auto',
-    })
-
-    try:
-        url = 'https://api.videoindexer.ai/trial/Accounts/'+ microsoftId + '/Videos?accessToken=' + access_token + '&name=test' + str(random.randint(1, 100))
-        r = requests.post(url, params=params, files=form_data, headers=headers)
-        print(r.url)
-        print(json.dumps(r.json(), indent=2))
-        video_id = (r.json())['id']
-        print ("The videoId is " + video_id)
-        source_lang = None
-        times = 0
-        while(source_lang == None or source_lang == 'en-US'):
-            times = times + 1
-            if (times > 10):
-                return "en-US"
-            print("HERE")
-            time.sleep(2)
-            print("HERE TOO")
-            url2 = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId + '/Videos/' + video_id +'/Index?accessToken=' + access_token
-            r = requests.get(url2, headers=headers)
-            print(r.json())
-            source_lang = (r.json())['videos'][0]['insights']['sourceLanguage']
-            print ("The source language is " , source_lang)
-        return source_lang
-    except Exception as e:
-        print("[Errno {0}] {1}".format(e.errno, e.strerror))
-        return "en-US"
+def get_text_from_pcm(pcm_data, sample_rate, lang):
+    wav_file = _convert_to_wav(pcm_data, sample_rate)
+    return get_text(wav_file, sample_rate, lang)

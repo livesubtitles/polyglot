@@ -26,7 +26,6 @@ def translate(textToTranslate, targetLang, sourceLang):
         res = ""
     return res
 
-
 def getLanguages():
     payload = {'key' : apiKey}
     r = requests.get((url + languages), params = payload)
