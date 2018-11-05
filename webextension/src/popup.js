@@ -2,7 +2,10 @@ const languageKey = "selectedLanguage";
 let languageSelector = document.getElementById('languageSelector');
 
 function setLanguage(lang) {
-  let url = "http://127.0.0.1:8000/set-language"
+  chrome.storage.sync.set({'language': lang}, function() {
+    console.log("Value set to " + lang);
+  });
+  /*let url = "http://127.0.0.1:8000/set-language"
   fetch(url, {method: 'post',
         headers: {
           "Content-Type": "application/json; charset=utf-8",
@@ -15,7 +18,7 @@ function setLanguage(lang) {
           response.status);
         return;
       }
-    });
+    });*/
 }
 
  languageSelector.onchange = () => {
@@ -33,9 +36,11 @@ let translateButton = document.getElementById('translateButton');
        if (!clicked) {
          console.log("Clicked");
          clicked = true;
+         console.log("Calling set language from popup.js with lang = " + languageSelector.value);
          setLanguage(languageSelector.value);
          chrome.tabs.executeScript({file: "src/capture.js"});
        } else {
+         console.log("Calling set language from popup.js with lang = " + languageSelector.value);
          setLanguage(languageSelector.value);
        }
        // vid.pause();
