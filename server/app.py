@@ -20,12 +20,12 @@ language = ""
 def process(audio, sample_rate, lang, raw_pcm=False):
     if lang == '':
         #TODO: Move the split into the detect_language function
-        lang = detect_language(audio).split('-')[0]
+        lang = detect_language(audio)
 
     transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
                  get_text(audio, sample_rate, lang)
 
-    translated = translate(transcript, 'en', lang)
+    translated = translate(transcript, 'en', lang.split('-')[0])
     return jsonify(subtitle=translated, lang=lang)
 
 def _error_response():

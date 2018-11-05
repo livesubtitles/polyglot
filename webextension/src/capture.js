@@ -1,6 +1,6 @@
-const localUrl = "http://127.0.0.1:8000"
-const herokuUrl = "https://vast-plains-75205.herokuapp.com"
-const baseUrl = herokuUrl
+const localUrl = "http://127.0.0.1:8000";
+const herokuUrl = "https://vast-plains-75205.herokuapp.com";
+const baseUrl = localUrl;
 
 let vid = document.getElementsByTagName("video")[0];
 let track = vid.addTextTrack("captions", "English", "en");
