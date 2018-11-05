@@ -22,14 +22,14 @@ def process(audio, sample_rate, lang, raw_pcm=False):
         #TODO: Move the split into the detect_language function
         lang = detect_language(audio).split('-')[0]
 
-    if raw_pcm:
-        transcript = get_text_from_pcm(audio, sample_rate, lang)
-    else:
-        transcript = get_text(audio, sample_rate, lang)
+    transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
+                 get_text(audio, sample_rate, lang)
 
     translated = translate(transcript, 'en', lang)
     return jsonify(subtitle=translated, lang=lang)
 
+def _error_response():
+    return jsonify(subtitle="", lang="")
 
 ################# REST ENDPOINTS #################
 
@@ -41,10 +41,11 @@ def hello():
 def subtitle():
     request_body = json.loads(request.data)
 
-    return process(request_body['audio'], \
-                   request_body['sampleRate'], \
-                   request_body['lang'], \
-                   raw_pcm=True)
+    audio = request_body['audio']
+    sample_rate = request_body['sampleRate']
+    lang = request_body['lang']
+
+    return process(audio, sample_rate, lang, raw_pcm=True)
 
 @app.route("/set-language", methods=['POST'])
 def select_language():
@@ -68,7 +69,7 @@ def stream():
         streamer.start()
         audio = streamer.get_data()
     except Exception:
-        return flask.jsonify(subtitle="", lang="")
+        return _error_response()
 
     audio = streamer.get_data()
     sample_rate = streamer.get_sample_rate()
@@ -79,6 +80,10 @@ def stream():
 @app.route("/stream-subtitle", methods=['POST'])
 def stream_subtitle():
     global streamer
+
+    if streamer == None:
+        return _error_response()
+
     lang = json.loads(request.data)['lang']
     audio = streamer.get_data()
     sample_rate = streamer.get_sample_rate()
