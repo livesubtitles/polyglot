@@ -8,12 +8,8 @@
   },
   "scripts": {
     "test": "jest",
-<<<<<<< HEAD
     "build": "babel webextension/src -d build/src && gulp",
-=======
-    "build": "babel webextension/src -d build/src",
->>>>>>> All but capture.js merged
-    "release": "python3 update_version.py & webstore upload --source=webextension/ --extension-id=$extensionID --client-id=$clientID --client-scret=$clientSecret --refresh-token=$refreshTok --auto-publish"
+    "release": "python3 deploy_extension.py" 
   },
   "repository": {
     "type": "git",
@@ -35,10 +31,7 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
-<<<<<<< HEAD
     "gulp": "^4.0.0",
-=======
->>>>>>> All but capture.js merged
     "jest": "^23.6.0"
   },
   "dependencies": {

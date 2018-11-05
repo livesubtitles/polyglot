@@ -5,6 +5,7 @@ import streamlink
 import wave
 import sys
 import time
+import contextlib
 import server.speechtotext as stt
 import server.translate as trn
 from ffmpy import FFmpeg
@@ -12,8 +13,7 @@ from six.moves import queue
 from threading import Thread
 from enum import Enum
 
-BYTES_TO_READ_AUDIO = 100000
-BYTES_TO_READ_VIDEO = 1000000
+BYTES_TO_READ = 100000
 AUDIO_STREAM_KEY = 'audio_only'
 VIDEO_STREAM_KEY = 'worst'
 TEMP_INPUT_FILE = "temp.ts"
@@ -24,19 +24,17 @@ class StreamDataType(Enum):
 	VIDEO = 1
 
 class _StreamWorker(Thread):
-	def __init__(self, buff, stream_data, size_bytes):
+	def __init__(self, buff, stream_data):
 		self.buff = buff
 		self.stream_data = stream_data
 		self.streaming = True
-		self.size_bytes = size_bytes
 		Thread.__init__(self)
 
 	def run(self):
 		while self.streaming:
-			data = self.stream_data.read(self.size_bytes)
+			data = self.stream_data.read(BYTES_TO_READ)
 			if data != '':
-				print("Getting data...")
-				self.buff.put( data )
+				self.buff.put(data)
 
 		self.stream_data.close()
 
@@ -51,7 +49,8 @@ class Streamer(object):
 		self.worker = None
 		self.sample_rate = None
 		self.data_type = None
-		print("**** INITIALISED STREAMER ***** ")
+
+		print("Initialised Streamer...")
 
 	def get_sample_rate(self):
 		"""
@@ -60,7 +59,7 @@ class Streamer(object):
 		"""
 		return self.sample_rate
 
-	def get_data(self, num_segments):
+	def get_data(self, num_segments=3):
 		with open(TEMP_INPUT_FILE, "ab") as f:
 			for x in range(num_segments):
 				data = self.buff.get()
@@ -103,16 +102,18 @@ class Streamer(object):
 
 	@staticmethod
 	def _remove_if_present(file):
-		print(os.path.isfile(file))
 		if os.path.isfile(file):
 			os.remove(file)
 
 	def _clear_files(self):
+		print("Cleaning up temp files... ", end='')
 		Streamer._remove_if_present(TEMP_INPUT_FILE)
 		Streamer._remove_if_present(OUTPUT_WAV_FILE)
+		print("Success!")
 
 	def _get_audio_stream(self):
-		print("***** Getting audio stream ******")
+		print("Getting stream... ", end='')
+
 		try:
 			available_streams = streamlink.streams(self.stream_url)
 		except Exception as exe:
@@ -123,38 +124,27 @@ class Streamer(object):
 			# video stream
 			self.data_type = StreamDataType.VIDEO
 			res = available_streams[VIDEO_STREAM_KEY]
-			print("***** FOUND VIDEO STREAM *****")
 		else:
 			self.data_type = StreamDataType.AUDIO
 			res = available_streams[AUDIO_STREAM_KEY]
-			print("****** FOUND AUDIO STREAM ******")
+
+		print("Success!")
 		return res
 
 	def start(self):
-
-		print("**** BEFORE CLEARING FILES ****")
-
 		self._clear_files()
-
-		print("**** AFTER CLEARING FILES ****")
 
 		audio_stream = self._get_audio_stream()
 
 		if audio_stream == None:
 			raise Exception("Streamlink Unavailable")
 
-		print("**** OPENING AUDIO STREAM ****")
-
 		stream_data = audio_stream.open()
 
-		print("**** CALCULATING BYTES TO READ ****")
-
-		size_bytes = BYTES_TO_READ_AUDIO if self.data_type == StreamDataType.AUDIO else BYTES_TO_READ_VIDEO
-
-		print("**** CREATING STREAM WORKER ****")
-
-		self.worker = _StreamWorker(self.buff, stream_data, size_bytes)
+		print("Starting StreamWorker... ", end='')
+		self.worker = _StreamWorker(self.buff, stream_data)
 		self.worker.start()
+		print("Success!")
 
 	def stop(self):
 		self.worker.stop_queue_worker()
