@@ -5,49 +5,66 @@ import urllib
 import json
 import random
 
+microsoftKey = os.environ.get('MICROSOFTKEY')
+microsoftId = os.environ.get('MICROSOFTID')
+
 _LIMIT = 10
 _DEFAULT = "en-US"
 
+def _get_access_token():
+	url = 'https://api.videoindexer.ai/auth/trial/Accounts/' + microsoftId + '/AccessToken?allowEdit=true'
+	response = requests.get(url, headers={'Ocp-Apim-Subscription-Key': microsoftKey})
+	return response.text.split("\"")[1]
+
+def _get_id_url(access_token):
+	url = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId
+	url = url + '/Videos?accessToken=' + access_token
+	url = url + '&name=test' + str(random.randint(1, 100))
+
+	return url
+
+def _get_video_id(audio_file, access_token):
+	url = _get_id_url(access_token)
+
+	form_data = {'file': audio_file.getvalue()}
+	params = urllib.parse.urlencode({'language': 'auto'})
+
+	r = requests.post(url, params=params, files=form_data, headers=headers)
+	return (r.json())['id']
+
+def _detection_request(video_id, access_token):
+	url = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId 
+	url = url + '/Videos/' + video_id
+	url = url + '/Index?accessToken=' + access_token
+
+	r = requests.get(url, headers=headers)
+	return (r.json())['videos'][0]['insights']['sourceLanguage']
+
+
+########### PUBLIC FUNCTIONS ###########
+
 def detect_language(audio_file):
-    microsoftKey = os.environ.get('MICROSOFTKEY')
-    microsoftId = os.environ.get('MICROSOFTID')
-    headers = {
-        'Ocp-Apim-Subscription-Key': microsoftKey
-    }
+	access_token = _get_access_token()
+	
+	try:
+		video_id = _get_video_id(audio_file, access_token)
+	except Exception as e:
+		print("Error with finding video ID from Microsoft API")
+		print(e.strerror)
+		return "en-US"
 
-    url = 'https://api.videoindexer.ai/auth/trial/Accounts/' + microsoftId + '/AccessToken?allowEdit=true'
-    response = requests.get(url, headers=headers)
-    access_token = response.text.split("\"")[1]
+	source_lang = None
+	try_no = 0
 
-    form_data = {'file': audio_file.getvalue()}
+	while(source_lang == None or source_lang == _DEFAULT):   
+		if (try_no > _LIMIT):
+			print("Detection limit reached. Defaulting to " + _DEFAULT)
+			return _DEFAULT
 
-    params = urllib.parse.urlencode({
-        'language': 'auto',
-    })
+		time.sleep(2)
 
-    try:
-        url = 'https://api.videoindexer.ai/trial/Accounts/'+ microsoftId + '/Videos?accessToken=' + access_token + '&name=test' + str(random.randint(1, 100))
-        r = requests.post(url, params=params, files=form_data, headers=headers)
+		source_lang = _detection_request(video_id, access_token)
+		print ("Found source lang: ", source_lang)
+		try_no = try_no + 1
 
-        video_id = (r.json())['id']
-        source_lang = None
-        try_no = 0
-
-        while(source_lang == None or source_lang == _DEFAULT):
-            try_no = try_no + 1
-            
-            if (try_no > _LIMIT):
-            	print("Detection limit reached. Defaulting to " + _DEFAULT)
-            	return _DEFAULT
-
-            time.sleep(2)
-
-            url2 = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId + '/Videos/' + video_id +'/Index?accessToken=' + access_token
-            r = requests.get(url2, headers=headers)
-            source_lang = (r.json())['videos'][0]['insights']['sourceLanguage']
-            print ("Found source lang: ", source_lang)
-        return source_lang
-    
-    except Exception as e:
-        print("[Errno {0}] {1}".format(e.errno, e.strerror))
-        return "en-US"
+	return source_lang
