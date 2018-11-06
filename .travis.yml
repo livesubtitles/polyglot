@@ -9,6 +9,7 @@ matrix:
      install:
        - pip install pipenv
        - pipenv install
+       - apt-get install ffmpeg
      script:
        - python -m unittest discover server/tests
  
