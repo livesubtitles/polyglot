@@ -1,4 +1,5 @@
 import json
+import jsonpickle
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -8,6 +9,7 @@ from server.translate import test
 from server.speechtotext import *
 from server.language import *
 from server.stream import *
+from server.punctuate import *
 
 app = Flask(__name__)
 CORS(app, resources={r"/subtitle": {"origins": "*"}, "/stream": {"origins": "*"}, "/stream-subtitle": {"origins": "*"}
@@ -19,14 +21,24 @@ language = ""
 # Main pipeline. Will return the JSON response with the translated text.
 def process(audio, sample_rate, lang, raw_pcm=False):
     if lang == '':
-        #TODO: Move the split into the detect_language function
         lang = detect_language(audio)
 
     transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
                  get_text(audio, sample_rate, lang)
 
     translated = translate(transcript, 'en', lang.split('-')[0])
-    return jsonify(subtitle=translated, lang=lang)
+    punctuated = punctuate_subtitle(translated) if translated != "" else ""
+    return jsonify(subtitle=punctuated, lang=lang)
+
+def process_with_video(video, audio, sample_rate, lang):
+    if lang == '':
+        #TODO: Move the split into the detect_language function
+        lang = detect_language(audio)
+
+    transcript = get_text(audio, sample_rate, lang)
+    translated = translate(transcript, 'en', lang.split('-')[0])
+
+    return jsonify(video=jsonpickle.encode(video), subtitle=translated, lang=lang)
 
 def _error_response(error):
     return jsonify(subtitle="", lang="", error=error)
@@ -63,19 +75,18 @@ def stream():
     global streamer
     url = json.loads(request.data)['url']
     lang = json.loads(request.data)['lang']
-    streamer = Streamer(url)
+    streamer = VideoStreamer(url)
 
     try:
         streamer.start()
-        audio = streamer.get_data()
+        (video, audio) = streamer.get_data()
     except Exception:
         return _error_response( "StreamlinkUnavailable" )
 
-    audio = streamer.get_data()
-    sample_rate = streamer.get_sample_rate()
+    (video, audio) = streamer.get_data()
+    sample_rate    = streamer.get_sample_rate()
 
-    return process(audio, sample_rate, lang)
-
+    return process_with_video(video, audio, sample_rate, lang)
 
 @app.route("/stream-subtitle", methods=['POST'])
 def stream_subtitle():
@@ -85,10 +96,10 @@ def stream_subtitle():
         return _error_response( "UninitialisedStreamer" )
 
     lang = json.loads(request.data)['lang']
-    audio = streamer.get_data()
-    sample_rate = streamer.get_sample_rate()
+    (video, audio) = streamer.get_data()
+    sample_rate    = streamer.get_sample_rate()
 
-    return process(audio, sample_rate, lang)
+    return process_with_video(video, audio, sample_rate, lang)
 
 @app.route("/translate-test")
 def dummyTranslate():

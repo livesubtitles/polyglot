@@ -44,6 +44,7 @@ def _detection_request(video_id, headers, access_token):
 ########### PUBLIC FUNCTIONS ###########
 
 def detect_language(audio_file):
+	print("Detecting Language...")
 	headers = {'Ocp-Apim-Subscription-Key': microsoftKey}
 	access_token = _get_access_token(headers)
 	
@@ -59,18 +60,20 @@ def detect_language(audio_file):
 
 	while(source_lang == None or source_lang == _DEFAULT): 
 		if (try_no > _LIMIT):
-			print("Detection limit reached. Defaulting to " + _DEFAULT)
+			print("\tDetection limit reached. Defaulting to " + _DEFAULT)
 			return _DEFAULT
 
 		time.sleep(2)
 
-		print("Detecting language: ", end='')
+		print("\tFound: ", end='')
 		source_lang = _detection_request(video_id, headers, access_token)
 		
 		print (source_lang, end='')
 		if source_lang == None:
-			print("Retrying...")
+			print(" (Retrying)")
 
 		try_no = try_no + 1
 
+
+	print("\n\n\n")
 	return source_lang
