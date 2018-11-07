@@ -25,7 +25,6 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-
 const languageKey = "selectedLanguage";
 
 function getLanguage() {
@@ -112,6 +111,7 @@ async function sendStreamlinkRequest() {
         response.json().then(function(data) {
           console.log(data.subtitle);
           console.log(data.lang);
+          console.log(data.video);
           // if (data.lang != 'detected') {
           //   lang = data.lang;
           // }
