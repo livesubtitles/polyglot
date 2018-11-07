@@ -96,10 +96,10 @@ def stream_subtitle():
         return _error_response()
 
     lang = json.loads(request.data)['lang']
-    audio = streamer.get_data()
-    sample_rate = streamer.get_sample_rate()
+    (video, audio) = streamer.get_data()
+    sample_rate    = streamer.get_sample_rate()
 
-    return process(audio, sample_rate, lang)
+    return process_with_video(video, audio, sample_rate, lang)
 
 @app.route("/translate-test")
 def dummyTranslate():

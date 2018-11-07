@@ -23,7 +23,8 @@ OUTPUT_WAV_FILE  = "temp/audio.wav"
 
 # Nukes the temp directory and generates a fresh one
 def _clearTempFiles():
-	shutil.rmtree('temp')
+	if os.path.isdir('temp'):
+		shutil.rmtree('temp')
 	os.makedirs('temp')
 
 class _StreamWorker(Thread):
@@ -53,8 +54,10 @@ class VideoStreamer(object):
 		self.worker = None
 
 	def get_data(self, num_segments=3):
-
 		video_data = self.buffer.get()
+
+		for i in range(1, num_segments):
+			video_data = video_data + self.buffer.get()
 
 		with open(TEMP_INPUT_FILE, "ab") as f:
 			f.write(video_data)
