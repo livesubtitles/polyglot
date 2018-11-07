@@ -1,4 +1,35 @@
+import os.path
+
 from punctuator2.punctuator import *
+
+def segment_model():
+    f1 = open("./punctuator2/model1.pcl", "wb")
+    f2 = open("./punctuator2/model2.pcl", "wb")
+    model = open("./punctuator2/Demo-Europarl-EN.pcl", "rb")
+    count = 0
+    for line in model:
+        if (count <= 100000):
+            f1.write(line)
+        else:
+            f2.write(line)
+        count = count + 1
+    f1.close()
+    f2.close()
+    model.close()
+
+def prepare_model_file():
+    f1 = open("./punctuator2/model1.pcl", "rb")
+    final_file = open("./punctuator2/final-model.pcl", "wb")
+    for line in f1:
+        final_file.write(line)
+    f1.close()
+    print("Writing first file completed")
+    f2 = open("./punctuator2/model2.pcl", "rb")
+    for line in f2:
+        final_file.write(line)
+    f2.close()
+    print("Writing second file completed")
+    final_file.close()
 
 def remove_punctuation_annotations(subtitle):
     result = ""
@@ -40,11 +71,12 @@ def remove_punctuation_annotations(subtitle):
 
 
 def punctuate_subtitle(subtitle):
+    if (not os.path.isfile("./punctuator2/final-model.pcl")):
+        prepare_model_file()
     preprocessed_text = preprocess_text(subtitle)
-    model_path = "./punctuator2/Demo-Europarl-EN.pcl"
+    #model_path = "./punctuator2/Demo-Europarl-EN.pcl"
+    model_path = "./punctuator2/final-model.pcl"
     return remove_punctuation_annotations(punctuate(preprocessed_text, model_path))
 
 def preprocess_text(subtitle):
     return subtitle.lower()
-
-#print(punctuate_subtitle("Hello do you like cheese I like cheese how about you"))
