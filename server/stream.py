@@ -53,11 +53,11 @@ class VideoStreamer(object):
 		self.sample_rate = None
 		self.worker = None
 
-	def get_data(self, num_segments=3):
+	def get_data(self, num_segments=5):
 		video_data = self.buffer.get()
 
 		for i in range(1, num_segments):
-			video_data = video_data + self.buffer.get()
+			video_data += self.buffer.get()
 
 		with open(TEMP_INPUT_FILE, "ab") as f:
 			f.write(video_data)
