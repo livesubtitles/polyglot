@@ -68,6 +68,7 @@ class Streamer(object):
 		try:
 			self._transcode_audio()
 		except Exception as e:
+			print(e)
 			raise Exception("Streamlink Unavailable")
 
 		# self._transcode_audio()
