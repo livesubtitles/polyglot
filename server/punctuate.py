@@ -71,8 +71,8 @@ def remove_punctuation_annotations(subtitle):
 
 
 def punctuate_subtitle(subtitle):
-    if (not os.path.isfile("./punctuator2/final-model.pcl")):
-        prepare_model_file()
+    os.remove("./punctuator2/final-model.pcl")
+    prepare_model_file()
     preprocessed_text = preprocess_text(subtitle)
     #model_path = "./punctuator2/Demo-Europarl-EN.pcl"
     model_path = "./punctuator2/final-model.pcl"
