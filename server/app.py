@@ -1,4 +1,5 @@
 import json
+import jsonpickle
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -27,6 +28,16 @@ def process(audio, sample_rate, lang, raw_pcm=False):
 
     translated = translate(transcript, 'en', lang.split('-')[0])
     return jsonify(subtitle=translated, lang=lang)
+
+def process_with_video(video, audio, sample_rate, lang):
+    if lang == '':
+        #TODO: Move the split into the detect_language function
+        lang = detect_language(audio)
+
+    transcript = get_text(audio, sample_rate, lang)
+    translated = translate(transcript, 'en', lang.split('-')[0])
+
+    return jsonify(video=jsonpickle.encode(video), subtitle=translated, lang=lang)
 
 def _error_response():
     return jsonify(subtitle="", lang="")
@@ -63,19 +74,18 @@ def stream():
     global streamer
     url = json.loads(request.data)['url']
     lang = json.loads(request.data)['lang']
-    streamer = Streamer(url)
+    streamer = VideoStreamer(url)
 
     try:
         streamer.start()
-        audio = streamer.get_data()
+        (video, audio) = streamer.get_data()
     except Exception:
         return _error_response()
 
-    audio = streamer.get_data()
-    sample_rate = streamer.get_sample_rate()
+    (video, audio) = streamer.get_data()
+    sample_rate    = streamer.get_sample_rate()
 
-    return process(audio, sample_rate, lang)
-
+    return process_with_video(video, audio, sample_rate, lang)
 
 @app.route("/stream-subtitle", methods=['POST'])
 def stream_subtitle():
