@@ -1,8 +1,8 @@
 # coding: utf-8
 from __future__ import division
 
-import punctuator2.models as models
-import punctuator2.data as data
+import server.punctuator2.models as models
+import server.punctuator2.data as data
 
 import theano
 import sys
