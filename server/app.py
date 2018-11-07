@@ -28,8 +28,8 @@ def process(audio, sample_rate, lang, raw_pcm=False):
     translated = translate(transcript, 'en', lang.split('-')[0])
     return jsonify(subtitle=translated, lang=lang)
 
-def _error_response():
-    return jsonify(subtitle="", lang="")
+def _error_response(error):
+    return jsonify(subtitle="", lang="", error=error)
 
 ################# REST ENDPOINTS #################
 
@@ -69,7 +69,7 @@ def stream():
         streamer.start()
         audio = streamer.get_data()
     except Exception:
-        return _error_response()
+        return _error_response( "StreamlinkUnavailable" )
 
     audio = streamer.get_data()
     sample_rate = streamer.get_sample_rate()
@@ -82,7 +82,7 @@ def stream_subtitle():
     global streamer
 
     if streamer == None:
-        return _error_response()
+        return _error_response( "UninitialisedStreamer" )
 
     lang = json.loads(request.data)['lang']
     audio = streamer.get_data()
