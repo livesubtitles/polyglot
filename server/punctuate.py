@@ -1,6 +1,6 @@
 import os.path
 
-from punctuator2.punctuator import *
+from server.punctuator2.punctuator import *
 
 def segment_model():
     f1 = open("./punctuator2/model1.pcl", "wb")
@@ -8,7 +8,7 @@ def segment_model():
     model = open("./punctuator2/Demo-Europarl-EN.pcl", "rb")
     count = 0
     for line in model:
-        if (count <= 100000):
+        if (count <= 200000):
             f1.write(line)
         else:
             f2.write(line)
