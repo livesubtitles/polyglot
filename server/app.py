@@ -9,6 +9,7 @@ from server.translate import test
 from server.speechtotext import *
 from server.language import *
 from server.stream import *
+from server.punctuate import *
 
 app = Flask(__name__)
 CORS(app, resources={r"/subtitle": {"origins": "*"}, "/stream": {"origins": "*"}, "/stream-subtitle": {"origins": "*"}
@@ -20,14 +21,14 @@ language = ""
 # Main pipeline. Will return the JSON response with the translated text.
 def process(audio, sample_rate, lang, raw_pcm=False):
     if lang == '':
-        #TODO: Move the split into the detect_language function
         lang = detect_language(audio)
 
     transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
                  get_text(audio, sample_rate, lang)
 
     translated = translate(transcript, 'en', lang.split('-')[0])
-    return jsonify(subtitle=translated, lang=lang)
+    punctuated = punctuate_subtitle(translated) if translated != "" else ""
+    return jsonify(subtitle=punctuated, lang=lang)
 
 def process_with_video(video, audio, sample_rate, lang):
     if lang == '':

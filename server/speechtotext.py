@@ -17,13 +17,12 @@ from server.translate import *
 def _send_stt_request(apiKey, lang, sample_rate, audiobase64):
     url = "https://speech.googleapis.com/v1/speech:recognize?key=" + apiKey
     headers = {'Accept-Encoding': 'UTF-8', 'Content-Type': 'application/json'}
-    
+
     config = {}
     config['encoding'] = 'LINEAR16'
     config['languageCode'] = lang
     config['sampleRateHertz'] = sample_rate
     config['enableWordTimeOffsets'] = False
-    config['enableAutomaticPunctuation'] = True
 
     audio = {}
     audio['content'] = audiobase64
@@ -40,7 +39,7 @@ def _send_stt_request(apiKey, lang, sample_rate, audiobase64):
 def _speech_to_text(audio_file, sample_rate, lang):
     apiKey = os.environ.get('APIKEY')
     audiobase64 = _convert_to_base64(audio_file)
-    
+
     if (lang == 'detected'):
         return ""
 
