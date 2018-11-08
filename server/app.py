@@ -102,7 +102,7 @@ def dummyTranslate():
 def punctuate():
     request_body = json.loads(request.data)
     subtitle = request_body['subtitle']
-    return jsonify(subtitle=punctuate_subtitle(translated))
+    return jsonify(subtitle=punctuate_subtitle(subtitle))
 
 ################# SOCKETS #################
 
