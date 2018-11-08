@@ -46,6 +46,16 @@ def process_with_video(video, audio, sample_rate, lang):
 
     return jsonify(video=jsonpickle.encode(video), subtitle=punctuated, lang=lang)
 
+def _initialise_streamer(url):
+    global streamer
+
+    streamer = VideoStreamer(url)
+
+    try:
+        streamer.start()
+    except Exception:
+        return _error_response( "StreamlinkUnavailable ")
+
 def _error_response(error):
     return jsonify(subtitle="", lang="", error=error)
 
@@ -76,34 +86,6 @@ def get_language():
     global language
     return language
 
-# @app.route("/stream", methods=['POST'])
-# def stream():
-#     global streamer
-#     url = json.loads(request.data)['url']
-#     lang = json.loads(request.data)['lang']
-#     streamer = VideoStreamer(url)
-
-#     try:
-#         streamer.start()
-#         (video, audio) = streamer.get_data()
-#     except Exception:
-#         return _error_response( "StreamlinkUnavailable" )
-
-#     (video, audio) = streamer.get_data()
-#     sample_rate    = streamer.get_sample_rate()
-
-#     return process_with_video(video, audio, sample_rate, lang)
-
-def _initialise_streamer(url):
-    global streamer
-
-    streamer = VideoStreamer(url)
-
-    try:
-        streamer.start()
-    except Exception:
-        return _error_response( "StreamlinkUnavailable ")
-
 @app.route("/stream", methods=['POST'])
 def stream():
     global streamer
@@ -126,7 +108,10 @@ def dummyTranslate():
 @socketio.on('connect')
 def test_connect():
     print("Connected.")
-    emit('connection', {'data': 'Connected'})
+
+@socketio.on('testevent')
+def testevent(payload):
+    print("Hello")
 
 @socketio.on("audioprocess")
 def audioprocess(payload):
@@ -138,7 +123,6 @@ def audioprocess(payload):
     print(type(payload["audio"]))
     subtitle = get_subtitle(payload['audio'], payload['sampleRate'], payload['lang'])
     emit("subtitle", { "subtitle": subtitle })
-
 
 
 if __name__ == '__main__':
