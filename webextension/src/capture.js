@@ -1,7 +1,7 @@
 /* Url definitions */
 const localUrl = "http://127.0.0.1:8000";
 const herokuUrl = "https://polyglot-livesubtitles.herokuapp.com";
-const baseUrl = herokuUrl;
+const baseUrl = localUrl;
 const captureEndpoint = "/subtitle";
 const streamEndpoint = "/stream";
 const punctuateEndpoint = "/punctuate";
@@ -123,8 +123,12 @@ let subsequentStreamRequestCallback = function(data) {
     console.log("About to set language to " + lang);
     setLanguage(lang);
   }
-  request = JSON.stringify({"subtitle": data.subtitle});
-  sendPostRequest(baseUrl + punctuateEndpoint, request, punctuateCallback);
+  if (data.subtitle == "") {
+    sendStreamlinkRequest();
+  } else {
+    request = JSON.stringify({"subtitle": data.subtitle});
+    sendPostRequest(baseUrl + punctuateEndpoint, request, punctuateCallback);
+  }
 }
 
 /* Send stream request */
