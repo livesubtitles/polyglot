@@ -1,7 +1,7 @@
 /* Url definitions */
 const localUrl = "http://127.0.0.1:8000";
 const herokuUrl = "https://polyglot-livesubtitles.herokuapp.com";
-const baseUrl = localUrl;
+const baseUrl = herokuUrl;
 const captureEndpoint = "/subtitle"
 const streamEndpoint = "/stream"
 
