@@ -2,8 +2,9 @@
 const localUrl = "http://127.0.0.1:8000";
 const herokuUrl = "https://polyglot-livesubtitles.herokuapp.com";
 const baseUrl = herokuUrl;
-const captureEndpoint = "/subtitle"
-const streamEndpoint = "/stream"
+const captureEndpoint = "/subtitle";
+const streamEndpoint = "/stream";
+const punctuateEndpoint = "/punctuate";
 
 /* Definitions for capture and stream requests */
 let vid = document.getElementsByTagName("video")[0];
@@ -81,6 +82,12 @@ function setLanguage(lang_local) {
     getLanguage();
   }
 
+/* Displays subtitle after punctuation */
+let punctuateCallback = function(data) {
+  console.log("Got back punctuated: " + data.subtitle);
+  addSubtitles(data.subtitle);
+}
+
 /* Runs only once the first stream response is received. */
 let firstStreamCallback = function(data) {
     if (data.subtitle == "none") {
@@ -115,7 +122,8 @@ let subsequentStreamRequestCallback = function(data) {
     console.log("About to set language to " + lang);
     setLanguage(lang);
   }
-  addSubtitles(data.subtitle);
+  request = JSON.stringify({"subtitle": data.subtitle});
+  sendPostRequest(baseUrl + punctuateEndpoint, request, punctuateCallback);
 }
 
 /* Send stream request */
@@ -125,7 +133,7 @@ async function sendStreamlinkRequest() {
     getLanguageFromSelector();
     let request = JSON.stringify({"url": pageUrl, "lang": lang});
     sendPostRequest(urlStream, request, subsequentStreamRequestCallback);
-      await sleep(3000);
+    await sleep(3000);
   }
 }
 
