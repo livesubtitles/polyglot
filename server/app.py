@@ -31,15 +31,20 @@ def process(audio, sample_rate, lang, raw_pcm=False):
     return jsonify(subtitle=translated, lang=lang)
 
 def process_with_video(video, audio, sample_rate, lang):
+    no_punctuation = False
     if lang == '':
         #TODO: Move the split into the detect_language function
         lang = detect_language(audio)
+        no_punctuation = True
+
 
     transcript = get_text(audio, sample_rate, lang)
     translated = translate(transcript, 'en', lang.split('-')[0])
-    #punctuated = punctuate_subtitle(translated) if translated != "" else ""
+    if (no_punctuation):
+        return jsonify(video=jsonpickle.encode(video), subtitle=translated, lang=lang)
+    punctuated = punctuate_subtitle(translated) if translated != "" else ""
 
-    return jsonify(video=jsonpickle.encode(video), subtitle=translated, lang=lang)
+    return jsonify(video=jsonpickle.encode(video), subtitle=punctuated, lang=lang)
 
 def _error_response(error):
     return jsonify(subtitle="", lang="", error=error)
