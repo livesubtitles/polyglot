@@ -98,7 +98,7 @@ def stream():
 def dummyTranslate():
     return test()
 
-@app.route("/punctuate")
+@app.route("/punctuate", methods=['POST'])
 def punctuate():
     request_body = json.loads(request.data)
     subtitle = request_body['subtitle']
