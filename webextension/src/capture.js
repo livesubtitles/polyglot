@@ -4,7 +4,7 @@ const herokuUrl = "https://polyglot-livesubtitles.herokuapp.com";
 const baseUrl = localUrl;
 const captureEndpoint = "/subtitle";
 const streamEndpoint = "/stream";
-const punctuateEndpoint = "/punctuate";
+const punctuateEndpoint = "https://polyglot-punctuator.herokuapp.com/punctuate";
 
 /* Definitions for capture and stream requests */
 let vid = document.getElementsByTagName("video")[0];
@@ -127,7 +127,7 @@ let subsequentStreamRequestCallback = function(data) {
     sendStreamlinkRequest();
   } else {
     request = JSON.stringify({"subtitle": data.subtitle});
-    sendPostRequest(baseUrl + punctuateEndpoint, request, punctuateCallback);
+    sendPostRequest(punctuateEndpoint, request, punctuateCallback);
   }
 }
 
