@@ -92,9 +92,7 @@ let firstStreamCallback = function(data) {
       vid.play();
       console.log(data.subtitle);
       console.log(data.lang);
-      if (data.lang != 'detected') {
-        lang = data.lang;
-      }
+      lang = data.lang;
       if (lang != '' && first_detected) {
         first_detected = false;
         alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
