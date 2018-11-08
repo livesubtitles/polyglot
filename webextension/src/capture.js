@@ -86,6 +86,7 @@ function setLanguage(lang_local) {
 let punctuateCallback = function(data) {
   console.log("Got back punctuated: " + data.subtitle);
   addSubtitles(data.subtitle);
+  sendStreamlinkRequest();
 }
 
 /* Runs only once the first stream response is received. */
@@ -128,13 +129,11 @@ let subsequentStreamRequestCallback = function(data) {
 
 /* Send stream request */
 async function sendStreamlinkRequest() {
-  while (!vid.paused) {
     console.log("About to get language");
     getLanguageFromSelector();
     let request = JSON.stringify({"url": pageUrl, "lang": lang});
     sendPostRequest(urlStream, request, subsequentStreamRequestCallback);
     await sleep(3000);
-  }
 }
 
 /* Gets called after response from 'subtitle' endpoint is received */
