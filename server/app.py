@@ -31,7 +31,7 @@ def process(audio, sample_rate, lang, raw_pcm=False):
     return jsonify(subtitle=translated, lang=lang)
 
 def process_with_video(video, audio, sample_rate, lang):
-    no_punctuation = False
+    no_punctuation = True
     if lang == '':
         #TODO: Move the split into the detect_language function
         lang = detect_language(audio)
