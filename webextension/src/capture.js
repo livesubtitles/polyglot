@@ -25,15 +25,12 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const languageKey = "selectedLanguage";
-
-function getLanguage() {
-  /*let language = '';
-  let url = "http://127.0.0.1:8000/get-language"
-  fetch(url, {method: 'get',
+function sendPostRequest(url, requestBody, callback) {
+  fetch(url, {method: 'post',
         headers: {
           "Content-Type": "application/json; charset=utf-8",
-        }})
+        },
+      body: requestBody})
   .then(
     function(response) {
       if (response.status !== 200) {
@@ -41,13 +38,11 @@ function getLanguage() {
           response.status);
         return;
       }
-      response.text().then(function (text) {
-        language = text;
-        lang = text;
-        console.log("Got language " + text);
+        response.json().then(function(data) {callback(data)});
       });
-    });
-    return language;*/
+}
+
+function getLanguage() {
     chrome.storage.sync.get(['language'], function(result) {
           if ('language' in result) {
             lang = result.language;
@@ -57,116 +52,94 @@ function getLanguage() {
   }
 
 function setLanguage(lang_local) {
-  /*lang = lang_local;
-  let url = "http://127.0.0.1:8000/set-language"
-  fetch(url, {method: 'post',
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      body: lang_local})
-  .then(
-    function(response) {
-      if (response.status !== 200) {
-        console.log('Looks like there was a problem. Status Code: ' +
-          response.status);
-        return;
-      }
-    });*/
     lang = lang_local;
     chrome.storage.sync.set({'language': lang}, function() {
       console.log("Value set to " + lang);
       chrome.storage.sync.get(['language'], function(result) {
-            // if ('language' in result) {
               lang = result.language;
               console.log('Got value from callback: ' + result.language);
-            // }
           });
     });
   }
 
+let streamRequestCallback = function(data) {
+  console.log(data.subtitle);
+  console.log(data.lang);
+  console.log(data.video);
+  if (lang != '' && first_detected) {
+    first_detected = false;
+    alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
+    console.log("About to set language to " + lang);
+    setLanguage(lang);
+  }
+  addSubtitles(data.subtitle);
+}
+
 async function sendStreamlinkRequest() {
   urlStream = baseUrl + "/stream-subtitle"
   while (!vid.paused) {
-    // ----
     console.log("About to get language");
     getLanguage();
     if (lang === undefined) {
       setLanguage('');
     }
     getLanguage();
-    // ----
     let request = JSON.stringify(JSON.parse("{\"url\":\"" + pageUrl + "\", \"lang\":\"" + lang + "\"}"));
-    fetch(urlStream, {method: 'post',
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-        body: request})
-    .then(
-      function(response) {
-        if (response.status !== 200) {
-          console.log('Looks like there was a problem. Status Code: ' +
-            response.status);
-          return;
-        }
-        response.json().then(function(data) {
-          console.log(data.subtitle);
-          console.log(data.lang);
-          console.log(data.video);
-          // if (data.lang != 'detected') {
-          //   lang = data.lang;
-          // }
-          if (lang != '' && first_detected) {
-            first_detected = false;
-            alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
-            console.log("About to set language to " + lang);
-            setLanguage(lang);
-          }
-          addSubtitles(data.subtitle);
-        });
-      });
+    sendPostRequest(urlStream, request, streamRequestCallback);
       await sleep(3000);
   }
 }
 
+let secondStreamCallback = function(data) {
+   if (data.subtitle == "none") {
+     vid.play();
+     capture();
+   } else {
+     subtitle = data.subtitle;
+     lang = data.lang;
+     vid.play();
+     console.log(data.subtitle);
+     console.log(data.lang);
+     if (data.lang != 'detected') {
+        lang = data.lang;
+     }
+     if (lang != '' && first_detected) {
+       first_detected = false;
+       alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
+       setLanguage(lang);
+     }
+     addSubtitles(data.subtitle);
+     sendStreamlinkRequest();
+    }
+}
+
 let urlStream = baseUrl + "/stream"
 let pageUrl = window.location.href;
+console.log("About to get language");
+getLanguage();
+if (lang === undefined) {
+  setLanguage('');
+}
+getLanguage();
 vid.pause();
 let request = JSON.stringify(JSON.parse("{\"url\":\"" + pageUrl + "\", \"lang\":\"" + lang + "\"}"));
-fetch(urlStream, {method: 'post',
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-    body: request})
-.then(
-  function(response) {
-    if (response.status !== 200) {
-      console.log('Looks like there was a problem. Status Code: ' +
-        response.status);
-      return;
-    }
-      response.json().then(function(data) {
-        if (data.subtitle == "none") {
-          vid.play();
-          capture();
-        } else {
-        subtitle = data.subtitle;
-        lang = data.lang;
-        vid.play();
-        console.log(data.subtitle);
-        console.log(data.lang);
-        if (data.lang != 'detected') {
-          lang = data.lang;
-        }
-        if (lang != '' && first_detected) {
-          first_detected = false;
-          alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
-          setLanguage(lang);
-        }
-        addSubtitles(data.subtitle);
-        sendStreamlinkRequest();
-      }
-      });
-  });
+console.log("First request sent");
+sendPostRequest(urlStream, request, secondStreamCallback);
+
+let captureCallback = function(data) {
+  console.log(data.subtitle);
+  console.log(data.lang);
+  if (data.lang != 'detected') {
+    lang = data.lang;
+  }
+  if (lang != '' && first_detected && lang != 'detected') {
+    first_detected = false;
+    alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
+    setLanguage(lang);
+    vid.play();
+  }
+  addSubtitles(data.subtitle);
+}
 
 function capture() {
   let stream = vid.captureStream();
@@ -177,13 +150,11 @@ function capture() {
   // create a script processor with input of size 16384, one input (the video) and one output (the audioctx.destination)
   let scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
   scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
-    // ----
-    // getLanguage();
+    getLanguage();
     if (lang === undefined) {
       setLanguage('');
     }
-    // getLanguage();
-    // ----
+    getLanguage();
     if (!vid.paused) {
       if (numOfBufferedChunks == 0) {
         buffersSoFar = audioProcessingEvent.inputBuffer;
@@ -216,37 +187,7 @@ function capture() {
         }
         request = JSON.stringify(jsonRequest);
         let url = baseUrl + "/subtitle"
-        fetch(url, {method: 'post',
-              headers: {
-                "Content-Type": "application/json; charset=utf-8",
-              },
-            body: request})
-        .then(
-          function(response) {
-            if (response.status !== 200) {
-              console.log('Looks like there was a problem. Status Code: ' +
-                response.status);
-              return;
-            }
-            response.json().then(function(data) {
-              console.log(data.subtitle);
-              console.log(data.lang);
-              if (data.lang != 'detected') {
-                lang = data.lang;
-              }
-              if (lang != '' && first_detected && lang != 'detected') {
-                first_detected = false;
-                alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
-                // ---
-              	setLanguage(lang);
-		// ---
-
-                vid.play();
-              }
-              addSubtitles(data.subtitle);
-            });
-          });
-
+        sendPostRequest(url, request, captureCallback);
         }
       }
     };
