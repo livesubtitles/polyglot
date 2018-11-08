@@ -71,30 +71,40 @@ def get_language():
     global language
     return language
 
-@app.route("/stream", methods=['POST'])
-def stream():
+# @app.route("/stream", methods=['POST'])
+# def stream():
+#     global streamer
+#     url = json.loads(request.data)['url']
+#     lang = json.loads(request.data)['lang']
+#     streamer = VideoStreamer(url)
+
+#     try:
+#         streamer.start()
+#         (video, audio) = streamer.get_data()
+#     except Exception:
+#         return _error_response( "StreamlinkUnavailable" )
+
+#     (video, audio) = streamer.get_data()
+#     sample_rate    = streamer.get_sample_rate()
+
+#     return process_with_video(video, audio, sample_rate, lang)
+
+def _initialise_streamer(url):
     global streamer
-    url = json.loads(request.data)['url']
-    lang = json.loads(request.data)['lang']
+
     streamer = VideoStreamer(url)
 
     try:
         streamer.start()
-        (video, audio) = streamer.get_data()
     except Exception:
-        return _error_response( "StreamlinkUnavailable" )
+        return _error_response( "StreamlinkUnavailable ")
 
-    (video, audio) = streamer.get_data()
-    sample_rate    = streamer.get_sample_rate()
-
-    return process_with_video(video, audio, sample_rate, lang)
-
-@app.route("/stream-subtitle", methods=['POST'])
-def stream_subtitle():
+@app.route("/stream", methods=['POST'])
+def stream():
     global streamer
 
     if streamer == None:
-        return _error_response( "UninitialisedStreamer" )
+        _initialise_streamer(json.loads(request.data)['url'])
 
     lang = json.loads(request.data)['lang']
     (video, audio) = streamer.get_data()
