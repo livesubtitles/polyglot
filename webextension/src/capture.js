@@ -4,12 +4,7 @@ const herokuUrl = "https://polyglot-livesubtitles.herokuapp.com";
 const baseUrl = localUrl;
 const captureEndpoint = "/subtitle";
 const streamEndpoint = "/stream";
-const punctuateEndpoint = "/punctuate";
-
-function handleError(status) {
-  console.log('Error. Status Code: ' + status);
-  alert('Looks like there was a problem. Please refresh the page.');
-}
+const punctuateEndpoint = "https://polyglot-punctuator.herokuapp.com/punctuate";
 
 /* Definitions for capture and stream requests */
 let vid = document.getElementsByTagName("video")[0];
@@ -51,7 +46,8 @@ function sendPostRequest(url, requestBody, callback) {
   .then(
     function(response) {
       if (response.status !== 200) {
-        handleError(response.status);
+        console.log('Looks like there was a problem. Status Code: ' +
+          response.status);
         return;
       }
         response.json().then(function(data) {callback(data)});
@@ -131,7 +127,7 @@ let subsequentStreamRequestCallback = function(data) {
     sendStreamlinkRequest();
   } else {
     request = JSON.stringify({"subtitle": data.subtitle});
-    sendPostRequest(baseUrl + punctuateEndpoint, request, punctuateCallback);
+    sendPostRequest(punctuateEndpoint, request, punctuateCallback);
   }
 }
 
