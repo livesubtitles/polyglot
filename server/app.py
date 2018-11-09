@@ -63,7 +63,18 @@ socketio = SocketIO(app)
 
 @app.route("/")
 def hello():
+    with open("playlist.m3u8", "a") as myfile:
+        myfile.write("#EXT-X-DISCONTINUITY\n")
+        myfile.write("#EXTINF:2.500,\n")
+        myfile.write("temp2.ts\n")
+        myfile.write("#EXT-X-DISCONTINUITY\n")
+        myfile.write("#EXTINF:2.500,\n")
+        myfile.write("temp2.ts\n")
+        myfile.write("#EXT-X-DISCONTINUITY\n")
+        myfile.write("#EXTINF:2.500,\n")
+        myfile.write("temp2.ts\n")
     return "Polyglot - Live Subtitles - ICL"
+
 
 # @app.route("/subtitle", methods=['POST'])
 # def subtitle():
@@ -134,7 +145,7 @@ class StreamingSocket(Namespace):
             self._initialise_streamer(data['url'])
 
         lang = data['lang']
-        
+
         if lang == '':
             (video, audio) = self.streamer.get_data()
             lang = detect_language(audio)
@@ -154,7 +165,7 @@ class StreamingSocket(Namespace):
         translated = translate(transcript, 'en', self.language.split('-')[0])
 
         response = json.dumps({'video':jsonpickle.encode(video), 'subtitles':translated})
-        
+
         print("Sending response: " + response)
         emit('stream-response', response)
 
