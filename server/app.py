@@ -17,6 +17,7 @@ CORS(app, resources={r"/subtitle": {"origins": "*"}, "/stream": {"origins": "*"}
 socketio = SocketIO(app)
 streamer = None
 language = ""
+first_request = True
 
 # Main pipeline. Will return the JSON response with the translated text.
 def process(audio, sample_rate, lang, raw_pcm=False):
@@ -53,6 +54,20 @@ def _initialise_streamer(url):
 
 def _error_response(error):
     return jsonify(subtitle="", lang="", error=error)
+
+def prepare_model_file():
+    f1 = open("./punctuator2/model1.pcl", "rb")
+    final_file = open("./punctuator2/final-model.pcl", "wb")
+    for line in f1:
+        final_file.write(line)
+    f1.close()
+    print("Writing first file completed")
+    f2 = open("./punctuator2/model2.pcl", "rb")
+    for line in f2:
+        final_file.write(line)
+    f2.close()
+    print("Writing second file completed")
+    final_file.close()
 
 ################# REST ENDPOINTS #################
 
@@ -100,6 +115,13 @@ def dummyTranslate():
 
 @app.route("/punctuate", methods=['POST'])
 def punctuate():
+    global first_request
+    if (first_request):
+        if (not os.path.isfile("./punctuator2/final-model.pcl")):
+            prepare_model_file()
+        model_path = "./punctuator2/final-model.pcl"
+        init_punctuator(model_path)
+        first_request = False
     request_body = json.loads(request.data)
     subtitle = request_body['subtitle']
     return jsonify(subtitle=punctuate_subtitle(subtitle))
