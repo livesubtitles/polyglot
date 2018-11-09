@@ -19,9 +19,7 @@ def _get_access_token(headers):
 def _get_id_url(access_token):
     url = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId
     url = url + '/Videos?accessToken=' + access_token
-    params = urllib.parse.urlencode({'language': 'auto'})
-    url = url + '?' + params
-    # url = url + '&name=test' + str(random.randint(1, 100))
+    url = url + '&name=test'
 
     return url
 
@@ -29,6 +27,8 @@ def _get_video_id(audio_file, headers, access_token):
     url = _get_id_url(access_token)
 
     form_data = {'file': audio_file.getvalue()}
+    params = urllib.parse.urlencode({'language': 'auto'})
+    url = url + '&' + params
 
     r = requests.post(url, files=form_data, headers=headers)
     return (r.json())['id']
