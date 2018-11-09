@@ -6,6 +6,11 @@ const captureEndpoint = "/subtitle";
 const streamEndpoint = "/stream";
 const punctuateEndpoint = "/punctuate";
 
+function handleError(status) {
+  console.log('Error. Status Code: ' + status);
+  alert('Looks like there was a problem. Please refresh the page.');
+}
+
 /* Definitions for capture and stream requests */
 let vid = document.getElementsByTagName("video")[0];
 let lang = '';
@@ -46,8 +51,7 @@ function sendPostRequest(url, requestBody, callback) {
   .then(
     function(response) {
       if (response.status !== 200) {
-        console.log('Looks like there was a problem. Status Code: ' +
-          response.status);
+        handleError(response.status);
         return;
       }
         response.json().then(function(data) {callback(data)});
