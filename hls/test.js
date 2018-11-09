@@ -1,14 +1,14 @@
-const video = document.getElementById('video');
-console.log(video);
+//const video = document.getElementById('video');
+//console.log(video);
 
-console.log("Hello");
-var hls = new Hls();
-hls.loadSource('https://localhost:8000/temp/temp.ts');
-console.log("HELLO");
-hls.attachMedia(video);
-hls.on(Hls.Events.MANIFEST_PARSED, function() {
-		video.play();
-});	
+//console.log("Hello");
+//var hls = new Hls();
+//hls.loadSource('https://localhost:8000/temp/temp.ts');
+//console.log("HELLO");
+//hls.attachMedia(video);
+//hls.on(Hls.Events.MANIFEST_PARSED, function() {
+//		video.play();
+//});	
 
 
 // ---- Socket stuff ---- //
