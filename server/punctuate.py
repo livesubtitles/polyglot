@@ -1,6 +1,6 @@
 import os.path
 
-from punctuator2.punctuator import *
+from server.punctuator2.punctuator import *
 
 def segment_model():
     f1 = open("./punctuator2/model1.pcl", "wb")
