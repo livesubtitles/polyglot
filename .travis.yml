@@ -11,4 +11,7 @@ matrix:
        - pipenv install
      script:
        - python -m unittest discover server/tests
- 
+     env:
+       - APIKEY=123456789
+       - MICROSOFTKEY=123456789
+       - MICROSOFTID=123456789
