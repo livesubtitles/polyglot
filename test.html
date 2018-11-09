@@ -1,0 +1,29 @@
+<h2>Testing sockets for Polyglot</h2>
+
+<div>
+  <video id="video" style="width:600px" playsinline controls muted>
+  </video>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<script>
+if (Hls.isSupported()) {
+	console.log("Hls Supported.");
+	var video = document.getElementById('video');
+	var hls = new Hls();
+	console.log("Hello");
+
+	hls.loadSource("http://localhost:8000/temp/playlist.m3u8");
+	console.log("Hello");
+	hls.attachMedia(video);
+
+	hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+    	debugger;
+	});
+}
+
+
+
+</script>
+<!-- <script src="sock.js"></script> -->
