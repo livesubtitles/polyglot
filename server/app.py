@@ -9,7 +9,6 @@ from server.translate import test
 from server.speechtotext import *
 from server.language import *
 from server.stream import *
-from server.punctuate import *
 
 app = Flask(__name__)
 CORS(app, resources={r"/subtitle": {"origins": "*"}, "/stream": {"origins": "*"}, "/stream-subtitle": {"origins": "*"}
@@ -27,7 +26,6 @@ def process(audio, sample_rate, lang, raw_pcm=False):
                  get_text(audio, sample_rate, lang)
 
     translated = translate(transcript, 'en', lang.split('-')[0])
-    #punctuated = punctuate_subtitle(translated) if translated != "" else ""
     return jsonify(subtitle=translated, lang=lang)
 
 def process_with_video(video, audio, sample_rate, lang):
@@ -97,12 +95,6 @@ def stream():
 @app.route("/translate-test")
 def dummyTranslate():
     return test()
-
-@app.route("/punctuate", methods=['POST'])
-def punctuate():
-    request_body = json.loads(request.data)
-    subtitle = request_body['subtitle']
-    return jsonify(subtitle=punctuate_subtitle(subtitle))
 
 ################# SOCKETS #################
 
