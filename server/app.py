@@ -96,6 +96,10 @@ def stream():
 def dummyTranslate():
     return test()
 
+@app.route("/streams/<path:filename>")
+def getFile(filename):
+    return send_from_directory('/streams', filename)
+
 ################# SOCKETS #################
 
 @socketio.on('connect')
