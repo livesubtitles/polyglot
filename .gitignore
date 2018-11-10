@@ -2,3 +2,4 @@
 node_modules/
 .git-god
 build/
+server/streams/*

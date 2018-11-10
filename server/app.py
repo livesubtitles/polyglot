@@ -1,7 +1,7 @@
 import json
 import jsonpickle
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 
@@ -32,7 +32,6 @@ def process_with_video(video, audio, sample_rate, lang):
     if lang == '':
         #TODO: Move the split into the detect_language function
         lang = detect_language(audio)
-
 
     transcript = get_text(audio, sample_rate, lang)
     translated = translate(transcript, 'en', lang.split('-')[0])
@@ -98,29 +97,13 @@ def dummyTranslate():
 
 @app.route("/streams/<path:filename>")
 def getFile(filename):
-    return send_from_directory('/streams', filename)
+    return send_from_directory('streams', filename)
 
 ################# SOCKETS #################
 
 @socketio.on('connect')
 def test_connect():
     print("Connected.")
-
-@socketio.on('testevent')
-def testevent(payload):
-    print("Hello")
-
-@socketio.on("audioprocess")
-def audioprocess(payload):
-    print(payload["sampleRate"])
-    print(type(payload["sampleRate"]))
-    print(payload["lang"])
-    print(type(payload["lang"]))
-    print(payload["audio"][0:5])
-    print(type(payload["audio"]))
-    subtitle = get_subtitle(payload['audio'], payload['sampleRate'], payload['lang'])
-    emit("subtitle", { "subtitle": subtitle })
-
 
 if __name__ == '__main__':
     socketio.run(app)
