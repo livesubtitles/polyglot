@@ -17,7 +17,8 @@ from server.stream import *
 
 app = Flask(__name__)
 CORS(app, resources={r"/subtitle": {"origins": "*"}, "/stream": {"origins": "*"}, "/stream-subtitle": {"origins": "*"}
-	, "/set-language": {"origins": "*"}, "/get-language": {"origins": "*"}, "/punctuate": {"origins": "*"}})
+	, "/set-language": {"origins": "*"}, "/get-language": {"origins": "*"}, "/punctuate": {"origins": "*"},
+	"/streams": {"origins": "*"}})
 socketio = SocketIO(app)
 streamer = None
 language = ""
