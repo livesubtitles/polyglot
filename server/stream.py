@@ -49,7 +49,7 @@ class _StreamWorker(Thread):
 	def _update_playlist(self, video_file):
 		playlist_path = self.user_dir + '/playlist.m3u8'
 
-		if not os.isfile(playlist_path):
+		if not os.path.isfile(playlist_path):
 			print("Playlist not found, exiting...")
 			raise Exception
 
@@ -74,6 +74,8 @@ class _StreamWorker(Thread):
 			video_file = INPUT_FILE + str(self.count) + EXTENSION
 			path = self.user_dir + '/'
 
+			print("Writing file with path: " + path + video_file)
+
 			with open(path + video_file, "wb") as f:
 				f.write(data)
 
@@ -81,7 +83,8 @@ class _StreamWorker(Thread):
 
 			try:
 				self._update_playlist(video_file)
-			except Exception:
+			except Exception as exe:
+				print(exe)
 				return
 
 			self.count += 1

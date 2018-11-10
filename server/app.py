@@ -170,7 +170,7 @@ class StreamingSocket(Namespace):
 		with open(playlist_path, "w") as f:
 			f.write("#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:9\n#EXT-X-MEDIA-SEQUENCE:0\n")
 
-		emit('stream-response', json.dumps({'media':str(SERVER_URL + playlist_path)}))
+		emit('stream-response', json.dumps({'media':str(LOCAL_URL + playlist_path)}))
 
 socketio.on_namespace(StreamingSocket('/streams'))
 
