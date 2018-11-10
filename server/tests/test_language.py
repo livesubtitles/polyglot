@@ -4,6 +4,7 @@ import os
 import server.language
 import server.speechtotext
 import urllib
+import unittest.mock
 
 microsoftKey = os.environ.get('MICROSOFTKEY')
 microsoftId = os.environ.get('MICROSOFTID')
@@ -11,14 +12,14 @@ headers = {
     'Ocp-Apim-Subscription-Key': microsoftKey
 }
 
-urlOfAPI = "https://api.videoindexer.ai/auth/trial/Accounts/" + microsoftId + "/AccessToken?allowEdit=true"
+urlOfAPIKey = "https://api.videoindexer.ai/auth/trial/Accounts/" + microsoftId + "/AccessToken?allowEdit=true"
 
 class TestDetectLanguage(unittest.TestCase):
 
     @responses.activate
     def test_getAccessToken(self):
         mock_response = "at123"
-        responses.add(responses.GET, urlOfAPI, json=mock_response, status=200)
+        responses.add(responses.GET, urlOfAPIKey, json=mock_response, status=200)
         accessToken = server.language._get_access_token(headers)
         self.assertEqual(accessToken, "at123")
         self.assertEqual(len(responses.calls), 1)
@@ -31,8 +32,7 @@ class TestDetectLanguage(unittest.TestCase):
         params = urllib.parse.urlencode({
             'language': 'auto',
         })
-        urlOfLan = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId + '/Videos?accessToken=' + mock_response0 + '?' + params
-        # urlOfLan = 'https://api.videoindexer.ai/trial/Accounts/'
+        urlOfLan = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId + '/Videos?accessToken=' + mock_response0 + '&name=test' + '&' + params
         urlOfGettingLan = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId + '/Videos/' + video_id + '/Index?accessToken=' + mock_response0
         mock_response1 = {
             "id": video_id
@@ -43,7 +43,7 @@ class TestDetectLanguage(unittest.TestCase):
             }]
         }
         responses.add(responses.POST, urlOfLan, json=mock_response1, status=200)
-        responses.add(responses.GET, urlOfAPI, json=mock_response0, status=200)
+        responses.add(responses.GET, urlOfAPIKey, json=mock_response0, status=200)
         responses.add(responses.GET, urlOfGettingLan, json=mock_response2, status=200)
         languageDetected = server.language.detect_language(speech)
         self.assertEqual(languageDetected, "FR-fr")
@@ -58,7 +58,7 @@ class TestDetectLanguage(unittest.TestCase):
         params = urllib.parse.urlencode({
             'language': 'auto',
         })
-        urlOfLan = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId + '/Videos?accessToken=' + mock_response0 + '?' + params
+        urlOfLan = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId + '/Videos?accessToken=' + mock_response0 + '&name=test' + '&' + params
         urlOfGettingLan = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId + '/Videos/' + video_id + '/Index?accessToken=' + mock_response0
         mock_response1 = {
             "id": video_id
@@ -69,7 +69,7 @@ class TestDetectLanguage(unittest.TestCase):
             }]
         }
         responses.add(responses.POST, urlOfLan, json=mock_response1, status=200)
-        responses.add(responses.GET, urlOfAPI, json=mock_response0, status=200)
+        responses.add(responses.GET, urlOfAPIKey, json=mock_response0, status=200)
         responses.add(responses.GET, urlOfGettingLan, json=mock_response2, status=200)
         languageDetected = server.language.detect_language(speech)
         self.assertEqual(languageDetected, "en-US")

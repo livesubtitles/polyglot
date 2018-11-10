@@ -4,6 +4,7 @@ import requests
 import urllib
 import json
 import random
+import uuid
 
 microsoftKey = os.environ.get('MICROSOFTKEY')
 microsoftId = os.environ.get('MICROSOFTID')
@@ -16,10 +17,15 @@ def _get_access_token(headers):
     response = requests.get(url, headers=headers)
     return response.text.split("\"")[1]
 
+def _get_random_filename():
+    return str(uuid.uuid4())
+
 def _get_id_url(access_token):
     url = 'https://api.videoindexer.ai/trial/Accounts/' + microsoftId
     url = url + '/Videos?accessToken=' + access_token
     url = url + '&name=test'
+    params = urllib.parse.urlencode({'language': 'auto'})
+    url = url + '&' + params
 
     return url
 
@@ -27,8 +33,6 @@ def _get_video_id(audio_file, headers, access_token):
     url = _get_id_url(access_token)
 
     form_data = {'file': audio_file.getvalue()}
-    params = urllib.parse.urlencode({'language': 'auto'})
-    url = url + '&' + params
 
     r = requests.post(url, files=form_data, headers=headers)
     return (r.json())['id']
