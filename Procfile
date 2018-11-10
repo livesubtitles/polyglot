@@ -1,1 +1,1 @@
-web: gunicorn --timeout=100 --chdir server app:app 
+web: gunicorn --worker-class eventlet -w 1 --chdir server app:app 
