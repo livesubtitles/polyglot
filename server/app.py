@@ -132,14 +132,17 @@ class StreamingSocket(Namespace):
 	def on_connect(self):
 		new_hash = self._generate_user_hash()
 
-		while os.path.isdir('streams/' + new_hash):
-			new_hash = self._generate_user_hash()
+		print("Creating user directory... ", end="")
+		new_hash = self._generate_user_hash()
 
-			os.makedirs('streams/' + new_hash)
-			self.user_hash = new_hash
-			self.user_dir  = 'streams/' + new_hash
+		os.makedirs('streams/' + new_hash)
+		self.user_hash = new_hash
+		self.user_dir  = 'streams/' + new_hash
+		print("Success!")
 
-			print("Connected to client. User hash: " + self.user_hash)
+		print("Connected to client. User hash: " + self.user_hash)
+
+		emit('server-ready')
 
 	def on_disconnect(self):
 		self.streamer.stop()
@@ -165,8 +168,6 @@ class StreamingSocket(Namespace):
 
 		with open(playlist_path, "w") as f:
 			f.write("#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:9\n#EXT-X-MEDIA-SEQUENCE:0\n")
-
-		print(SERVER_URL + playlist_path)
 
 		emit('stream-response', json.dumps({'media':str(SERVER_URL + playlist_path)}))
 
