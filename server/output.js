@@ -6267,7 +6267,7 @@ module.exports = yeast;
 
 },{}],40:[function(require,module,exports){
 const io = require('socket.io-client');
-const socket = io('http://localhost:8000/streams', {transport : ['websocket']});
+const socket = io('http://localhost:8000/streams');
 
 console.log(socket);
 
@@ -6278,7 +6278,7 @@ socket.on('connect', function() {
 });
 
 socket.on('server-ready', function() {
-    socket.emit('stream', {url: "https://www.youtube.com/watch?v=mV8jp1N2fSw", lang: "es-ES"})
+    socket.emit('stream', {url: "https://www.youtube.com/watch?v=XOacA3RYrXk", lang: "es-GB"})
 });
 
 socket.on('stream-response', function(data) {

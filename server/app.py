@@ -6,7 +6,7 @@ import os
 import shutil
 
 
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, Namespace
 
@@ -103,6 +103,14 @@ def stream():
 @app.route("/translate-test")
 def dummyTranslate():
 	return test()
+
+@app.route("/streams")
+def streams():
+	return send_file('media.html')
+
+@app.route("/<path:filename>")
+def file(filename):
+	return send_file(filename)
 
 @app.route("/streams/<path:user_dir>/<path:filename>")
 def getFile(user_dir, filename):

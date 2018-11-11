@@ -26,7 +26,7 @@ from enum import Enum
 BYTES_TO_READ = 1000000
 WAIT_TIME	  = 10.0
 
-STD_VIDEO_KEY   = '480p'
+STD_VIDEO_KEY   = '360p'
 INPUT_FILE		= "segment"
 EXTENSION 		= ".ts"
 OUTPUT_WAV_FILE = "temp/audio.wav"
@@ -62,6 +62,8 @@ class _StreamWorker(Thread):
 
 		with open(playlist_path, "w+") as f:
 			f.writelines(lines)
+			if not sequence_no == 0:
+				f.write('#EXT-X-DISCONTINUITY\n')
 			f.write('#EXTINF:8.0000,\n')
 			f.write(video_file + '\n')
 
