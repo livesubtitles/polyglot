@@ -128,7 +128,7 @@ class StreamingSocket(Namespace):
 	user_dir  = None
 
 	def _initialise_streamer(self, url):
-		self.streamer = VideoStreamer(url, self.user_dir)
+		self.streamer = VideoStreamer(url, self.user_dir, self._playlist_ready)
 
 		try:
 			self.streamer.start()
@@ -168,6 +168,10 @@ class StreamingSocket(Namespace):
 
 		print("Generating file: " + playlist_path)
 
+	def _playlist_ready(self):
+		playlist_path = self.user_dir + '/playlist.m3u8'
+		emit('stream-response', json.dumps({'media':str(LOCAL_URL + playlist_path)}))
+
 	def on_stream(self, data):
 		if self.streamer == None:
 			self._initialise_streamer(data['url'])
@@ -176,9 +180,10 @@ class StreamingSocket(Namespace):
 		playlist_path = self.user_dir + '/playlist.m3u8'
 
 		with open(playlist_path, "w") as f:
-			f.write("#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:9\n#EXT-X-MEDIA-SEQUENCE:0\n")
+			f.write("#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:20\n#EXT-X-MEDIA-SEQUENCE:0\n")
 
 		emit('stream-response', json.dumps({'media':str(LOCAL_URL + playlist_path)}))
+
 
 socketio.on_namespace(StreamingSocket('/streams'))
 

@@ -38,12 +38,14 @@ def _clearTempFiles():
 	os.makedirs('temp')
 
 class _StreamWorker(Thread):
-	def __init__(self, buff, stream_data, user_dir):
+	def __init__(self, buff, stream_data, user_dir, callback):
 		self.buff = buff
 		self.stream_data = stream_data
 		self.user_dir = user_dir
 		self.streaming = True
 		self.count = 0
+		self.callback = callback
+		self.start_sending = False
 		Thread.__init__(self)
 
 	def _update_playlist(self, video_file):
@@ -58,14 +60,25 @@ class _StreamWorker(Thread):
 
 		sequence_no = int(lines[3].split(':')[1])
 
-		lines[3] = '#EXT-X-MEDIA-SEQUENCE:' + str(sequence_no + 1) + '\n'
+		lines[3] = '#EXT-X-MEDIA-SEQUENCE:' + str(sequence_no) + '\n'
+
+		if (sequence_no + 1 >= 4 and len(lines) >= 7):
+			lines = lines[0:4] + lines[7:]
+			lines[3] = '#EXT-X-MEDIA-SEQUENCE:' + str(sequence_no + 1) + '\n'
+			if (not self.start_sending):
+				self.start_sending = True
+		print(lines)
+
 
 		with open(playlist_path, "w+") as f:
 			f.writelines(lines)
 			if not sequence_no == 0:
 				f.write('#EXT-X-DISCONTINUITY\n')
-			f.write('#EXTINF:8.0000,\n')
+			f.write('#EXTINF:20.0000,\n')
 			f.write(video_file + '\n')
+
+		# if (self.start_sending):
+		# 	self.callback()
 
 	def run(self):
 		while self.streaming:
@@ -98,12 +111,13 @@ class _StreamWorker(Thread):
 
 
 class VideoStreamer(object):
-	def __init__(self, stream_url, user_dir):
+	def __init__(self, stream_url, user_dir, callback):
 		self.stream_url = stream_url
 		self.user_dir = user_dir
 		self.buffer = queue.Queue()
 		self.sample_rate = None
 		self.worker = None
+		self.callback = callback
 
 	# def get_data(self, num_segments=5):
 	# 	video_data = self.buffer.get()
@@ -177,7 +191,7 @@ class VideoStreamer(object):
 		print("Success!")
 
 		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(self.buffer, data, self.user_dir)
+		self.worker = _StreamWorker(self.buffer, data, self.user_dir, self.callback)
 		self.worker.start()
 		print("Success!")
 
