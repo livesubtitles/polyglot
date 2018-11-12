@@ -16,9 +16,7 @@ from server.language import *
 from server.stream import *
 
 app = Flask(__name__)
-CORS(app, resources={r"/subtitle": {"origins": "*"}, "/stream": {"origins": "*"}, "/stream-subtitle": {"origins": "*"}
-	, "/set-language": {"origins": "*"}, "/get-language": {"origins": "*"}, "/punctuate": {"origins": "*"},
-	"/streams": {"origins": "*"}})
+CORS(app)
 socketio = SocketIO(app)
 streamer = None
 language = ""
@@ -104,6 +102,13 @@ def stream():
 @app.route("/translate-test")
 def dummyTranslate():
 	return test()
+
+@app.after_request
+def after_request(response):
+  response.headers.add('Access-Control-Allow-Origin', '*')
+  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+  return response
 
 @app.route("/streams")
 def streams():
