@@ -22,7 +22,7 @@ streamer = None
 language = ""
 
 LOCAL_URL  = 'http://localhost:8000/'
-HEROKU_URL = 'https://ployglot-livesubtitles.herokuapp.com/'
+HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
 SERVER_URL = HEROKU_URL
 
 # Main pipeline. Will return the JSON response with the translated text.
