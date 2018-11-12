@@ -6,6 +6,7 @@ import streamlink
 import wave
 import sys
 import time
+import subprocess
 from ffmpy import FFmpeg
 from six.moves import queue
 from threading import Thread
@@ -96,6 +97,11 @@ class _StreamWorker(Thread):
 
 			print("Created file: " + video_file)
 
+			duration = subprocess.check_output(["ffmpeg -i " + path + video_file +   " 2>&1 | grep 'Duration'"], shell=True)
+			duration_time = duration.decode('ascii').split("Duration: ")[1].split(',')[0]
+			print(duration_time)
+
+
 			try:
 				self._update_playlist(video_file)
 			except Exception as exe:
@@ -119,48 +125,48 @@ class VideoStreamer(object):
 		self.worker = None
 		self.callback = callback
 
-	# def get_data(self, num_segments=5):
-	# 	video_data = self.buffer.get()
+	def get_data(self, num_segments=5):
+		video_data = self.buffer.get()
 
-	# 	for i in range(1, num_segments):
-	# 		video_data += self.buffer.get()
+		for i in range(1, num_segments):
+			video_data += self.buffer.get()
 
-	# 	video_file = INPUT_FILE + str(self.count) + EXT
-	# 	self.count += 1
+		video_file = INPUT_FILE + str(self.count) + EXT
+		self.count += 1
 
-	# 	with open(video_file, "ab") as f:
-	# 		f.write(video_data)
+		with open(video_file, "ab") as f:
+			f.write(video_data)
 
-	# 	try:
-	# 		audio_data = self._extract_audio(video_file)
-	# 	except Exception as e:
-	# 		raise Exception("FFMpeg Error")
+		try:
+			audio_data = self._extract_audio(video_file)
+		except Exception as e:
+			raise Exception("FFMpeg Error")
 
-	# 	self._set_sample_rate()
+		self._set_sample_rate()
 
-	# 	return (bytearray(video_data), io.BytesIO(audio_data))
+		return (bytearray(video_data), io.BytesIO(audio_data))
 
-	# def get_sample_rate(self):
-	# 	return self.sample_rate
+	def get_sample_rate(self):
+		return self.sample_rate
 
-	# def _extract_audio(self, file_name):
-	# 	ff = FFmpeg(
-	# 		inputs={file_name:['-hide_banner', '-loglevel', 'panic', '-y']},
-	# 		outputs={OUTPUT_WAV_FILE:['-ac', '1', '-vn', '-f', 'wav']}
-	# 	)
+	def _extract_audio(self, file_name):
+		ff = FFmpeg(
+			inputs={file_name:['-hide_banner', '-loglevel', 'panic', '-y']},
+			outputs={OUTPUT_WAV_FILE:['-ac', '1', '-vn', '-f', 'wav']}
+		)
 
-	# 	ff.run()
+		ff.run()
 
-	# 	with open(OUTPUT_WAV_FILE, "rb") as f:
-	# 		content = f.read()
+		with open(OUTPUT_WAV_FILE, "rb") as f:
+			content = f.read()
 
-	# 	return content
+		return content
 
-	# def _set_sample_rate(self):
-	# 	if not self.sample_rate:
-	# 		wav = wave.open(OUTPUT_WAV_FILE, "rb")
-	# 		self.sample_rate = wav.getframerate()
-	# 		wav.close()
+	def _set_sample_rate(self):
+		if not self.sample_rate:
+			wav = wave.open(OUTPUT_WAV_FILE, "rb")
+			self.sample_rate = wav.getframerate()
+			wav.close()
 
 	def _get_video_stream(self):
 		try:

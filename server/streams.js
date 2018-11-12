@@ -15,7 +15,7 @@ socket.on('server-ready', function() {
 
 socket.on('stream-response', function(data) {
     console.log("Recieved stream-response");
-    var json = JSON.parse(data);
+    v = JSON.parse(data);
 
     if (json.media == "") {
         return;
@@ -35,7 +35,7 @@ socket.on('stream-response', function(data) {
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
             console.log("Manifest Loaded");
         });
-    
+
     }
 
 });
