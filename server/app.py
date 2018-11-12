@@ -24,7 +24,8 @@ streamer = None
 language = ""
 
 LOCAL_URL  = 'http://localhost:8000/'
-SERVER_URL = 'https://ployglot-livesubtitles.herokuapp.com/'
+HEROKU_URL = 'https://ployglot-livesubtitles.herokuapp.com/'
+SERVER_URL = HEROKU_URL
 
 # Main pipeline. Will return the JSON response with the translated text.
 def process(audio, sample_rate, lang, raw_pcm=False):
@@ -170,7 +171,7 @@ class StreamingSocket(Namespace):
 
 	def _playlist_ready(self):
 		playlist_path = self.user_dir + '/playlist.m3u8'
-		emit('stream-response', json.dumps({'media':str(LOCAL_URL + playlist_path)}))
+		emit('stream-response', json.dumps({'media':str(SERVER_URL + playlist_path)}))
 
 	def on_stream(self, data):
 		if self.streamer == None:
@@ -182,7 +183,7 @@ class StreamingSocket(Namespace):
 		with open(playlist_path, "w") as f:
 			f.write("#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:20\n#EXT-X-MEDIA-SEQUENCE:0\n")
 
-		emit('stream-response', json.dumps({'media':str(LOCAL_URL + playlist_path)}))
+		emit('stream-response', json.dumps({'media':str(SERVER_URL + playlist_path)}))
 
 
 socketio.on_namespace(StreamingSocket('/streams'))
