@@ -4,6 +4,13 @@
     <h2>SourceBuffer testing</h2>
     <video id ="video" style="width: 640px; height: 360px; border: solid 1px;" playsinline controls></video>
 
+    <script>
+    let vid = document.getElementById("video")
+    let track = vid.addTextTrack("captions", "English", "en");
+    track.mode = "showing";
+    track.addCue(new VTTCue(0, 10, "TEST"));
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="output.js"></script>
   </body>

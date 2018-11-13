@@ -31,6 +31,7 @@ socket.on('stream-response', function(data) {
         hls.loadSource(manifest_url);
         console.log("Attatching Media...")
         hls.attachMedia(video);
+        hls.enableWebVTT(true);
 
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
             console.log("Manifest Loaded");

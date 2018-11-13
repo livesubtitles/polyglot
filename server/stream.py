@@ -47,6 +47,7 @@ class _StreamWorker(Thread):
 		self.count = 0
 		self.callback = callback
 		self.start_sending = False
+		self.time_so_far = 0
 		Thread.__init__(self)
 
 	def _update_playlist(self, video_file):
@@ -78,8 +79,42 @@ class _StreamWorker(Thread):
 			f.write('#EXTINF:20.0000,\n')
 			f.write(video_file + '\n')
 
+		# with open(self.user_dir + '/subtitleSegment1.webvtt', "w") as f:
+		# 	f.write("WEBVTT\n")
+		# 	f.write("\n")
+		# 	f.write('00:00:00.00-->00:00:10.00 align:start\n')
+		# 	f.write('This is a caption\n')
+
+		segment_duration = self.get_duration_time(self.user_dir + "/" + video_file)
+		# subtitle_playlist_path = self.user_dir + "/subtitles.m3u8"
+		# with open(subtitle_playlist_path, "w") as subtitleplaylist:
+		# 	subtitleplaylist.write('#EXTM3U\n')
+		# 	subtitleplaylist.write('#EXT-X-TARGETDURATION:20\n')
+		# 	subtitleplaylist.write('#EXT-X-VERSION:3\n')
+		# 	subtitleplaylist.write('#EXT-X-MEDIA-SEQUENCE:1\n')
+		# 	subtitleplaylist.write('#EXTINF:20,\n')
+		# 	subtitleplaylist.write('subtitleSegment1.webvtt\n')
+
+		master_playlist_path = self.user_dir + "/masterplaylist.m3u8"
+		# with open(master_playlist_path, "w") as masterplaylist:
+		# 	masterplaylist.write('#EXTM3U\n')
+		# 	masterplaylist.write('#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-\n')
+		# 	masterplaylist.write('ID="subs",NAME="English",DEFAULT=NO,FORCED=NO,URI="subtitles.m3u8",LANGUAGE="en"\n')
+		# 	masterplaylist.write('#EXT-X-STREAM-INF:BANDWIDTH=1118592,CODECS="mp4a.40.2,\n')
+		# 	masterplaylist.write('avc1.64001f",RESOLUTION=640x360,SUBTITLES="subs"\n')
+		# 	masterplaylist.write('playlist.m3u8')
+
+
+
 		# if (self.start_sending):
 		# 	self.callback()
+
+	def get_duration_time(self, video_file):
+		duration = subprocess.check_output(["ffmpeg -i " + video_file +   " 2>&1 | grep 'Duration'"], shell=True)
+		duration_time = duration.decode('ascii').split("Duration: ")[1].split(',')[0]
+		return float(duration_time.split(":")[2])
+		print("Segment duration time: " + duration_time)
+
 
 	def run(self):
 		while self.streaming:
@@ -96,10 +131,6 @@ class _StreamWorker(Thread):
 				f.write(data)
 
 			print("Created file: " + video_file)
-
-			duration = subprocess.check_output(["ffmpeg -i " + path + video_file +   " 2>&1 | grep 'Duration'"], shell=True)
-			duration_time = duration.decode('ascii').split("Duration: ")[1].split(',')[0]
-			print(duration_time)
 
 
 			try:
