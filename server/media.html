@@ -8,7 +8,7 @@
     let vid = document.getElementById("video")
     let track = vid.addTextTrack("captions", "English", "en");
     track.mode = "showing";
-    track.addCue(new VTTCue(0, 10, "TEST"));
+    track.addCue(new VTTCue(1, 1000000000, "TEST"));
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>

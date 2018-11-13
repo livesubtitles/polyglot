@@ -125,11 +125,10 @@ class _StreamWorker(Thread):
 		if lang == '':
 			lang = detect_language(audio)
 
-			transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
-			get_text(audio, sample_rate, lang)
-
-			translated = translate(transcript, 'en', lang.split('-')[0])
-			return jsonify(subtitle=translated, lang=lang)
+		transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
+		get_text(audio, sample_rate, lang)
+		translated = translate(transcript, 'en', lang.split('-')[0])
+		return jsonify(subtitle=translated, lang=lang)
 
 
 	def run(self):
@@ -155,9 +154,7 @@ class _StreamWorker(Thread):
 
 			self.video_streamer._set_sample_rate()
 
-			print(audio_data)
-
-			print(self.process(io.BytesIO(audio_data), self.video_streamer.get_sample_rate(), "en-US"))
+			print(self.process(io.BytesIO(audio_data), self.video_streamer.get_sample_rate(), "en-US", False))
 
 			try:
 				self._update_playlist(video_file)
