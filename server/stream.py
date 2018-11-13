@@ -6,11 +6,16 @@ import streamlink
 import wave
 import sys
 import time
+import json
 import subprocess
 from ffmpy import FFmpeg
 from six.moves import queue
 from threading import Thread
 from enum import Enum
+from server.translate import test
+from server.speechtotext import *
+from server.language import *
+from server.stream import *
 
 '''
 	New Workflow:
@@ -39,7 +44,7 @@ def _clearTempFiles():
 	os.makedirs('temp')
 
 class _StreamWorker(Thread):
-	def __init__(self, buff, stream_data, user_dir, callback):
+	def __init__(self, buff, stream_data, user_dir, callback, video_streamer):
 		self.buff = buff
 		self.stream_data = stream_data
 		self.user_dir = user_dir
@@ -48,6 +53,7 @@ class _StreamWorker(Thread):
 		self.callback = callback
 		self.start_sending = False
 		self.time_so_far = 0
+		self.video_streamer = video_streamer
 		Thread.__init__(self)
 
 	def _update_playlist(self, video_file):
@@ -115,6 +121,16 @@ class _StreamWorker(Thread):
 		return float(duration_time.split(":")[2])
 		print("Segment duration time: " + duration_time)
 
+	def process(audio, sample_rate, lang, raw_pcm=False):
+		if lang == '':
+			lang = detect_language(audio)
+
+			transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
+			get_text(audio, sample_rate, lang)
+
+			translated = translate(transcript, 'en', lang.split('-')[0])
+			return jsonify(subtitle=translated, lang=lang)
+
 
 	def run(self):
 		while self.streaming:
@@ -132,6 +148,16 @@ class _StreamWorker(Thread):
 
 			print("Created file: " + video_file)
 
+			try:
+				audio_data = self.video_streamer._extract_audio(path + video_file)
+			except Exception as e:
+				raise Exception("FFMPEG error")
+
+			self.video_streamer._set_sample_rate()
+
+			print(audio_data)
+
+			print(self.process(io.BytesIO(audio_data), self.video_streamer.get_sample_rate(), "en-US"))
 
 			try:
 				self._update_playlist(video_file)
@@ -156,30 +182,30 @@ class VideoStreamer(object):
 		self.worker = None
 		self.callback = callback
 
-	def get_data(self, num_segments=5):
-		video_data = self.buffer.get()
-
-		for i in range(1, num_segments):
-			video_data += self.buffer.get()
-
-		video_file = INPUT_FILE + str(self.count) + EXT
-		self.count += 1
-
-		with open(video_file, "ab") as f:
-			f.write(video_data)
-
-		try:
-			audio_data = self._extract_audio(video_file)
-		except Exception as e:
-			raise Exception("FFMpeg Error")
-
-		self._set_sample_rate()
-
-		return (bytearray(video_data), io.BytesIO(audio_data))
-
+	# def get_data(self, num_segments=5):
+	# 	video_data = self.buffer.get()
+	#
+	# 	for i in range(1, num_segments):
+	# 		video_data += self.buffer.get()
+	#
+	# 	video_file = INPUT_FILE + str(self.count) + EXT
+	# 	self.count += 1
+	#
+	# 	with open(video_file, "ab") as f:
+	# 		f.write(video_data)
+	#
+	# 	try:
+	# 		audio_data = self._extract_audio(video_file)
+	# 	except Exception as e:
+	# 		raise Exception("FFMpeg Error")
+	#
+	# 	self._set_sample_rate()
+	#
+	# 	return (bytearray(video_data), io.BytesIO(audio_data))
+	#
 	def get_sample_rate(self):
 		return self.sample_rate
-
+	#
 	def _extract_audio(self, file_name):
 		ff = FFmpeg(
 			inputs={file_name:['-hide_banner', '-loglevel', 'panic', '-y']},
@@ -228,7 +254,7 @@ class VideoStreamer(object):
 		print("Success!")
 
 		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(self.buffer, data, self.user_dir, self.callback)
+		self.worker = _StreamWorker(self.buffer, data, self.user_dir, self.callback, self)
 		self.worker.start()
 		print("Success!")
 

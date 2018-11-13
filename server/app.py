@@ -126,7 +126,6 @@ class StreamingSocket(Namespace):
 	language  = None
 	user_hash = None
 	user_dir  = None
-	first = True
 
 	def _initialise_streamer(self, url):
 		self.streamer = VideoStreamer(url, self.user_dir, self._playlist_ready)
@@ -186,8 +185,7 @@ class StreamingSocket(Namespace):
 
 		with open(master_playlist_path, "w") as masterplaylist:
 			masterplaylist.write('#EXTM3U\n')
-			masterplaylist.write('#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-\n')
-			masterplaylist.write('ID="subs",NAME="English",DEFAULT=NO,FORCED=YES,URI="subtitles.m3u8",LANGUAGE="en"\n')
+			masterplaylist.write('#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",NAME="English",URI="subtitles.m3u8",LANGUAGE="en"\n')
 			masterplaylist.write('#EXT-X-STREAM-INF:BANDWIDTH=1118592,CODECS="mp4a.40.2, SUBTITLES="subs"\n')
 			masterplaylist.write('playlist.m3u8')
 
@@ -207,12 +205,7 @@ class StreamingSocket(Namespace):
 			f.write('00:00:00.00-->00:00:10.00 align:start\n')
 			f.write('This is a caption\n')
 
-
-		if self.first:
-			self.first = False
-			emit('stream-response', json.dumps({'media':str(LOCAL_URL + master_playlist_path)}))
-		else:
-			emit('stream-response', json.dumps({'media':str(LOCAL_URL + master_playlist_path)}))
+		emit('stream-response', json.dumps({'media':str(LOCAL_URL + master_playlist_path)}))
 
 
 socketio.on_namespace(StreamingSocket('/streams'))
