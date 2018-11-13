@@ -121,14 +121,17 @@ class _StreamWorker(Thread):
 		return float(duration_time.split(":")[2])
 		print("Segment duration time: " + duration_time)
 
-	def process(audio, sample_rate, lang, raw_pcm=False):
+	def process(self, audio, sample_rate, lang, raw_pcm=False):
 		if lang == '':
 			lang = detect_language(audio)
 
 		transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
 		get_text(audio, sample_rate, lang)
 		translated = translate(transcript, 'en', lang.split('-')[0])
-		return jsonify(subtitle=translated, lang=lang)
+		response = {}
+		response["subtitle"] = translated
+		response["lang"] = lang
+		return json.dumps(response)
 
 
 	def run(self):
@@ -154,7 +157,7 @@ class _StreamWorker(Thread):
 
 			self.video_streamer._set_sample_rate()
 
-			print(self.process(io.BytesIO(audio_data), self.video_streamer.get_sample_rate(), "en-US", False))
+			print(self.process(io.BytesIO(audio_data), self.video_streamer.get_sample_rate(), "es-ES", False))
 
 			try:
 				self._update_playlist(video_file)

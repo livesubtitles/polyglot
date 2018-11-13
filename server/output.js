@@ -6230,7 +6230,7 @@ socket.on('connect', function() {
 });
 
 socket.on('server-ready', function() {
-    socket.emit('stream', {url: "https://www.youtube.com/watch?v=XOacA3RYrXk", lang: "es-GB"})
+    socket.emit('stream', {url: "https://www.youtube.com/watch?v=mV8jp1N2fSw", lang: "es-ES"})
 });
 
 socket.on('stream-response', function(data) {

@@ -10,12 +10,12 @@ socket.on('connect', function() {
 });
 
 socket.on('server-ready', function() {
-    socket.emit('stream', {url: "https://www.youtube.com/watch?v=XOacA3RYrXk", lang: "es-GB"})
+    socket.emit('stream', {url: "https://www.youtube.com/watch?v=mV8jp1N2fSw", lang: "es-ES"})
 });
 
 socket.on('stream-response', function(data) {
     console.log("Recieved stream-response");
-    v = JSON.parse(data);
+    json = JSON.parse(data);
 
     if (json.media == "") {
         return;
@@ -31,7 +31,6 @@ socket.on('stream-response', function(data) {
         hls.loadSource(manifest_url);
         console.log("Attatching Media...")
         hls.attachMedia(video);
-        hls.enableWebVTT(true);
 
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
             console.log("Manifest Loaded");
