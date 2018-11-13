@@ -10,6 +10,7 @@ socket.on('connect', function() {
 });
 
 socket.on('server-ready', function() {
+  console.log("HERE");
     socket.emit('stream', {url: "https://www.youtube.com/watch?v=mV8jp1N2fSw", lang: "es-ES"})
 });
 

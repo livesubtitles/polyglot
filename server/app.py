@@ -91,6 +91,7 @@ def get_language():
 def stream():
 	global streamer
 
+	print(json.loads(request.data)['url'])
 	if streamer == None:
 		_initialise_streamer(json.loads(request.data)['url'])
 

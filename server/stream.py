@@ -85,31 +85,6 @@ class _StreamWorker(Thread):
 			f.write('#EXTINF:20.0000,\n')
 			f.write(video_file + '\n')
 
-		# with open(self.user_dir + '/subtitleSegment1.webvtt', "w") as f:
-		# 	f.write("WEBVTT\n")
-		# 	f.write("\n")
-		# 	f.write('00:00:00.00-->00:00:10.00 align:start\n')
-		# 	f.write('This is a caption\n')
-
-		segment_duration = self.get_duration_time(self.user_dir + "/" + video_file)
-		# subtitle_playlist_path = self.user_dir + "/subtitles.m3u8"
-		# with open(subtitle_playlist_path, "w") as subtitleplaylist:
-		# 	subtitleplaylist.write('#EXTM3U\n')
-		# 	subtitleplaylist.write('#EXT-X-TARGETDURATION:20\n')
-		# 	subtitleplaylist.write('#EXT-X-VERSION:3\n')
-		# 	subtitleplaylist.write('#EXT-X-MEDIA-SEQUENCE:1\n')
-		# 	subtitleplaylist.write('#EXTINF:20,\n')
-		# 	subtitleplaylist.write('subtitleSegment1.webvtt\n')
-
-		master_playlist_path = self.user_dir + "/masterplaylist.m3u8"
-		# with open(master_playlist_path, "w") as masterplaylist:
-		# 	masterplaylist.write('#EXTM3U\n')
-		# 	masterplaylist.write('#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-\n')
-		# 	masterplaylist.write('ID="subs",NAME="English",DEFAULT=NO,FORCED=NO,URI="subtitles.m3u8",LANGUAGE="en"\n')
-		# 	masterplaylist.write('#EXT-X-STREAM-INF:BANDWIDTH=1118592,CODECS="mp4a.40.2,\n')
-		# 	masterplaylist.write('avc1.64001f",RESOLUTION=640x360,SUBTITLES="subs"\n')
-		# 	masterplaylist.write('playlist.m3u8')
-
 
 
 		# if (self.start_sending):
