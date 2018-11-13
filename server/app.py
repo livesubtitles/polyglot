@@ -172,7 +172,6 @@ class StreamingSocket(Namespace):
 	def on_stream(self, data):
 		if self.streamer == None:
 			self._initialise_streamer(data['url'])
-			self._generate_playlist()
 
 		playlist_path = self.user_dir + '/playlist.m3u8'
 
