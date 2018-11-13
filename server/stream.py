@@ -38,13 +38,12 @@ def _clearTempFiles():
 	os.makedirs('temp')
 
 class _StreamWorker(Thread):
-	def __init__(self, buff, stream_data, user_dir, callback):
+	def __init__(self, buff, stream_data, user_dir):
 		self.buff = buff
 		self.stream_data = stream_data
 		self.user_dir = user_dir
 		self.streaming = True
 		self.count = 0
-		self.callback = callback
 		self.start_sending = False
 		Thread.__init__(self)
 
@@ -77,9 +76,6 @@ class _StreamWorker(Thread):
 			f.write('#EXTINF:20.0000,\n')
 			f.write(video_file + '\n')
 
-		# if (self.start_sending):
-		# 	self.callback()
-
 	def run(self):
 		while self.streaming:
 			time.sleep(WAIT_TIME)
@@ -111,13 +107,12 @@ class _StreamWorker(Thread):
 
 
 class VideoStreamer(object):
-	def __init__(self, stream_url, user_dir, callback):
+	def __init__(self, stream_url, user_dir):
 		self.stream_url = stream_url
 		self.user_dir = user_dir
 		self.buffer = queue.Queue()
 		self.sample_rate = None
 		self.worker = None
-		self.callback = callback
 
 	# def get_data(self, num_segments=5):
 	# 	video_data = self.buffer.get()
@@ -191,7 +186,7 @@ class VideoStreamer(object):
 		print("Success!")
 
 		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(self.buffer, data, self.user_dir, self.callback)
+		self.worker = _StreamWorker(self.buffer, data, self.user_dir)
 		self.worker.start()
 		print("Success!")
 

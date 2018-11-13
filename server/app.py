@@ -134,7 +134,7 @@ class StreamingSocket(Namespace):
 	user_dir  = None
 
 	def _initialise_streamer(self, url):
-		self.streamer = VideoStreamer(url, self.user_dir, self._playlist_ready)
+		self.streamer = VideoStreamer(url, self.user_dir)
 
 		try:
 			self.streamer.start()
@@ -145,8 +145,6 @@ class StreamingSocket(Namespace):
 		return ''.join(random.choices(string.ascii_letters + string.digits, k=self._HASH_LEN))
 
 	def on_connect(self):
-		new_hash = self._generate_user_hash()
-
 		print("Creating user directory... ", end="")
 		new_hash = self._generate_user_hash()
 
@@ -166,17 +164,10 @@ class StreamingSocket(Namespace):
 			shutil.rmtree(self.user_dir)
 
 		print("Disconnected from client. User hash: " + self.user_hash)
+		self.streamer  = None
 		self.user_hash = None
 		self.user_dir  = None
-
-	def _generate_playlist(self):
-		playlist_path = self.user_dir + '/playlist.m3u8'
-
-		print("Generating file: " + playlist_path)
-
-	def _playlist_ready(self):
-		playlist_path = self.user_dir + '/playlist.m3u8'
-		emit('stream-response', json.dumps({'media':str(SERVER_URL + playlist_path)}))
+		self.language  = None
 
 	def on_stream(self, data):
 		if self.streamer == None:
