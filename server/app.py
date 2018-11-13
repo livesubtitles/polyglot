@@ -25,6 +25,9 @@ LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
 SERVER_URL = HEROKU_URL
 
+MASTER_STUB = '#EXTM3U\n#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",NAME="English",URI="subtitles.m3u8",LANGUAGE="en"\n#EXT-X-STREAM-INF:BANDWIDTH=1118592,RESOLUTION=480x360,SUBTITLES="subs"\nplaylist.m3u8\n'
+PLAYLIST_STUB = '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:20\n#EXT-X-MEDIA-SEQUENCE:0\n'
+
 # Main pipeline. Will return the JSON response with the translated text.
 def process(audio, sample_rate, lang, raw_pcm=False):
 	if lang == '':
@@ -138,8 +141,8 @@ class StreamingSocket(Namespace):
 
 		try:
 			self.streamer.start()
-		except Exception:
-			emit('stream-response', json.dumps({'media':'', 'error':'Streamlink Unavailable!'}))
+		except Exception as exe:
+			emit('stream-response', json.dumps({'media':'', 'error':exe}))
 
 	def _generate_user_hash(self):
 		return ''.join(random.choices(string.ascii_letters + string.digits, k=self._HASH_LEN))
@@ -154,12 +157,12 @@ class StreamingSocket(Namespace):
 		print("Success!")
 
 		print("Connected to client. User hash: " + self.user_hash)
-
 		emit('server-ready')
 
 	def on_disconnect(self):
 		self.streamer.stop()
 
+		print("Removing user files: " + self.user_dir)
 		if os.path.isdir(self.user_dir):
 			shutil.rmtree(self.user_dir)
 
@@ -169,17 +172,27 @@ class StreamingSocket(Namespace):
 		self.user_dir  = None
 		self.language  = None
 
-	def on_stream(self, data):
-		if self.streamer == None:
-			self._initialise_streamer(data['url'])
-
+	def _generate_playlists(self):
+		masterplaylist_path = self.user_dir + '/masterplaylist.m3u8'
 		playlist_path = self.user_dir + '/playlist.m3u8'
+		subtitle_path = self.user_dir + '/subtitles.m3u8'
 
-		with open(playlist_path, "w") as f:
-			f.write("#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:20\n#EXT-X-MEDIA-SEQUENCE:0\n")
+		with open(masterplaylist_path, 'w') as f:
+			f.write(MASTER_STUB)
 
-		emit('stream-response', json.dumps({'media':str(SERVER_URL + playlist_path)}))
+		with open(playlist_path, 'w') as f:
+			f.write(PLAYLIST_STUB)
 
+		with open(subtitle_path, 'w') as f:
+			f.write(PLAYLIST_STUB)
+
+		return masterplaylist_path
+
+	def on_stream(self, data):
+		self._initialise_streamer(data['url'])
+		master_path = self._generate_playlists();
+
+		emit('stream-response', json.dumps({'media':str(SERVER_URL + master_path)}))
 
 socketio.on_namespace(StreamingSocket('/streams'))
 

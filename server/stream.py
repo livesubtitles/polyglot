@@ -6,6 +6,8 @@ import streamlink
 import wave
 import sys
 import time
+from datetime import timedelta
+from webvtt import WebVTT, Caption
 from ffmpy import FFmpeg
 from six.moves import queue
 from threading import Thread
@@ -27,9 +29,14 @@ BYTES_TO_READ = 1000000
 WAIT_TIME	  = 10.0
 
 STD_VIDEO_KEY   = '360p'
-INPUT_FILE		= "segment"
-EXTENSION 		= ".ts"
+VID_INPUT_FILE	= "segment"
+SUB_INPUT_FILE  = "subtitle"
+VID_EXTENSION 	= ".ts"
+SUB_EXTENSION	= ".vtt"
 OUTPUT_WAV_FILE = "temp/audio.wav"
+
+SUBTITLE_PLAYLIST = '/subtitles.m3u8'
+VIDEO_PLAYLIST    = '/playlist.m3u8'
 
 # Nukes the temp directory and generates a fresh one
 def _clearTempFiles():
@@ -45,13 +52,15 @@ class _StreamWorker(Thread):
 		self.streaming = True
 		self.count = 0
 		self.start_sending = False
+		self.current_time = 0
 		Thread.__init__(self)
 
-	def _update_playlist(self, video_file):
-		playlist_path = self.user_dir + '/playlist.m3u8'
+	def _update_playlist(self, playlist_name, file_path):
+		playlist_path = self.user_dir + playlist_name
+		file_name = file_path.split('/')[-1]
 
 		if not os.path.isfile(playlist_path):
-			print("Playlist not found, exiting...")
+			print("Playlist file not found, exiting...")
 			raise Exception
 
 		with open(playlist_path, "r") as f:
@@ -64,17 +73,66 @@ class _StreamWorker(Thread):
 		if (sequence_no + 1 >= 4 and len(lines) >= 7):
 			lines = lines[0:4] + lines[7:]
 			lines[3] = '#EXT-X-MEDIA-SEQUENCE:' + str(sequence_no + 1) + '\n'
-			if (not self.start_sending):
-				self.start_sending = True
-		print(lines)
-
 
 		with open(playlist_path, "w+") as f:
 			f.writelines(lines)
 			if not sequence_no == 0:
 				f.write('#EXT-X-DISCONTINUITY\n')
 			f.write('#EXTINF:20.0000,\n')
-			f.write(video_file + '\n')
+			f.write(file_name + '\n')
+
+	def _get_duration(self, video_file):
+		duration = subprocess.check_output(["ffmpeg -i " + video_file + " 2>&1 | grep 'Duration'"], shell=True)
+		duration_time = duration.decode('ascii').split("Duration: ")[1].split(',')[0]
+		return float(duration_time.split(":")[2])
+
+	def _get_next_filepath(self, subtitle):
+		return self.user_dir \
+			+ '/' \
+			+ (SUB_INPUT_FILE if subtitle else VID_INPUT_FILE) \
+			+ str(self.count) \
+			+ (SUB_EXTENSION if subtitle else VID_EXTENSION)
+
+	def _get_current_timestamp(self):
+		seconds = self.current_time
+		hours, remainder = divmod(seconds, 3600)
+		minutes, seconds = divmod(remainder, 60)
+		return '{:02}:{:02}:{:02}'.format(int(hours), int(minutes), int(seconds)) + '.000'
+
+	def _create_video_file(self, data):
+		file_path = self._get_next_filepath(subtitle=False)
+
+		with open(file_path, "wb") as f:
+				f.write(data)
+
+		print("Created file: " + file_path)
+		self._update_playlist(VIDEO_PLAYLIST, file_path)
+
+		return self._get_duration(file_path)
+
+	def _create_subtitle_file(self, data, duration):
+		file_path = self._get_next_filepath(subtitle=True)
+
+		translated_text = "HELLO!!! :) " + str(duration)
+
+		start_time = self._get_current_timestamp()
+		self.current_time += duration
+		end_time = self._get_current_timestamp()
+
+		vtt = WebVTT()
+		caption = Caption(
+			start_time,
+			end_time,
+			translated_text
+		)
+
+		vtt.captions.append(caption)
+
+		with open(file_path, 'w') as f:
+			vtt.write(f)
+
+		print("Created file: " + file_path)
+		self._update_playlist(SUBTITLE_PLAYLIST, file_path)
 
 	def run(self):
 		while self.streaming:
@@ -82,21 +140,8 @@ class _StreamWorker(Thread):
 
 			data = self.stream_data.read(BYTES_TO_READ)
 
-			video_file = INPUT_FILE + str(self.count) + EXTENSION
-			path = self.user_dir + '/'
-
-			print("Writing file with path: " + path + video_file)
-
-			with open(path + video_file, "wb") as f:
-				f.write(data)
-
-			print("Created file: " + video_file)
-
-			try:
-				self._update_playlist(video_file)
-			except Exception as exe:
-				print(exe)
-				return
+			duration = self._create_video_file(data)
+			self._create_subtitle_file(data, duration)
 
 			self.count += 1
 
@@ -114,71 +159,27 @@ class VideoStreamer(object):
 		self.sample_rate = None
 		self.worker = None
 
-	# def get_data(self, num_segments=5):
-	# 	video_data = self.buffer.get()
-
-	# 	for i in range(1, num_segments):
-	# 		video_data += self.buffer.get()
-
-	# 	video_file = INPUT_FILE + str(self.count) + EXT
-	# 	self.count += 1
-
-	# 	with open(video_file, "ab") as f:
-	# 		f.write(video_data)
-
-	# 	try:
-	# 		audio_data = self._extract_audio(video_file)
-	# 	except Exception as e:
-	# 		raise Exception("FFMpeg Error")
-
-	# 	self._set_sample_rate()
-
-	# 	return (bytearray(video_data), io.BytesIO(audio_data))
-
-	# def get_sample_rate(self):
-	# 	return self.sample_rate
-
-	# def _extract_audio(self, file_name):
-	# 	ff = FFmpeg(
-	# 		inputs={file_name:['-hide_banner', '-loglevel', 'panic', '-y']},
-	# 		outputs={OUTPUT_WAV_FILE:['-ac', '1', '-vn', '-f', 'wav']}
-	# 	)
-
-	# 	ff.run()
-
-	# 	with open(OUTPUT_WAV_FILE, "rb") as f:
-	# 		content = f.read()
-
-	# 	return content
-
-	# def _set_sample_rate(self):
-	# 	if not self.sample_rate:
-	# 		wav = wave.open(OUTPUT_WAV_FILE, "rb")
-	# 		self.sample_rate = wav.getframerate()
-	# 		wav.close()
-
 	def _get_video_stream(self):
 		try:
 			available_streams = streamlink.streams(self.stream_url)
+		except NoPluginError:
+			raise Exception("Streamlink Unavailable: No Plugin Found")
+		except PluginError:
+			raise Exception("Streamlink Unavailable: Plugin Error")
 		except Exception:
-			# HANDLE SPECIFIC NOPLUGINERROR OR PLUGINERROR
 			raise Exception("Streamlink Unavailable")
 
 		if STD_VIDEO_KEY not in available_streams:
-			# HANDLE THE CASE WHERE 480 IS NOT AVAILABLE
-			print("Could not find 480p stream")
+			print("Could not find 360p stream")
 			raise Exception("Streamlink Unavailable")
 
 		return available_streams[STD_VIDEO_KEY]
 
 	def start(self):
-		print("Starting Video Streamer...")
+		print("Starting Video Streamer:")
 
 		print("Getting Video Stream...", end="")
 		stream = self._get_video_stream()
-
-		if stream == None:
-			raise Exception("Streamlink Unavailable")
 		print("Success!")
 
 		print("Opening stream...", end="")
