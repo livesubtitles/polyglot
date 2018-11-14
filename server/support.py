@@ -16,6 +16,5 @@ def isStreamLinkSupported(url):
 	global supported_websites
 	if (not loaded_files):
 		supported_websites = set(line.strip() for line in open('supported_websites'))
-		print(supported_websites)
 		loaded_files = True
 	return extractPage(url) in supported_websites
