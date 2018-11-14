@@ -112,7 +112,6 @@ class _StreamWorker(Thread):
 		response["lang"] = lang
 		return json.dumps(response)
 
-
 	def _get_current_timestamp(self):
 		seconds = self.current_time
 		hours, remainder = divmod(seconds, 3600)
@@ -146,7 +145,6 @@ class _StreamWorker(Thread):
 		translated_text = self._get_subtitle(io.BytesIO(audio_data), self.video_streamer.get_sample_rate(), "es-ES", False)
 
 		subtitle_and_lang = json.loads(translated_text)
-
 		subtitle = subtitle_and_lang['subtitle']
 
 		print(subtitle)
@@ -156,12 +154,7 @@ class _StreamWorker(Thread):
 		end_time = self._get_current_timestamp()
 
 		vtt = WebVTT()
-		caption = Caption(
-			start_time,
-			end_time,
-			subtitle
-		)
-
+		caption = Caption(start_time,end_time,subtitle)
 		vtt.captions.append(caption)
 
 		with open(file_path, 'w') as f:
