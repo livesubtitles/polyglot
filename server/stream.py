@@ -6,6 +6,7 @@ import streamlink
 import wave
 import sys
 import time
+from math import ceil
 from datetime import timedelta
 from webvtt import WebVTT, Caption
 from ffmpy import FFmpeg
@@ -146,31 +147,34 @@ class _StreamWorker(Thread):
 		body['subtitle'] = subtitle
 		data = json.dumps(body)
 		response = requests.post(url, data=data)
-		print("Got back punctuated: ", response)
-		return response.json()['subtitle']
+		try:
+			punctuated = response.json()['subtitle']
+		except Exception:
+			print("ERROR: Could not punctuate text.")
+			return
+
+		return punctuated
 
 	def _create_subtitle_file(self, data, audio_data, duration):
 		file_path = self._get_next_filepath(subtitle=True)
 
 		subtitles = self._get_subtitle(audio_data, self.sample_rate, "es-ES")
-		subtitles = self._get_punctuated(subtitles)
+		# subtitles = self._get_punctuated(subtitles)
 
 		vtt = WebVTT()
 
 		words = subtitles.split()
-		print(words)
 		num_words = len(words)
-		sub_segments = int(num_words / SUB_SEG_SIZE)
-		print("Subtitle segments: " + sub_segments)
-		sub_segments_window = duration / sub_segments
-		print("Duration: " + duration + " SubSegmentsWindow: " + sub_segments_window)
+		sub_segments = ceil(num_words / SUB_SEG_SIZE)
+		sub_segments_window = ceil(duration / sub_segments)
 
-		for i in range(1, sub_segments):
+		for i in range(0, sub_segments - 1):
 			start_time = self._get_current_timestamp()
 			self.current_time += sub_segments_window
 			end_time = self._get_current_timestamp()
 
-			vtt.captions.append(Caption(start_time, end_time, words[(i*10):((i*10)+10)]))
+			capts = " ".join(words[(i*10):((i*10)+10)])
+			vtt.captions.append(Caption(start_time, end_time, capts))
 
 		with open(file_path, 'w') as f:
 			vtt.write(f)
