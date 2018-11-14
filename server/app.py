@@ -4,6 +4,7 @@ import string
 import random
 import os
 import shutil
+import re
 
 
 from flask import Flask, request, jsonify, send_from_directory, send_file
@@ -67,6 +68,32 @@ def _error_response(error):
 @app.route("/")
 def hello():
 	return "Polyglot - Live Subtitles - ICL"
+
+def extractPage(url):
+    first = "www."
+    last = "."
+    try:
+        start = url.index( first ) + len( first )
+        end = url.index( last, start )
+        return url[start:end]
+    except ValueError:
+        return ""
+
+loaded_files = False;
+supported_websites = []
+def isStreamLinkSupported(url):
+	global loaded_files
+	global supported_websites
+	if (not loaded_files):
+		supported_websites = set(line.strip() for line in open('supported_websites'))
+		print(supported_websites)
+		loaded_files = True
+	return extractPage(url) in supported_websites
+
+@app.route("/supports", methods=['GET'])
+def supportsStreamlink():
+	s = request.args.get("web")
+	return json.dumps(isStreamLinkSupported(s));
 
 @app.route("/subtitle", methods=['POST'])
 def subtitle():
