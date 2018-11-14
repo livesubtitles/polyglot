@@ -140,10 +140,20 @@ class _StreamWorker(Thread):
 
 		return file_path
 
+	def _get_punctuated(self, subtitle):
+		url = "https://polyglot-punctuator.herokuapp.com/punctuate"
+		body = {}
+		body['subtitle'] = subtitle
+		data = json.dumps(body)
+		response = requests.post(url, data=data)
+		print("Got back punctuated: ", response)
+		return response.json()['subtitle']
+
 	def _create_subtitle_file(self, data, audio_data, duration):
 		file_path = self._get_next_filepath(subtitle=True)
 
 		subtitles = self._get_subtitle(audio_data, self.sample_rate, "es-ES")
+		subtitles = self._get_punctuated(subtitles)
 
 		vtt = WebVTT()
 
