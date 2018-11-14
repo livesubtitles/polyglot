@@ -13,6 +13,11 @@ from six.moves import queue
 from threading import Thread
 from enum import Enum
 
+from server.translate import test
+from server.speechtotext import *
+from server.language import *
+from server.stream import *
+
 '''
 	New Workflow:
 
@@ -26,14 +31,14 @@ from enum import Enum
 '''
 
 BYTES_TO_READ = 1000000
-WAIT_TIME	  = 10.0
+WAIT_TIME	  = 8.0
 
 STD_VIDEO_KEY   = '360p'
 VID_INPUT_FILE	= "segment"
 SUB_INPUT_FILE  = "subtitle"
 VID_EXTENSION 	= ".ts"
 SUB_EXTENSION	= ".vtt"
-OUTPUT_WAV_FILE = "temp/audio.wav"
+OUTPUT_WAV_FILE = "/audio.wav"
 
 SUBTITLE_PLAYLIST = '/subtitles.m3u8'
 VIDEO_PLAYLIST    = '/playlist.m3u8'
@@ -45,14 +50,13 @@ def _clearTempFiles():
 	os.makedirs('temp')
 
 class _StreamWorker(Thread):
-	def __init__(self, buff, stream_data, user_dir):
-		self.buff = buff
+	def __init__(self, stream_data, user_dir, video_streamer):
 		self.stream_data = stream_data
 		self.user_dir = user_dir
 		self.streaming = True
 		self.count = 0
-		self.start_sending = False
 		self.current_time = 0
+		self.sample_rate = 0
 		Thread.__init__(self)
 
 	def _update_playlist(self, playlist_name, file_path):
@@ -86,12 +90,36 @@ class _StreamWorker(Thread):
 		duration_time = duration.decode('ascii').split("Duration: ")[1].split(',')[0]
 		return float(duration_time.split(":")[2])
 
+	def _extract_audio(self, file_name):
+		FFmpeg(
+			inputs={file_name:['-hide_banner', '-loglevel', 'panic', '-y']},
+			outputs={(self.user_dir + OUTPUT_WAV_FILE):['-ac', '1', '-vn', '-f', 'wav']}
+		).run()
+
+		if (self.sample_rate == 0):
+			with wave.open(self.user_dir + OUTPUT_WAV_FILE, 'rb') as wav:
+				self.sample_rate = wav.getframerate()
+
+		with open(self.user_dir + OUTPUT_WAV_FILE, "rb") as f:
+			content = f.read()
+
+		return io.BytesIO(content)
+
 	def _get_next_filepath(self, subtitle):
 		return self.user_dir \
 			+ '/' \
 			+ (SUB_INPUT_FILE if subtitle else VID_INPUT_FILE) \
 			+ str(self.count) \
 			+ (SUB_EXTENSION if subtitle else VID_EXTENSION)
+
+	def _get_subtitle(self, audio, sample_rate, lang, raw_pcm=False):
+		if lang == '':
+			lang = detect_language(audio)
+
+		transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
+					 get_text(audio, sample_rate, lang)
+		translated = translate(transcript, 'en', lang.split('-')[0])
+		return translated
 
 	def _get_current_timestamp(self):
 		seconds = self.current_time
@@ -106,27 +134,33 @@ class _StreamWorker(Thread):
 				f.write(data)
 
 		print("Created file: " + file_path)
+		self.current_video_file = file_path
 		self._update_playlist(VIDEO_PLAYLIST, file_path)
 
-		return self._get_duration(file_path)
+		return file_path
 
-	def _create_subtitle_file(self, data, duration):
+	def _get_punctuated(self, subtitle):
+		url = "https://polyglot-punctuator.herokuapp.com/punctuate"
+		body = {}
+		body['subtitle'] = subtitle
+		data = json.dumps(body)
+		response = requests.post(url, data=data)
+		print("Got back punctuated: ", response)
+		return response.json()['subtitle']
+
+	def _create_subtitle_file(self, data, audio_data, duration):
 		file_path = self._get_next_filepath(subtitle=True)
 
-		translated_text = "HELLO!!! :) " + str(duration)
+		subtitle = self._get_subtitle(audio_data, self.sample_rate, "es-ES")
+		print(subtitle)
+		punctuated = self._get_punctuated(subtitle)
 
 		start_time = self._get_current_timestamp()
 		self.current_time += duration
 		end_time = self._get_current_timestamp()
 
 		vtt = WebVTT()
-		caption = Caption(
-			start_time,
-			end_time,
-			translated_text
-		)
-
-		vtt.captions.append(caption)
+		vtt.captions.append(Caption(start_time, end_time, punctuated))
 
 		with open(file_path, 'w') as f:
 			vtt.write(f)
@@ -140,8 +174,12 @@ class _StreamWorker(Thread):
 
 			data = self.stream_data.read(BYTES_TO_READ)
 
-			duration = self._create_video_file(data)
-			self._create_subtitle_file(data, duration)
+			video_path = self._create_video_file(data)
+
+			audio_data = self._extract_audio(video_path)
+			duration = self._get_duration(video_path)
+
+			self._create_subtitle_file(data, audio_data, duration)
 
 			self.count += 1
 
@@ -155,8 +193,6 @@ class VideoStreamer(object):
 	def __init__(self, stream_url, user_dir):
 		self.stream_url = stream_url
 		self.user_dir = user_dir
-		self.buffer = queue.Queue()
-		self.sample_rate = None
 		self.worker = None
 
 	def _get_video_stream(self):
@@ -187,7 +223,7 @@ class VideoStreamer(object):
 		print("Success!")
 
 		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(self.buffer, data, self.user_dir)
+		self.worker = _StreamWorker(data, self.user_dir, self)
 		self.worker.start()
 		print("Success!")
 

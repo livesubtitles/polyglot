@@ -6267,8 +6267,8 @@ module.exports = yeast;
 
 },{}],40:[function(require,module,exports){
 const io = require('socket.io-client');
-const socket = io('https://polyglot-livesubtitles.herokuapp.com/streams')
-// const socket = io('http://localhost:8000/streams');
+// const socket = io('https://polyglot-livesubtitles.herokuapp.com/streams')
+const socket = io('http://localhost:8000/streams');
 
 console.log(socket);
 
@@ -6279,7 +6279,7 @@ socket.on('connect', function() {
 });
 
 socket.on('server-ready', function() {
-    socket.emit('stream', {url: "https://www.youtube.com/watch?v=XOacA3RYrXk", lang: "es-GB"})
+    socket.emit('stream', {url: "https://www.youtube.com/watch?v=mV8jp1N2fSw", lang: "es-ES"})
 });
 
 socket.on('stream-response', function(data) {
@@ -6304,7 +6304,7 @@ socket.on('stream-response', function(data) {
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
             console.log("Manifest Loaded");
         });
-    
+
     }
 
 });
