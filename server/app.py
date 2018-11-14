@@ -4,6 +4,7 @@ import string
 import random
 import os
 import shutil
+import re
 
 
 from flask import Flask, request, jsonify, send_from_directory, send_file
@@ -14,6 +15,7 @@ from server.translate import test
 from server.speechtotext import *
 from server.language import *
 from server.stream import *
+from server.support import isStreamLinkSupported
 
 app = Flask(__name__)
 CORS(app)
@@ -67,6 +69,11 @@ def _error_response(error):
 @app.route("/")
 def hello():
 	return "Polyglot - Live Subtitles - ICL"
+
+@app.route("/supports", methods=['GET'])
+def supportsStreamlink():
+	url = request.args.get("web")
+	return json.dumps(isStreamLinkSupported(url));
 
 @app.route("/subtitle", methods=['POST'])
 def subtitle():
