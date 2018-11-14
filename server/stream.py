@@ -13,6 +13,11 @@ from six.moves import queue
 from threading import Thread
 from enum import Enum
 
+from server.translate import test
+from server.speechtotext import *
+from server.language import *
+from server.stream import *
+
 '''
 	New Workflow:
 
@@ -45,7 +50,7 @@ def _clearTempFiles():
 	os.makedirs('temp')
 
 class _StreamWorker(Thread):
-	def __init__(self, buff, stream_data, user_dir):
+	def __init__(self, buff, stream_data, user_dir, video_streamer):
 		self.buff = buff
 		self.stream_data = stream_data
 		self.user_dir = user_dir
@@ -53,6 +58,8 @@ class _StreamWorker(Thread):
 		self.count = 0
 		self.start_sending = False
 		self.current_time = 0
+		self.current_video_file = None
+		self.video_streamer = video_streamer
 		Thread.__init__(self)
 
 	def _update_playlist(self, playlist_name, file_path):
@@ -93,6 +100,19 @@ class _StreamWorker(Thread):
 			+ str(self.count) \
 			+ (SUB_EXTENSION if subtitle else VID_EXTENSION)
 
+	def _get_subtitle(self, audio, sample_rate, lang, raw_pcm=False):
+		if lang == '':
+			lang = detect_language(audio)
+
+		transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
+		get_text(audio, sample_rate, lang)
+		translated = translate(transcript, 'en', lang.split('-')[0])
+		response = {}
+		response["subtitle"] = translated
+		response["lang"] = lang
+		return json.dumps(response)
+
+
 	def _get_current_timestamp(self):
 		seconds = self.current_time
 		hours, remainder = divmod(seconds, 3600)
@@ -106,6 +126,7 @@ class _StreamWorker(Thread):
 				f.write(data)
 
 		print("Created file: " + file_path)
+		self.current_video_file = file_path
 		self._update_playlist(VIDEO_PLAYLIST, file_path)
 
 		return self._get_duration(file_path)
@@ -113,7 +134,22 @@ class _StreamWorker(Thread):
 	def _create_subtitle_file(self, data, duration):
 		file_path = self._get_next_filepath(subtitle=True)
 
-		translated_text = "HELLO!!! :) " + str(duration)
+		video_file = self.current_video_file
+
+		try:
+			audio_data = self.video_streamer._extract_audio(video_file)
+		except Exception as e:
+			raise Exception("FFMPEG error")
+
+		self.video_streamer._set_sample_rate()
+
+		translated_text = self._get_subtitle(io.BytesIO(audio_data), self.video_streamer.get_sample_rate(), "es-ES", False)
+
+		subtitle_and_lang = json.loads(translated_text)
+
+		subtitle = subtitle_and_lang['subtitle']
+
+		print(subtitle)
 
 		start_time = self._get_current_timestamp()
 		self.current_time += duration
@@ -123,7 +159,7 @@ class _StreamWorker(Thread):
 		caption = Caption(
 			start_time,
 			end_time,
-			translated_text
+			subtitle
 		)
 
 		vtt.captions.append(caption)
@@ -175,6 +211,30 @@ class VideoStreamer(object):
 
 		return available_streams[STD_VIDEO_KEY]
 
+
+	def get_sample_rate(self):
+		return self.sample_rate
+
+	def _extract_audio(self, file_name):
+		ff = FFmpeg(
+			inputs={file_name:['-hide_banner', '-loglevel', 'panic', '-y']},
+			outputs={OUTPUT_WAV_FILE:['-ac', '1', '-vn', '-f', 'wav']}
+		)
+
+		ff.run()
+
+		with open(OUTPUT_WAV_FILE, "rb") as f:
+			content = f.read()
+
+		return content
+
+	def _set_sample_rate(self):
+		if not self.sample_rate:
+			wav = wave.open(OUTPUT_WAV_FILE, "rb")
+			self.sample_rate = wav.getframerate()
+			wav.close()
+
+
 	def start(self):
 		print("Starting Video Streamer:")
 
@@ -187,7 +247,7 @@ class VideoStreamer(object):
 		print("Success!")
 
 		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(self.buffer, data, self.user_dir)
+		self.worker = _StreamWorker(self.buffer, data, self.user_dir, self)
 		self.worker.start()
 		print("Success!")
 
