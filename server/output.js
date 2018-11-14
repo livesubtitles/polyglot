@@ -6303,8 +6303,12 @@ socket.on('stream-response', function(data) {
 
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
             console.log("Manifest Loaded");
-        });
 
+            video.onplay = function() {
+                textTrack = video.textTracks[0];
+                textTrack.mode = "showing";
+            }
+        });
     }
 
 });

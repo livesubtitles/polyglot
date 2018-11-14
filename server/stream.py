@@ -32,6 +32,7 @@ from server.stream import *
 
 BYTES_TO_READ = 1000000
 WAIT_TIME	  = 8.0
+SUB_SEG_SIZE  = 10
 
 STD_VIDEO_KEY   = '360p'
 VID_INPUT_FILE	= "segment"
@@ -142,15 +143,24 @@ class _StreamWorker(Thread):
 	def _create_subtitle_file(self, data, audio_data, duration):
 		file_path = self._get_next_filepath(subtitle=True)
 
-		subtitle = self._get_subtitle(audio_data, self.sample_rate, "es-ES")
-		print(subtitle)
-
-		start_time = self._get_current_timestamp()
-		self.current_time += duration
-		end_time = self._get_current_timestamp()
+		subtitles = self._get_subtitle(audio_data, self.sample_rate, "es-ES")
 
 		vtt = WebVTT()
-		vtt.captions.append(Caption(start_time, end_time, subtitle))
+
+		words = subtitles.split()
+		print(words)
+		num_words = len(words)
+		sub_segments = int(num_words / SUB_SEG_SIZE)
+		print("Subtitle segments: " + sub_segments)
+		sub_segments_window = duration / sub_segments
+		print("Duration: " + duration + " SubSegmentsWindow: " + sub_segments_window)
+
+		for i in range(1, sub_segments):
+			start_time = self._get_current_timestamp()
+			self.current_time += sub_segments_window
+			end_time = self._get_current_timestamp()
+
+			vtt.captions.append(Caption(start_time, end_time, words[(i*10):((i*10)+10)]))
 
 		with open(file_path, 'w') as f:
 			vtt.write(f)
