@@ -131,6 +131,35 @@ class _StreamWorker(Thread):
 
 		return self._get_duration(file_path)
 
+	def _get_punctuated(self, subtitle):
+		url = "https://polyglot-punctuator.herokuapp.com/punctuate"
+		body = {}
+		body['subtitle'] = subtitle
+		data = json.dumps(body)
+		response = requests.post(url, data=data)
+		print("Got back punctuated: ", response)
+		return response.json()['subtitle']
+		# subtitle_words = subtitle.split(" ")
+		# punctuated = ""
+		# current_to_punctuate = ""
+		# buffered_words = 0
+		# for word in subtitle_words:
+		# 	buffered_words += 1
+		# 	current_to_punctuate += word + " "
+		# 	if buffered_words % 5 == 0:
+		# 		buffered_words = 0
+		# 		if (subtitle == "" or subtitle == None):
+		# 			return ""
+		# 		url = "https://polyglot-punctuator.herokuapp.com/punctuate"
+		# 		body = {}
+		# 		body['subtitle'] = current_to_punctuate
+		# 		data = json.dumps(body)
+		# 		response = requests.post(url, data=data)
+		# 		print("Got back punctuated: ", response)
+		# 		punctuated += response.json()['subtitle']
+		# 		current_to_punctuate = ""
+		# return punctuated
+
 	def _create_subtitle_file(self, data, duration):
 		file_path = self._get_next_filepath(subtitle=True)
 
@@ -147,7 +176,7 @@ class _StreamWorker(Thread):
 
 		subtitle_and_lang = json.loads(translated_text)
 
-		subtitle = subtitle_and_lang['subtitle']
+		subtitle = self._get_punctuated(subtitle_and_lang['subtitle'])
 
 		print(subtitle)
 
