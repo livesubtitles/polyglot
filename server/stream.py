@@ -165,12 +165,12 @@ class _StreamWorker(Thread):
 
 		words = subtitles.split()
 		num_words = len(words)
-		sub_segments = ceil(num_words / SUB_SEG_SIZE)
-		sub_segments_window = ceil(duration / sub_segments)
+		segments = ceil(num_words / SUB_SEG_SIZE)
+		window = duration if segments == 0 else ceil(duration / segments)
 
-		for i in range(0, sub_segments - 1):
+		for i in range(0, segments - 1):
 			start_time = self._get_current_timestamp()
-			self.current_time += sub_segments_window
+			self.current_time += window
 			end_time = self._get_current_timestamp()
 
 			capts = " ".join(words[(i*10):((i*10)+10)])
