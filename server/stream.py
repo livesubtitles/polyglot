@@ -52,13 +52,14 @@ def _clearTempFiles():
 	os.makedirs('temp')
 
 class _StreamWorker(Thread):
-	def __init__(self, stream_data, user_dir, video_streamer):
+	def __init__(self, stream_data, user_dir, video_streamer, credentials):
 		self.stream_data = stream_data
 		self.user_dir = user_dir
 		self.streaming = True
 		self.count = 0
 		self.current_time = 0
 		self.sample_rate = 0
+		self.credentials = credentials
 		Thread.__init__(self)
 
 	def _update_playlist(self, playlist_name, file_path):
@@ -120,7 +121,7 @@ class _StreamWorker(Thread):
 
 		transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
 					 get_text(audio, sample_rate, lang)
-		translated = translate(transcript, 'en', lang.split('-')[0])
+		translated = translate(transcript, 'en', lang.split('-')[0], self.credentials)
 		return translated
 
 	def _get_current_timestamp(self):
@@ -204,9 +205,10 @@ class _StreamWorker(Thread):
 
 
 class VideoStreamer(object):
-	def __init__(self, stream_url, user_dir):
+	def __init__(self, stream_url, user_dir, credentials):
 		self.stream_url = stream_url
 		self.user_dir = user_dir
+		self.credentials = credentials
 		self.worker = None
 
 	def _get_video_stream(self):
@@ -237,7 +239,7 @@ class VideoStreamer(object):
 		print("Success!")
 
 		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(data, self.user_dir, self)
+		self.worker = _StreamWorker(data, self.user_dir, self, self.credentials)
 		self.worker.start()
 		print("Success!")
 
