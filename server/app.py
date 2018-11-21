@@ -1,3 +1,4 @@
+import httplib2
 import json
 import jsonpickle
 import string
@@ -16,12 +17,15 @@ from server.speechtotext import *
 from server.language import *
 from server.stream import *
 from server.support import isStreamLinkSupported
+from apiclient import discovery
+from oauth2client import client
 
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app)
 streamer = None
 language = ""
+credentials = None
 
 LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
@@ -63,6 +67,9 @@ def _initialise_streamer(url):
 
 def _error_response(error):
 	return jsonify(subtitle="", lang="", error=error)
+
+def _generate_user_hash():
+	return ''.join(random.choices(string.ascii_letters + string.digits, k=20))
 
  ################# REST ENDPOINTS #################
 
@@ -132,6 +139,42 @@ def file(filename):
 def getFile(user_dir, filename):
 	return send_from_directory('streams/' + user_dir, filename)
 
+@app.route("/oauth")
+def oauth():
+	return send_file('oauth.html')
+
+@app.route("/storeauthcode", methods=['POST'])
+def get_user_access_token_google():
+	global credentials
+	auth_code = str(request.data).split("\'")[1]
+	# If this request does not have `X-Requested-With` header, this could be a CSRF
+	if not request.headers.get('X-Requested-With'):
+	    abort(403)
+	# Set path to the Web application client_secret_*.json file you downloaded from the
+	# Google API Console: https://console.developers.google.com/apis/credentials
+	CLIENT_SECRET_FILE = 'client_secret_1070969009500-4674ntngjh3dvlbcvoer0r4c7hao04dh.apps.googleusercontent.com.json'
+
+	# Exchange auth code for access token, refresh token, and ID token
+	credentials = client.credentials_from_clientsecrets_and_code(
+	    CLIENT_SECRET_FILE,
+	    ['https://www.googleapis.com/auth/drive.appdata', 'profile', 'email'],
+	    auth_code)
+
+	# Call Google API
+	http = httplib2.Http()
+	http_auth = credentials.authorize(http)
+	resp, content = http.request(
+        'https://www.googleapis.com/language/translate/v2/?q=voiture&target=en&source=fr')
+	print(resp.status)
+	print(content.decode('utf-8'))
+
+	# Get profile info from ID token
+	userid = credentials.id_token['sub']
+	email = credentials.id_token['email']
+	print(userid)
+	print(email)
+	return ""
+
 ################# SOCKETS #################
 
 class StreamingSocket(Namespace):
@@ -142,9 +185,10 @@ class StreamingSocket(Namespace):
 	language  = None
 	user_hash = None
 	user_dir  = None
+	global credentials
 
 	def _initialise_streamer(self, url):
-		self.streamer = VideoStreamer(url, self.user_dir)
+		self.streamer = VideoStreamer(url, self.user_dir, credentials)
 
 		try:
 			self.streamer.start()
