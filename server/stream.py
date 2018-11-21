@@ -245,3 +245,4 @@ class VideoStreamer(object):
 
 	def stop(self):
 		self.worker.stop()
+		self.worker.join()
