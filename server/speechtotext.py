@@ -47,7 +47,6 @@ def _speech_to_text(audio_file, sample_rate, lang):
 
     try:
         result = json_response['results'][0]['alternatives'][0]['transcript']
-        print(result)
     except KeyError as exc:
         print(exc)
         result = ""
