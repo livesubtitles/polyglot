@@ -4,11 +4,11 @@ import os
 import server.translate
 
 
-apiKey = os.environ.get('APIKEY')
-url = 'https://www.googleapis.com/language/translate/v2/'
-
-
-class TestTranslate(unittest.TestCase):
+# apiKey = os.environ.get('APIKEY')
+# url = 'https://www.googleapis.com/language/translate/v2/'
+#
+#
+# class TestTranslate(unittest.TestCase):
 
     # @responses.activate
     # def test_translate(self):
@@ -42,5 +42,5 @@ class TestTranslate(unittest.TestCase):
     #     self.assertEqual( translation, "" )
     #     self.assertEqual( len( responses.calls ), 1 )
 
-if __name__ == '__main__':
-    unittest.main()
+# if __name__ == '__main__':
+#     unittest.main()
