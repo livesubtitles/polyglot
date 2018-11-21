@@ -131,6 +131,10 @@ def after_request(response):
 def streams():
 	return send_file('media.html')
 
+@app.route("/authenticate")
+def oauth():
+	return send_file('oauth.html')
+
 @app.route("/<path:filename>")
 def file(filename):
 	return send_file(filename)
@@ -138,10 +142,6 @@ def file(filename):
 @app.route("/streams/<path:user_dir>/<path:filename>")
 def getFile(user_dir, filename):
 	return send_from_directory('streams/' + user_dir, filename)
-
-@app.route("/oauth")
-def oauth():
-	return send_file('oauth.html')
 
 @app.route("/storeauthcode", methods=['POST'])
 def get_user_access_token_google():
