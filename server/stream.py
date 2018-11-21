@@ -239,7 +239,7 @@ class VideoStreamer(object):
 		print("Success!")
 
 		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(data, self.user_dir, self, credentials)
+		self.worker = _StreamWorker(data, self.user_dir, self, self.credentials)
 		self.worker.start()
 		print("Success!")
 
