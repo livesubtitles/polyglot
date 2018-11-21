@@ -6270,8 +6270,6 @@ const io = require('socket.io-client');
 // const socket = io('https://polyglot-livesubtitles.herokuapp.com/streams')
 const socket = io('http://localhost:8000/streams');
 
-console.log(socket);
-
 var video = document.getElementById('video');
 
 socket.on('connect', function() {
@@ -6296,6 +6294,13 @@ socket.on('stream-response', function(data) {
         console.log("Hls Supported. Got manifest url: " + manifest_url);
 
         var hls = new Hls();
+
+        hls.on(Hls.Events.ERROR, function (event, data) {
+            var errorType = data.type;
+            var errorDetails = data.details;
+            console.log("HLS Error: " + errorType + " " + errorDetails);
+        });
+
         console.log("Loading manifest url...");
         hls.loadSource(manifest_url);
         console.log("Attatching Media...")
