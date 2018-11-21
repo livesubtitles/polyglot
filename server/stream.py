@@ -62,7 +62,7 @@ class _StreamWorker(Thread):
 		self.credentials = credentials
 		Thread.__init__(self)
 
-	def _update_playlist(self, playlist_name, file_path):
+	def _update_playlist(self, playlist_name, file_path, duration):
 		playlist_path = self.user_dir + playlist_name
 		file_name = file_path.split('/')[-1]
 
@@ -85,7 +85,7 @@ class _StreamWorker(Thread):
 			f.writelines(lines)
 			if not sequence_no == 0:
 				f.write('#EXT-X-DISCONTINUITY\n')
-			f.write('#EXTINF:20.0000,\n')
+			f.write('#EXTINF:' + str(duration) + ',\n')
 			f.write(file_name + '\n')
 
 	def _get_duration(self, video_file):
@@ -138,7 +138,6 @@ class _StreamWorker(Thread):
 
 		print("Created file: " + file_path)
 		self.current_video_file = file_path
-		self._update_playlist(VIDEO_PLAYLIST, file_path)
 
 		return file_path
 
@@ -166,12 +165,12 @@ class _StreamWorker(Thread):
 
 		words = subtitles.split()
 		num_words = len(words)
-		sub_segments = ceil(num_words / SUB_SEG_SIZE)
-		sub_segments_window = ceil(duration / sub_segments)
+		segments = ceil(num_words / SUB_SEG_SIZE)
+		window = duration if segments == 0 else ceil(duration / segments)
 
-		for i in range(0, sub_segments - 1):
+		for i in range(0, segments - 1):
 			start_time = self._get_current_timestamp()
-			self.current_time += sub_segments_window
+			self.current_time += window
 			end_time = self._get_current_timestamp()
 
 			capts = " ".join(words[(i*10):((i*10)+10)])
@@ -181,7 +180,7 @@ class _StreamWorker(Thread):
 			vtt.write(f)
 
 		print("Created file: " + file_path)
-		self._update_playlist(SUBTITLE_PLAYLIST, file_path)
+		return file_path
 
 	def run(self):
 		while self.streaming:
@@ -194,7 +193,10 @@ class _StreamWorker(Thread):
 			audio_data = self._extract_audio(video_path)
 			duration = self._get_duration(video_path)
 
-			self._create_subtitle_file(data, audio_data, duration)
+			audio_path = self._create_subtitle_file(data, audio_data, duration)
+
+			self._update_playlist(VIDEO_PLAYLIST, video_path, duration)
+			self._update_playlist(SUBTITLE_PLAYLIST, audio_path, duration)
 
 			self.count += 1
 
@@ -245,3 +247,4 @@ class VideoStreamer(object):
 
 	def stop(self):
 		self.worker.stop()
+		self.worker.join()
