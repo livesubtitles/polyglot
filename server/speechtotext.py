@@ -37,7 +37,7 @@ def _send_stt_request(apiKey, lang, sample_rate, audiobase64, credentials):
     # resp, content = http.request(
 	# 	'https://www.googleapis.com/language/translate/v2/?q='+ urllib.parse.quote_plus(textToTranslate) + '&target=en&source='+sourceLang)
 
-    response = requests.post(url, headers = headers, data =z body)
+    response = requests.post(url, headers = headers, data =body)
 
     return response.json()
 
