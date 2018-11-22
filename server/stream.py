@@ -17,6 +17,7 @@ from enum import Enum
 from server.translate import test
 from server.speechtotext import *
 from server.language import *
+from server.playlist import *
 from server.stream import *
 
 '''
@@ -42,9 +43,6 @@ VID_EXTENSION 	= ".ts"
 SUB_EXTENSION	= ".vtt"
 OUTPUT_WAV_FILE = "/audio.wav"
 
-SUBTITLE_PLAYLIST = '/subtitles.m3u8'
-VIDEO_PLAYLIST    = '/playlist.m3u8'
-
 # Nukes the temp directory and generates a fresh one
 def _clearTempFiles():
 	if os.path.isdir('temp'):
@@ -52,7 +50,7 @@ def _clearTempFiles():
 	os.makedirs('temp')
 
 class _StreamWorker(Thread):
-	def __init__(self, stream_data, user_dir, video_streamer, credentials):
+	def __init__(self, stream_data, user_dir, playlist, credentials):
 		self.stream_data = stream_data
 		self.user_dir = user_dir
 		self.streaming = True
@@ -60,33 +58,8 @@ class _StreamWorker(Thread):
 		self.current_time = 0
 		self.sample_rate = 0
 		self.credentials = credentials
+		self.playlist = playlist
 		Thread.__init__(self)
-
-	def _update_playlist(self, playlist_name, file_path, duration):
-		playlist_path = self.user_dir + playlist_name
-		file_name = file_path.split('/')[-1]
-
-		if not os.path.isfile(playlist_path):
-			print("Playlist file not found, exiting...")
-			raise Exception
-
-		with open(playlist_path, "r") as f:
-			lines = f.readlines()
-
-		sequence_no = int(lines[3].split(':')[1])
-
-		lines[3] = '#EXT-X-MEDIA-SEQUENCE:' + str(sequence_no) + '\n'
-
-		if (sequence_no + 1 >= 4 and len(lines) >= 7):
-			lines = lines[0:4] + lines[7:]
-			lines[3] = '#EXT-X-MEDIA-SEQUENCE:' + str(sequence_no + 1) + '\n'
-
-		with open(playlist_path, "w+") as f:
-			f.writelines(lines)
-			if not sequence_no == 0:
-				f.write('#EXT-X-DISCONTINUITY\n')
-			f.write('#EXTINF:' + str(duration) + ',\n')
-			f.write(file_name + '\n')
 
 	def _get_duration(self, video_file):
 		duration = subprocess.check_output(["ffmpeg -i " + video_file + " 2>&1 | grep 'Duration'"], shell=True)
@@ -195,9 +168,7 @@ class _StreamWorker(Thread):
 
 			audio_path = self._create_subtitle_file(data, audio_data, duration)
 
-			self._update_playlist(VIDEO_PLAYLIST, video_path, duration)
-			self._update_playlist(SUBTITLE_PLAYLIST, audio_path, duration)
-
+			self.playlist.update_all(self.count, duration)
 			self.count += 1
 
 		self.stream_data.close()
@@ -207,19 +178,16 @@ class _StreamWorker(Thread):
 
 
 class VideoStreamer(object):
-	def __init__(self, stream_url, user_dir, credentials):
+	def __init__(self, stream_url, user_dir, playlist, credentials):
 		self.stream_url = stream_url
 		self.user_dir = user_dir
 		self.credentials = credentials
+		self.playlist = playlist
 		self.worker = None
 
 	def _get_video_stream(self):
 		try:
 			available_streams = streamlink.streams(self.stream_url)
-		except NoPluginError:
-			raise Exception("Streamlink Unavailable: No Plugin Found")
-		except PluginError:
-			raise Exception("Streamlink Unavailable: Plugin Error")
 		except Exception:
 			raise Exception("Streamlink Unavailable")
 
@@ -241,7 +209,7 @@ class VideoStreamer(object):
 		print("Success!")
 
 		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(data, self.user_dir, self, self.credentials)
+		self.worker = _StreamWorker(data, self.user_dir, self.playlist, self.credentials)
 		self.worker.start()
 		print("Success!")
 

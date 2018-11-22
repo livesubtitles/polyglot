@@ -1,4 +1,5 @@
 const io = require('socket.io-client');
+
 // const socket = io('https://polyglot-livesubtitles.herokuapp.com/streams')
 const socket = io('http://localhost:8000/streams');
 
@@ -35,7 +36,7 @@ socket.on('stream-response', function(data) {
 
         console.log("Loading manifest url...");
         hls.loadSource(manifest_url);
-        console.log("Attatching Media...")
+        console.log("Attatching Media...");
         hls.attachMedia(video);
 
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {

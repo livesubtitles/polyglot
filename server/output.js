@@ -6267,6 +6267,7 @@ module.exports = yeast;
 
 },{}],40:[function(require,module,exports){
 const io = require('socket.io-client');
+
 // const socket = io('https://polyglot-livesubtitles.herokuapp.com/streams')
 const socket = io('http://localhost:8000/streams');
 
