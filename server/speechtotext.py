@@ -15,7 +15,7 @@ from server.translate import *
 
 # Sets up and sends an HTTP request to Google speech-to-text
 def _send_stt_request(apiKey, lang, sample_rate, audiobase64, credentials):
-    url = "https://speech.googleapis.com/v1/speech:recognize?key=" + apiKey
+    url = "https://speech.googleapis.com/v1/speech:recognize"
     headers = {'Accept-Encoding': 'UTF-8', 'Content-Type': 'application/json'}
 
     config = {}
@@ -32,14 +32,14 @@ def _send_stt_request(apiKey, lang, sample_rate, audiobase64, credentials):
     body['audio'] = audio
     body = json.dumps(body)
 
-    # http = httplib2.Http()
-	# http_auth = credentials.authorize(http)
-    # resp, content = http.request(
-	# 	'https://www.googleapis.com/language/translate/v2/?q='+ urllib.parse.quote_plus(textToTranslate) + '&target=en&source='+sourceLang)
+    http = httplib2.Http()
+	http_auth = credentials.authorize(http)
+    resp, content = http.request(url, method="POST", headers=headers, data=body)
+    return content.json()
 
-    response = requests.post(url, headers = headers, data =body)
+    # response = requests.post(url, headers = headers, data =body)
 
-    return response.json()
+    # return response.json()
 
 # Initiates and handles response from speech-to-text API
 def _speech_to_text(audio_file, sample_rate, lang, credentials):
