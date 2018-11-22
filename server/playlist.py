@@ -1,6 +1,3 @@
-
-
-
 class HLSPlaylist(object):
 
 	_MASTER_STUB = '#EXTM3U\n#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",NAME="English",URI="subtitles.m3u8",LANGUAGE="en"\n#EXT-X-STREAM-INF:BANDWIDTH=200000,RESOLUTION=480x360,SUBTITLES="subs"\nplaylist.m3u8\n'

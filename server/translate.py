@@ -32,7 +32,6 @@ def translate(textToTranslate, targetLang, sourceLang, credentials):
 	data = r.json()
 	try:
 	    res = data['data']['translations'][0]['translatedText']
-	    print("Translation: {}".format( res ))
 	except KeyError as exc:
 	    print("Exception with key: {}".format( exc ))
 	    res = ""
