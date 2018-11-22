@@ -33,7 +33,8 @@ def translate(textToTranslate, targetLang, sourceLang, credentials):
 	#     print("Exception with key: {}".format( exc ))
 	#     res = ""
 	# return res
-	return content.decode('utf-8').json()['data']['translations'][0]['translatedText']
+    json_response = json.loads(content.decode('utf-8'))
+	return json_response['data']['translations'][0]['translatedText']
 
 def getLanguages():
 	payload = {'key' : apiKey}
