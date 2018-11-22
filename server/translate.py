@@ -1,4 +1,5 @@
 import httplib2
+import json
 import requests
 import os
 
@@ -19,9 +20,9 @@ def translate(textToTranslate, targetLang, sourceLang, credentials):
 	payload = {'key' : apiKey, 'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
 	http = httplib2.Http()
 	http_auth = credentials.authorize(http)
-	print('https://www.googleapis.com/language/translate/v2/?q='+ targetLang + '&target=en&source='+sourceLang)
+	print('https://www.googleapis.com/language/translate/v2/?q='+ textToTranslate + '&target=en&source='+sourceLang)
 	resp, content = http.request(
-		'https://www.googleapis.com/language/translate/v2/?q='+ targetLang + '&target=en&source='+sourceLang)
+		'https://www.googleapis.com/language/translate/v2/?q='+ textToTranslate + '&target=en&source='+sourceLang)
 	print(resp.status)
 	print(content.decode('utf-8'))
 	# r = requests.get(url, params = payload)
