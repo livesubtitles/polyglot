@@ -21,24 +21,24 @@ def translate(textToTranslate, targetLang, sourceLang, credentials):
 	if (sourceLang == 'detected'):
 		return ""
 	payload = {'key' : apiKey, 'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
-	http = httplib2.Http()
-	http_auth = credentials.authorize(http)
-	print('https://www.googleapis.com/language/translate/v2/?q='+ textToTranslate + '&target=en&source='+sourceLang)
-	resp, content = http.request(
-		'https://www.googleapis.com/language/translate/v2/?q='+ urllib.parse.quote_plus(textToTranslate) + '&target=en&source='+sourceLang)
-	print(resp.status)
-	print(content.decode('utf-8'))
-	# r = requests.get(url, params = payload)
-	# data = r.json()
-	# try:
-	#     res = data['data']['translations'][0]['translatedText']
-	#     print("Translation: {}".format( res ))
-	# except KeyError as exc:
-	#     print("Exception with key: {}".format( exc ))
-	#     res = ""
-	# return res
-	json_response = json.loads(content.decode('utf-8'))
-	return json_response['data']['translations'][0]['translatedText']
+	# http = httplib2.Http()
+	# http_auth = credentials.authorize(http)
+	# print('https://www.googleapis.com/language/translate/v2/?q='+ textToTranslate + '&target=en&source='+sourceLang)
+	# resp, content = http.request(
+	# 	'https://www.googleapis.com/language/translate/v2/?q='+ urllib.parse.quote_plus(textToTranslate) + '&target=en&source='+sourceLang)
+	# print(resp.status)
+	# print(content.decode('utf-8'))
+	r = requests.get(url, params = payload)
+	data = r.json()
+	try:
+	    res = data['data']['translations'][0]['translatedText']
+	    print("Translation: {}".format( res ))
+	except KeyError as exc:
+	    print("Exception with key: {}".format( exc ))
+	    res = ""
+	return res
+	# json_response = json.loads(content.decode('utf-8'))
+	# return json_response['data']['translations'][0]['translatedText']
 
 def getLanguages():
 	payload = {'key' : apiKey}
