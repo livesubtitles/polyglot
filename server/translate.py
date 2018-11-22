@@ -1,7 +1,10 @@
 import httplib2
 import json
 import requests
+import urllib
 import os
+
+from urllib import parse
 
 # Set endpoints
 detection = 'detect'
@@ -22,7 +25,7 @@ def translate(textToTranslate, targetLang, sourceLang, credentials):
 	http_auth = credentials.authorize(http)
 	print('https://www.googleapis.com/language/translate/v2/?q='+ textToTranslate + '&target=en&source='+sourceLang)
 	resp, content = http.request(
-		'https://www.googleapis.com/language/translate/v2/?q='+ textToTranslate + '&target=en&source='+sourceLang)
+		'https://www.googleapis.com/language/translate/v2/?q='+ urllib.parse.quote_plus(textToTranslate) + '&target=en&source='+sourceLang)
 	print(resp.status)
 	print(content.decode('utf-8'))
 	# r = requests.get(url, params = payload)
