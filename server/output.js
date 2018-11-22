@@ -6304,7 +6304,7 @@ socket.on('stream-response', function(data) {
 
         console.log("Loading manifest url...");
         hls.loadSource(manifest_url);
-        console.log("Attatching Media...")
+        console.log("Attatching Media...");
         hls.attachMedia(video);
 
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {

@@ -93,7 +93,7 @@ class _StreamWorker(Thread):
 			lang = detect_language(audio)
 
 		transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
-					 get_text(audio, sample_rate, lang)
+					 get_text(audio, sample_rate, lang, self.credentials)
 		translated = translate(transcript, 'en', lang.split('-')[0], self.credentials)
 		return translated
 
