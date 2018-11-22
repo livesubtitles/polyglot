@@ -4,6 +4,14 @@ const io = require('socket.io-client');
 const socket = io('http://localhost:8000/streams');
 
 var video = document.getElementById('video');
+var button = document.getElementById('button');
+var hls = new Hls();
+
+button.onclick = function() {
+    socket.disconnect();
+    hls.destroy();
+    console.log("Disconnected");
+}
 
 socket.on('connect', function() {
     console.log("Socket connected");
@@ -25,8 +33,6 @@ socket.on('stream-response', function(data) {
 
     if (Hls.isSupported()) {
         console.log("Hls Supported. Got manifest url: " + manifest_url);
-
-        var hls = new Hls();
 
         hls.on(Hls.Events.ERROR, function (event, data) {
             var errorType = data.type;
