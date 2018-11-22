@@ -51,6 +51,7 @@ def _speech_to_text(audio_file, sample_rate, lang, credentials):
 				return ""
 
 		json_response = _send_stt_request(apiKey, lang, sample_rate, audiobase64, credentials)
+        print json_response['results']
 
 		try:
 				result = json_response['results'][0]['alternatives'][0]['transcript']
