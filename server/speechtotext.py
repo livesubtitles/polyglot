@@ -33,7 +33,7 @@ def _send_stt_request(apiKey, lang, sample_rate, audiobase64, credentials):
 		body = json.dumps(body)
 
 		http = httplib2.Http()
-	    http_auth = credentials.authorize(http)
+				http_auth = credentials.authorize(http)
 		resp, content = http.request(url, method="POST", headers=headers, data=body)
 		return content.json()
 
