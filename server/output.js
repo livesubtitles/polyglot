@@ -6267,8 +6267,10 @@ module.exports = yeast;
 
 },{}],40:[function(require,module,exports){
 const io = require('socket.io-client');
-// const socket = io('https://polyglot-livesubtitles.herokuapp.com/streams')
-const socket = io('http://localhost:8000/streams');
+const socket = io('https://polyglot-livesubtitles.herokuapp.com/streams')
+// const socket = io('http://localhost:8000/streams');
+
+console.log(socket);
 
 var video = document.getElementById('video');
 
@@ -6294,13 +6296,6 @@ socket.on('stream-response', function(data) {
         console.log("Hls Supported. Got manifest url: " + manifest_url);
 
         var hls = new Hls();
-
-        hls.on(Hls.Events.ERROR, function (event, data) {
-            var errorType = data.type;
-            var errorDetails = data.details;
-            console.log("HLS Error: " + errorType + " " + errorDetails);
-        });
-
         console.log("Loading manifest url...");
         hls.loadSource(manifest_url);
         console.log("Attatching Media...")
@@ -6308,12 +6303,8 @@ socket.on('stream-response', function(data) {
 
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
             console.log("Manifest Loaded");
-
-            video.onplay = function() {
-                textTrack = video.textTracks[0];
-                textTrack.mode = "showing";
-            }
         });
+
     }
 
 });
