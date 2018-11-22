@@ -18,11 +18,12 @@ def translate(textToTranslate, targetLang, sourceLang, credentials):
         return ""
     payload = {'key' : apiKey, 'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
     http = httplib2.Http()
-    http_auth = credentials.authorize(http)
-    resp, content = http.request(
-        'https://www.googleapis.com/language/translate/v2/?q='+ textToTranslate + '&target='+targetLang+'&source='+sourceLang)
-    print(resp.status)
-    print(content.decode('utf-8'))
+	http_auth = credentials.authorize(http)
+    print('https://www.googleapis.com/language/translate/v2/?q='+ targetLang + '&target=en&source='+sourceLang)
+	resp, content = http.request(
+        'https://www.googleapis.com/language/translate/v2/?q='+ targetLang + '&target=en&source='+sourceLang)
+	print(resp.status)
+	print(content.decode('utf-8'))
     # r = requests.get(url, params = payload)
     # data = r.json()
     # try:
