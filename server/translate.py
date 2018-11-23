@@ -18,7 +18,7 @@ def detectAndTranslate(textToTranslate, targetLang):
 def translate(textToTranslate, targetLang, sourceLang, credentials):
 	if (sourceLang == 'detected'):
 		return ""
-	payload = {'key' : apiKey, 'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
+	payload = {'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
 	http = httplib2.Http()
 	http_auth = credentials.authorize(http)
 	print(url + '?q='+ textToTranslate + '&target=en&source='+sourceLang)
@@ -30,14 +30,13 @@ def translate(textToTranslate, targetLang, sourceLang, credentials):
 	return json_response['data']['translations'][0]['translatedText']
 
 def getLanguages():
-	payload = {'key' : apiKey}
 	r = requests.get((url + languages), params = payload)
 	data = r.json()
 	print (data['data']['languages'])
 	return (data['data']['languages'])
 
 def detect(textToTranslate):
-	payload = {'key' : apiKey, 'q' : textToTranslate}
+	payload = {'q' : textToTranslate}
 	r = requests.get((url + detection), params = payload)
 	data = r.json()
 	print (data['data']['detections'][0][0])
