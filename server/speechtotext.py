@@ -38,13 +38,8 @@ def _send_stt_request(apiKey, lang, sample_rate, audiobase64, credentials):
 		print(content.decode('utf-8'))
 		return json.loads(content.decode('utf-8'))
 
-		# response = requests.post(url, headers = headers, data =body)
-
-		# return response.json()
-
 # Initiates and handles response from speech-to-text API
 def _speech_to_text(audio_file, sample_rate, lang, credentials):
-		apiKey = os.environ.get('APIKEY')
 		audiobase64 = _convert_to_base64(audio_file)
 
 		if (lang == 'detected'):
