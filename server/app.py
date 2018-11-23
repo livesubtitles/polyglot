@@ -7,7 +7,7 @@ import os
 import shutil
 import re
 
-from flask import Flask, request, jsonify, send_from_directory, send_file, session
+from flask import Flask, request, jsonify, send_from_directory, send_file, session, redirect, url_for
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, Namespace
 
@@ -20,7 +20,10 @@ from apiclient import discovery
 from oauth2client import client
 
 app = Flask(__name__)
+# login_manager = LoginManager()
+# login_manager.init_app(app)
 CORS(app)
+app.secret_key = b'\xc4Q\x8e\x10b\xafy\x10\xc0i\xb5G\x08{]\xee'
 socketio = SocketIO(app)
 streamer = None
 language = ""
@@ -70,6 +73,11 @@ def _error_response(error):
 
 def _generate_user_hash():
 	return ''.join(random.choices(string.ascii_letters + string.digits, k=20))
+
+################## LOGIN MANAGER ##################
+# @login_manager.user_loader
+# def load_user(user_id):
+#     return User.get(user_id)
 
  ################# REST ENDPOINTS #################
 
@@ -129,6 +137,9 @@ def after_request(response):
 
 @app.route("/streams")
 def streams():
+	print(session['userid'])
+	if not 'email' in session:
+		return "You are not logged in"
 	return send_file('media.html')
 
 @app.route("/authenticate")
@@ -149,31 +160,40 @@ def get_user_access_token_google():
 	auth_code = str(request.data).split("\'")[1]
 	# If this request does not have `X-Requested-With` header, this could be a CSRF
 	if not request.headers.get('X-Requested-With'):
-	    abort(403)
+		abort(403)
 	# Set path to the Web application client_secret_*.json file you downloaded from the
 	# Google API Console: https://console.developers.google.com/apis/credentials
 	CLIENT_SECRET_FILE = 'client_secret_1070969009500-4674ntngjh3dvlbcvoer0r4c7hao04dh.apps.googleusercontent.com.json'
 
 	# Exchange auth code for access token, refresh token, and ID token
 	credentials = client.credentials_from_clientsecrets_and_code(
-	    CLIENT_SECRET_FILE,
-	    ['https://www.googleapis.com/auth/drive.appdata', 'profile', 'email'],
-	    auth_code)
+		CLIENT_SECRET_FILE,
+		['https://www.googleapis.com/auth/drive.appdata', 'profile', 'email'],
+		auth_code)
 
 	# Call Google API
 	http = httplib2.Http()
 	http_auth = credentials.authorize(http)
 	resp, content = http.request(
-        'https://www.googleapis.com/language/translate/v2/?q=voiture&target=en&source=fr')
+		'https://www.googleapis.com/language/translate/v2/?q=voiture&target=en&source=fr')
 	print(resp.status)
 	print(content.decode('utf-8'))
 
 	# Get profile info from ID token
 	userid = credentials.id_token['sub']
 	email = credentials.id_token['email']
+	session['email'] = email
+	session['userid'] = userid
 	print(userid)
 	print(email)
 	return ""
+
+@app.route('/logout')
+def logout():
+	# remove the username from the session if it's there
+	session.pop('email', None)
+	session.pop('userid', None)
+	return redirect(url_for('index'))
 
 ################# SOCKETS #################
 
