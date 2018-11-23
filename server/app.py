@@ -27,7 +27,6 @@ app.secret_key = b'\xc4Q\x8e\x10b\xafy\x10\xc0i\xb5G\x08{]\xee'
 socketio = SocketIO(app)
 streamer = None
 language = ""
-credentials = None
 
 LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
@@ -157,7 +156,6 @@ def getFile(user_dir, filename):
 
 @app.route("/storeauthcode", methods=['POST'])
 def get_user_access_token_google():
-	global credentials
 	auth_code = str(request.data).split("\'")[1]
 	# If this request does not have `X-Requested-With` header, this could be a CSRF
 	if not request.headers.get('X-Requested-With'):
@@ -204,7 +202,6 @@ class StreamingSocket(Namespace):
 	_HASH_LEN = 20
 
 	streamers = {}
-	global credentials
 
 	def _initialise_new_streamer(self, url, user):
 		credentials = jsonpickle.loads(session['credentials'])
