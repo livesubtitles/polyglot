@@ -138,6 +138,13 @@ def after_request(response):
 @app.route("/streams")
 def streams():
 	print(session['userid'])
+	http = httplib2.Http()
+	credentials = session['credentials']
+	http_auth = credentials.authorize(http)
+	resp, content = http.request(
+		'https://www.googleapis.com/language/translate/v2/?q=voiture&target=en&source=fr')
+	print(resp.status)
+	print(content.decode('utf-8'))
 	if not 'email' in session:
 		return "You are not logged in"
 	return send_file('media.html')
@@ -184,6 +191,7 @@ def get_user_access_token_google():
 	email = credentials.id_token['email']
 	session['email'] = email
 	session['userid'] = userid
+	session['credentials'] = credentials
 	print(userid)
 	print(email)
 	return ""
