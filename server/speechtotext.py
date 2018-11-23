@@ -14,7 +14,7 @@ from google.cloud.speech import types
 from server.translate import *
 
 # Sets up and sends an HTTP request to Google speech-to-text
-def _send_stt_request(apiKey, lang, sample_rate, audiobase64, credentials):
+def _send_stt_request(lang, sample_rate, audiobase64, credentials):
 		url = "https://speech.googleapis.com/v1/speech:recognize"
 		headers = {'Accept-Encoding': 'UTF-8', 'Content-Type': 'application/json'}
 
@@ -45,7 +45,7 @@ def _speech_to_text(audio_file, sample_rate, lang, credentials):
 		if (lang == 'detected'):
 				return ""
 
-		json_response = _send_stt_request(apiKey, lang, sample_rate, audiobase64, credentials)
+		json_response = _send_stt_request(lang, sample_rate, audiobase64, credentials)
 		print(json_response['results'])
 
 		try:
