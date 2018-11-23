@@ -138,13 +138,7 @@ def after_request(response):
 @app.route("/streams")
 def streams():
 	print(session['userid'])
-	http = httplib2.Http()
 	credentials = jsonpickle.loads(session['credentials'])
-	http_auth = credentials.authorize(http)
-	resp, content = http.request(
-		'https://www.googleapis.com/language/translate/v2/?q=voiture&target=en&source=fr')
-	print(resp.status)
-	print(content.decode('utf-8'))
 	if not 'email' in session:
 		return "You are not logged in"
 	return send_file('media.html')
@@ -213,6 +207,7 @@ class StreamingSocket(Namespace):
 	global credentials
 
 	def _initialise_new_streamer(self, url, user):
+		credentials = jsonpickle.loads(session['credentials'])
 		streamer = VideoStreamer(url, 'streams/' + user, credentials)
 		try:
 			streamer.start()
