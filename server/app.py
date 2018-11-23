@@ -122,6 +122,10 @@ def after_request(response):
   response.headers.add('Access-Control-Allow-Origin', '*')
   response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+  response.headers.add('Cache-Control', 'no-cache, no-store, must-revalidate')
+  response.headers.add('Pragma', 'no-cache')
+  response.headers.add('Expires', '0')
+  response.headers.add('Cache-Control', 'public, max-age=0')
   return response
 
 @app.route("/streams")
