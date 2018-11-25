@@ -219,7 +219,7 @@ class StreamingSocket(Namespace):
 		user = session['uid']
 
 		playlist = HLSPlaylist(user)
-		streamer = VideoStreamer(data['url'], 'streams/' + user, playlist, credentials)
+		streamer = VideoStreamer(data['url'], data['lang'], 'streams/' + user, playlist, credentials)
 
 		try:
 			streamer.start()
