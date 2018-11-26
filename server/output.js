@@ -6267,19 +6267,12 @@ module.exports = yeast;
 
 },{}],40:[function(require,module,exports){
 const io = require('socket.io-client');
+// const socket = io('https://test-polyglot.herokuapp.com/streams')
+const socket = io('http://localhost:8000/streams');
 
-const socket = io('https://polyglot-livesubtitles.herokuapp.com/streams')
-// const socket = io('http://localhost:8000/streams');
+console.log(socket);
 
 var video = document.getElementById('video');
-var button = document.getElementById('button');
-var hls = new Hls();
-
-button.onclick = function() {
-    socket.disconnect();
-    hls.destroy();
-    console.log("Disconnected");
-}
 
 socket.on('connect', function() {
     console.log("Socket connected");
@@ -6302,25 +6295,16 @@ socket.on('stream-response', function(data) {
     if (Hls.isSupported()) {
         console.log("Hls Supported. Got manifest url: " + manifest_url);
 
-        hls.on(Hls.Events.ERROR, function (event, data) {
-            var errorType = data.type;
-            var errorDetails = data.details;
-            console.log("HLS Error: " + errorType + " " + errorDetails);
-        });
-
+        var hls = new Hls();
         console.log("Loading manifest url...");
         hls.loadSource(manifest_url);
-        console.log("Attatching Media...");
+        console.log("Attatching Media...")
         hls.attachMedia(video);
 
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
             console.log("Manifest Loaded");
-
-            video.onplay = function() {
-                textTrack = video.textTracks[0];
-                textTrack.mode = "showing";
-            }
         });
+
     }
 
 });
