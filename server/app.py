@@ -201,10 +201,13 @@ class StreamingSocket(Namespace):
 	def on_disconnect(self):
 		user = session['uid']
 		print("Disconneting from user: " + user)
-		print("Stopping worker...", end="")
-		self.streamers[user].stop()
-		self.streamers.pop(user)
-		print("Success!")
+		print("Stopping worker...")
+		if user in self.streamers:
+			self.streamers[user].stop()
+			self.streamers.pop(user)
+		print("Worker Stopped! Cleaning up...")
+
+		self._cleanup(user)
 
 	def _cleanup(self, user):
 		user_path = 'streams/' + user
@@ -216,15 +219,25 @@ class StreamingSocket(Namespace):
 		else:
 			print("!!! Not found !!!")
 
+		print("~~~ Ready ~~~")
+
+	def on_quality(self, data):
+		print("Recieved quality event")
+		user = session['uid']
+		new_quality = data['quality']
+		
+		new_playlist = self.streamers[user].update_quality(new_quality)
+
+		media_url = str(SERVER_URL + new_playlist.get_master())
+		emit('stream-response', json.dumps( {'media':media_url} ))
 
 	def on_stream(self, data):
 		user = session['uid']
 
-		playlist = HLSPlaylist(user)
-		streamer = VideoStreamer(data['url'], data['lang'], 'streams/' + user, playlist, credentials)
+		streamer = VideoStreamer(data['url'], data['lang'], user, credentials)
 
 		try:
-			streamer.start()
+			playlist = streamer.start()
 		except Exception as exe:
 			print("VideoStreamer raised an exception!")
 			disconnect()
@@ -233,7 +246,8 @@ class StreamingSocket(Namespace):
 		self.streamers[user] = streamer
 
 		media_url = str(SERVER_URL + playlist.get_master())
-		emit('stream-response', json.dumps( {'media':media_url} ))
+		supported_qualities = streamer.get_supported_qualities()
+		emit('stream-response', json.dumps( {'media':media_url, 'qualities':supported_qualities}))
 
 
 socketio.on_namespace(StreamingSocket('/streams'))

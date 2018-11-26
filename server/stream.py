@@ -20,43 +20,25 @@ from server.language import *
 from server.playlist import *
 from server.stream import *
 
-'''
-	New Workflow:
-
-	- On socket connection, create a hash for the user
-	- Streamer starts. It creates a new directory for the user.
-	- It creates a playlist file in this directory and sets off a stream worker.
-	- Every 10 seconds, the stream worker reads from the stream and writes to a temp file.
-	- The stream worker adds the name of the temp file into the current playlist file.
-	- The streamer should return the name of the playlist file to be used by hls.
-
-'''
-
-BYTES_TO_READ = 1000000
-WAIT_TIME	  = 10.0
+QUALITY_INFO = {'360p': (1000000, 10), '480p': (2000000, 12), '720p': (3000000, 15)}
 SUB_SEG_SIZE  = 10
 
-STD_VIDEO_KEY   = '480p'
 VID_INPUT_FILE	= "segment"
 SUB_INPUT_FILE  = "subtitle"
 VID_EXTENSION 	= ".ts"
 SUB_EXTENSION	= ".vtt"
 OUTPUT_WAV_FILE = "/audio.wav"
 
-# Nukes the temp directory and generates a fresh one
-def _clearTempFiles():
-	if os.path.isdir('temp'):
-		shutil.rmtree('temp')
-	os.makedirs('temp')
-
 class _StreamWorker(Thread):
-	def __init__(self, stream_data, language, user_dir, playlist, credentials):
+	def __init__(self, stream_data, bytes_to_read, wait_time, language, user, playlist, credentials):
 		self.stream_data = stream_data
-		self.user_dir = user_dir
+		self.user_dir = 'streams/' + user
 		self.streaming = True
 		self.count = 0
 		self.current_time = 0
 		self.sample_rate = 0
+		self.bytes_to_read = bytes_to_read
+		self.wait_time = wait_time
 		self.credentials = credentials
 		self.playlist = playlist
 		self.language = language
@@ -170,9 +152,9 @@ class _StreamWorker(Thread):
 
 	def run(self):
 		while self.streaming:
-			time.sleep(WAIT_TIME)
+			time.sleep(self.wait_time)
 
-			data = self.stream_data.read(BYTES_TO_READ)
+			data = self.stream_data.read(self.bytes_to_read)
 
 			video_path = self._create_video_file(data)
 
@@ -191,28 +173,45 @@ class _StreamWorker(Thread):
 
 
 class VideoStreamer(object):
-	def __init__(self, stream_url, language, user_dir, playlist, credentials):
+	def __init__(self, stream_url, language, user, credentials):
 		self.stream_url = stream_url
 		self.language = language
-		self.user_dir = user_dir
+		self.user = user
 		self.credentials = credentials
-		self.playlist = playlist
+		self.quality = '360p'
 		self.worker = None
+		self.available_streams = None
 
 	def _get_video_stream(self):
 		try:
-			available_streams = streamlink.streams(self.stream_url)
+			self.available_streams = streamlink.streams(self.stream_url)
 		except Exception:
 			raise Exception("Streamlink Unavailable")
 
-		if STD_VIDEO_KEY not in available_streams:
+		if self.quality not in self.available_streams:
 			print("Could not find 360p stream")
 			raise Exception("Streamlink Unavailable")
 
-		return available_streams[STD_VIDEO_KEY]
+		return self.available_streams[self.quality]
 
-	def start(self):
-		print("Starting Video Streamer:")
+	def get_supported_qualities(self):
+		return list(self.available_streams.keys())
+
+	def update_quality(self, new_quality):
+		if new_quality == self.quality:
+			return
+
+		print("!Stream Quality Update!")
+
+		print("Stopping worker...", end="")
+		self.stop()
+		print("Success!")
+
+		return self.start(new_quality)
+
+	def start(self, quality='360p'):
+		print("Starting Video Streamer with quality: " + quality)
+		self.quality = quality
 
 		print("Getting Video Stream...", end="")
 		stream = self._get_video_stream()
@@ -222,12 +221,22 @@ class VideoStreamer(object):
 		data = stream.open()
 		print("Success!")
 
+		print("Creating playlist...", end="")
+		playlist = HLSPlaylist(self.user)
+		print("Success!")
+
+		(bytes_to_read, wait_time) = QUALITY_INFO[self.quality]
+
 		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(data, self.language, self.user_dir, self.playlist, self.credentials)
+		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language, 
+			self.user, playlist, self.credentials)
 		self.worker.start()
 		print("Success!")
+
+		return playlist
 
 	def stop(self):
 		if self.worker != None:
 			self.worker.stop()
 			self.worker.join()
+			self.worker = None
