@@ -9,7 +9,7 @@ import re
 
 from flask import Flask, request, jsonify, send_from_directory, send_file, session
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit, Namespace
+from flask_socketio import SocketIO, emit, Namespace, disconnect
 
 from server.translate import test
 from server.speechtotext import *
@@ -29,7 +29,7 @@ credentials = None
 
 LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
-SERVER_URL = HEROKU_URL
+SERVER_URL = LOCAL_URL
 
 # Main pipeline. Will return the JSON response with the translated text.
 def process(audio, sample_rate, lang, raw_pcm=False):
@@ -206,6 +206,7 @@ class StreamingSocket(Namespace):
 		self.streamers.pop(user)
 		print("Success!")
 
+	def _cleanup(self, user):
 		user_path = 'streams/' + user
 
 		print("Removing user files at " + user_path + "...", end="")
@@ -214,6 +215,7 @@ class StreamingSocket(Namespace):
 			print("Success!")
 		else:
 			print("!!! Not found !!!")
+
 
 	def on_stream(self, data):
 		user = session['uid']
@@ -224,7 +226,8 @@ class StreamingSocket(Namespace):
 		try:
 			streamer.start()
 		except Exception as exe:
-			emit('stream-response', json.dumps({'media':'', 'error':str(exe)}))
+			print("VideoStreamer raised an exception!")
+			disconnect()
 			return
 
 		self.streamers[user] = streamer

@@ -36,7 +36,7 @@ BYTES_TO_READ = 1000000
 WAIT_TIME	  = 10.0
 SUB_SEG_SIZE  = 10
 
-STD_VIDEO_KEY   = '360p'
+STD_VIDEO_KEY   = '480p'
 VID_INPUT_FILE	= "segment"
 SUB_INPUT_FILE  = "subtitle"
 VID_EXTENSION 	= ".ts"
@@ -134,18 +134,9 @@ class _StreamWorker(Thread):
 		subtitles = self._get_subtitle(audio_data, self.sample_rate)
 		# subtitles = self._get_punctuated(subtitles)
 
-		print("Generated Subtitles: " + subtitles)
-
 		vtt = WebVTT()
 
-		print("\n**** SUBTITLE DEBUG ****\n")
-
-
 		subtitles = subtitles.split()
-		print("Subtitles: ", end="")
-		print(*subtitles, sep = ", ")
-
-		print("Duration: " + str(duration))
 
 		if len(subtitles) == 0:
 			with open(file_path, 'w') as f:
@@ -153,46 +144,23 @@ class _StreamWorker(Thread):
 			return file_path
 
 		max_segment_duration = duration / ceil(len(subtitles) / SUB_SEG_SIZE)
-		assert max_segment_duration != 0
-		print("Max Segment Duration: " + str(max_segment_duration))
-
 		words_per_segment = ceil(len(subtitles) / (duration / max_segment_duration))
-		print("Words Per Segment: " + str(words_per_segment))
 
 		rem_duration = duration
 		word_index = 0
 
 		while rem_duration > 0:
-			print("* Loop Iteration...")
 			segment_duration = min(rem_duration, max_segment_duration)
-			print("* Segment Duration: " + str(segment_duration))
 			words_in_segment = subtitles[word_index : word_index + words_per_segment]
-			print("* Words In Segment: " + str(words_in_segment))
 
 			start_time = self._get_current_timestamp()
-			print("* Start Time: " + str(start_time))
 			self.current_time += segment_duration
 			end_time = self._get_current_timestamp()
-			print("* End Time: " + str(end_time))
-			print("\n")
 
 			vtt.captions.append(Caption(start_time, end_time, " ".join(words_in_segment)))
 
 			word_index += words_per_segment
 			rem_duration -= segment_duration
-
-		# words = subtitles.split()
-		# num_words = len(words)
-		# segments = ceil(num_words / SUB_SEG_SIZE)
-		# window = duration if segments == 0 else ceil(duration / segments)
-
-		# for i in range(0, segments - 1):
-		# 	start_time = self._get_current_timestamp()
-		# 	self.current_time += window
-		# 	end_time = self._get_current_timestamp()
-
-		# 	capts = " ".join(words[(i*10):((i*10)+10)])
-		# 	vtt.captions.append(Caption(start_time, end_time, capts))
 
 		with open(file_path, 'w') as f:
 			vtt.write(f)
@@ -260,5 +228,6 @@ class VideoStreamer(object):
 		print("Success!")
 
 	def stop(self):
-		self.worker.stop()
-		self.worker.join()
+		if self.worker != None:
+			self.worker.stop()
+			self.worker.join()
