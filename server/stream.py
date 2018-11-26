@@ -78,7 +78,9 @@ class _StreamWorker(Thread):
 		transcript = get_text_from_pcm(audio, sample_rate, self.language) if raw_pcm else \
 					 get_text(audio, sample_rate, self.language, self.credentials)
 		translated = translate(transcript, 'en', self.language.split('-')[0], self.credentials)
-		return translated
+		punctuated = self._get_punctuated(translated)
+		print(punctuated)
+		return punctuated
 
 	def _get_current_timestamp(self):
 		seconds = self.current_time
@@ -98,7 +100,7 @@ class _StreamWorker(Thread):
 		return file_path
 
 	def _get_punctuated(self, subtitle):
-		url = "https://polyglot-punctuator.herokuapp.com/punctuate"
+		url = "http://flask-env.p5puf6mmb3.eu-west-2.elasticbeanstalk.com/punctuate"
 		body = {}
 		body['subtitle'] = subtitle
 		data = json.dumps(body)
