@@ -20,7 +20,7 @@ from server.language import *
 from server.playlist import *
 from server.stream import *
 
-QUALITY_INFO = {'worst': (500000, 8)
+QUALITY_INFO = {'worst': (500000, 8),
 				'144p': (500000, 8),
 				'360p': (1000000, 10), 
 				'480p': (2000000, 12), 
