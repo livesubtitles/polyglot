@@ -125,7 +125,7 @@ class _StreamWorker(Thread):
 
 		vtt = WebVTT()
 
-		if len(subtitles) == 0:
+		if subtitles == None or len(subtitles) == 0:
 			with open(file_path, 'w') as f:
 				vtt.write(f)
 			return file_path
