@@ -229,7 +229,7 @@ class StreamingSocket(Namespace):
 		new_playlist = self.streamers[user].update_quality(new_quality)
 
 		media_url = str(SERVER_URL + new_playlist.get_master())
-		emit('stream-response', json.dumps( {'media':media_url} ))
+		emit('stream-response', json.dumps({'media':media_url}))
 
 	def on_stream(self, data):
 		user = session['uid']
@@ -240,6 +240,7 @@ class StreamingSocket(Namespace):
 			playlist = streamer.start()
 		except Exception as exe:
 			print("VideoStreamer raised an exception!")
+			emit('error')
 			disconnect()
 			return
 
@@ -247,7 +248,7 @@ class StreamingSocket(Namespace):
 
 		media_url = str(SERVER_URL + playlist.get_master())
 		supported_qualities = streamer.get_supported_qualities()
-		emit('stream-response', json.dumps( {'media':media_url, 'qualities':supported_qualities}))
+		emit('stream-response', json.dumps({'media':media_url, 'qualities':supported_qualities}))
 
 
 socketio.on_namespace(StreamingSocket('/streams'))
