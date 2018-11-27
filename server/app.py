@@ -240,7 +240,7 @@ class StreamingSocket(Namespace):
 			playlist = streamer.start()
 		except Exception as exe:
 			print("VideoStreamer raised an exception!")
-			emit('error')
+			emit('streamlink-error')
 			disconnect()
 			return
 
