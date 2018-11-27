@@ -9,12 +9,13 @@ import re
 
 from flask import Flask, request, jsonify, send_from_directory, send_file, session
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit, Namespace
+from flask_socketio import SocketIO, emit, Namespace, disconnect
 
 from server.translate import test
 from server.speechtotext import *
 from server.language import *
 from server.stream import *
+from server.playlist import *
 from server.support import isStreamLinkSupported
 from apiclient import discovery
 from oauth2client import client
@@ -28,10 +29,7 @@ credentials = None
 
 LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
-SERVER_URL = LOCAL_URL
-
-MASTER_STUB = '#EXTM3U\n#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",NAME="English",URI="subtitles.m3u8",LANGUAGE="en"\n#EXT-X-STREAM-INF:BANDWIDTH=200000,RESOLUTION=480x360,SUBTITLES="subs"\nplaylist.m3u8\n'
-PLAYLIST_STUB = '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:20\n#EXT-X-MEDIA-SEQUENCE:0\n'
+SERVER_URL = HEROKU_URL
 
 # Main pipeline. Will return the JSON response with the translated text.
 def process(audio, sample_rate, lang, raw_pcm=False):
@@ -124,6 +122,10 @@ def after_request(response):
   response.headers.add('Access-Control-Allow-Origin', '*')
   response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+  response.headers.add('Cache-Control', 'no-cache, no-store, must-revalidate')
+  response.headers.add('Pragma', 'no-cache')
+  response.headers.add('Expires', '0')
+  response.headers.add('Cache-Control', 'public, max-age=0')
   return response
 
 @app.route("/streams")
@@ -183,14 +185,6 @@ class StreamingSocket(Namespace):
 	streamers = {}
 	global credentials
 
-	def _initialise_new_streamer(self, url, user):
-		streamer = VideoStreamer(url, 'streams/' + user, credentials)
-		try:
-			streamer.start()
-			self.streamers[user] = streamer
-		except Exception as exe:
-			emit('stream-response', json.dumps({'media':'', 'error':exe}))
-
 	def _generate_user_hash(self):
 		return ''.join(random.choices(string.ascii_letters + string.digits, k=self._HASH_LEN))
 
@@ -207,40 +201,54 @@ class StreamingSocket(Namespace):
 	def on_disconnect(self):
 		user = session['uid']
 		print("Disconneting from user: " + user)
-		print("Stopping worker...", end="")
-		self.streamers[user].stop()
-		self.streamers.pop(user)
-		print("Success!")
+		print("Stopping worker...")
+		if user in self.streamers:
+			self.streamers[user].stop()
+			self.streamers.pop(user)
+		print("Worker Stopped! Cleaning up...")
 
-		print("Removing user files at " + 'streams/' + user + "...", end="")
-		if os.path.isdir('streams/' + user):
-			shutil.rmtree('streams/' + user)
+		self._cleanup(user)
+
+	def _cleanup(self, user):
+		user_path = 'streams/' + user
+
+		print("Removing user files at " + user_path + "...", end="")
+		if os.path.isdir(user_path):
+			shutil.rmtree(user_path)
 			print("Success!")
 		else:
 			print("!!! Not found !!!")
 
-	def _generate_playlists(self, user):
-		masterplaylist_path = 'streams/' + user + '/masterplaylist.m3u8'
-		playlist_path = 'streams/' + user + '/playlist.m3u8'
-		subtitle_path = 'streams/' + user + '/subtitles.m3u8'
+		print("~~~ Ready ~~~")
 
-		with open(masterplaylist_path, 'w') as f:
-			f.write(MASTER_STUB)
+	def on_quality(self, data):
+		print("Recieved quality event")
+		user = session['uid']
+		new_quality = data['quality']
+		
+		new_playlist = self.streamers[user].update_quality(new_quality)
 
-		with open(playlist_path, 'w') as f:
-			f.write(PLAYLIST_STUB)
-
-		with open(subtitle_path, 'w') as f:
-			f.write(PLAYLIST_STUB)
-
-		return masterplaylist_path
+		media_url = str(SERVER_URL + new_playlist.get_master())
+		emit('stream-response', json.dumps( {'media':media_url} ))
 
 	def on_stream(self, data):
 		user = session['uid']
-		self._initialise_new_streamer(data['url'], user)
-		master_path = self._generate_playlists(user);
 
-		emit('stream-response', json.dumps({'media':str(SERVER_URL + master_path)}))
+		streamer = VideoStreamer(data['url'], data['lang'], user, credentials)
+
+		try:
+			playlist = streamer.start()
+		except Exception as exe:
+			print("VideoStreamer raised an exception!")
+			disconnect()
+			return
+
+		self.streamers[user] = streamer
+
+		media_url = str(SERVER_URL + playlist.get_master())
+		supported_qualities = streamer.get_supported_qualities()
+		emit('stream-response', json.dumps( {'media':media_url, 'qualities':supported_qualities}))
+
 
 socketio.on_namespace(StreamingSocket('/streams'))
 

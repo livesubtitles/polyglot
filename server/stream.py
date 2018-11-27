@@ -17,81 +17,43 @@ from enum import Enum
 from server.translate import test
 from server.speechtotext import *
 from server.language import *
+from server.playlist import *
 from server.stream import *
 
-'''
-	New Workflow:
+QUALITY_INFO = {'worst': (500000, 8),
+				'144p': (500000, 8),
+				'360p': (1000000, 10), 
+				'480p': (2000000, 12), 
+				'720p': (3000000, 15),
+				'best': (3000000, 15)}
 
-	- On socket connection, create a hash for the user
-	- Streamer starts. It creates a new directory for the user.
-	- It creates a playlist file in this directory and sets off a stream worker.
-	- Every 10 seconds, the stream worker reads from the stream and writes to a temp file.
-	- The stream worker adds the name of the temp file into the current playlist file.
-	- The streamer should return the name of the playlist file to be used by hls.
-
-'''
-
-BYTES_TO_READ = 1000000
-WAIT_TIME	  = 8.0
 SUB_SEG_SIZE  = 10
 
-STD_VIDEO_KEY   = '360p'
 VID_INPUT_FILE	= "segment"
 SUB_INPUT_FILE  = "subtitle"
 VID_EXTENSION 	= ".ts"
 SUB_EXTENSION	= ".vtt"
 OUTPUT_WAV_FILE = "/audio.wav"
 
-SUBTITLE_PLAYLIST = '/subtitles.m3u8'
-VIDEO_PLAYLIST    = '/playlist.m3u8'
-
-# Nukes the temp directory and generates a fresh one
-def _clearTempFiles():
-	if os.path.isdir('temp'):
-		shutil.rmtree('temp')
-	os.makedirs('temp')
-
 class _StreamWorker(Thread):
-	def __init__(self, stream_data, user_dir, video_streamer, credentials):
+	def __init__(self, stream_data, bytes_to_read, wait_time, language, user, playlist, credentials):
 		self.stream_data = stream_data
-		self.user_dir = user_dir
+		self.user_dir = 'streams/' + user
 		self.streaming = True
 		self.count = 0
 		self.current_time = 0
 		self.sample_rate = 0
+		self.bytes_to_read = bytes_to_read
+		self.wait_time = wait_time
 		self.credentials = credentials
+		self.playlist = playlist
+		self.language = language
 		Thread.__init__(self)
 
-	def _update_playlist(self, playlist_name, file_path, duration):
-		playlist_path = self.user_dir + playlist_name
-		file_name = file_path.split('/')[-1]
-
-		if not os.path.isfile(playlist_path):
-			print("Playlist file not found, exiting...")
-			raise Exception
-
-		with open(playlist_path, "r") as f:
-			lines = f.readlines()
-
-		sequence_no = int(lines[3].split(':')[1])
-
-		lines[3] = '#EXT-X-MEDIA-SEQUENCE:' + str(sequence_no) + '\n'
-
-		if (sequence_no + 1 >= 4 and len(lines) >= 7):
-			lines = lines[0:4] + lines[7:]
-			lines[3] = '#EXT-X-MEDIA-SEQUENCE:' + str(sequence_no + 1) + '\n'
-
-		with open(playlist_path, "w+") as f:
-			f.writelines(lines)
-			if not sequence_no == 0:
-				f.write('#EXT-X-DISCONTINUITY\n')
-			f.write('#EXTINF:' + str(duration) + ',\n')
-			f.write(file_name + '\n')
-
 	def _get_duration(self, video_file):
-		duration = subprocess.check_output(["ffmpeg -i " + video_file + " 2>&1 | grep 'Duration'"], shell=True)
-		duration_time = duration.decode('ascii').split("Duration: ")[1].split(',')[0]
-		return float(duration_time.split(":")[2])
+		output = subprocess.check_output(["ffmpeg -i " + video_file + " 2>&1 | grep 'Duration'"], shell=True)
+		duration = output.decode('ascii').split("Duration: ")[1].split(',')[0]
+		return float(duration.split(":")[2])
 
 	def _extract_audio(self, file_name):
 		FFmpeg(
@@ -115,14 +77,15 @@ class _StreamWorker(Thread):
 			+ str(self.count) \
 			+ (SUB_EXTENSION if subtitle else VID_EXTENSION)
 
-	def _get_subtitle(self, audio, sample_rate, lang, raw_pcm=False):
-		if lang == '':
-			lang = detect_language(audio)
+	def _get_subtitle(self, audio, sample_rate, raw_pcm=False):
+		if self.language == '':
+			self.language = detect_language(audio)
 
-		transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
-					 get_text(audio, sample_rate, lang)
-		translated = translate(transcript, 'en', lang.split('-')[0], self.credentials)
-		return translated
+		transcript = get_text_from_pcm(audio, sample_rate, self.language) if raw_pcm else \
+					 get_text(audio, sample_rate, self.language, self.credentials)
+		translated = translate(transcript, 'en', self.language.split('-')[0], self.credentials)
+		punctuated = self._get_punctuated(translated)
+		return punctuated
 
 	def _get_current_timestamp(self):
 		seconds = self.current_time
@@ -142,7 +105,7 @@ class _StreamWorker(Thread):
 		return file_path
 
 	def _get_punctuated(self, subtitle):
-		url = "https://polyglot-punctuator.herokuapp.com/punctuate"
+		url = "http://flask-env.p5puf6mmb3.eu-west-2.elasticbeanstalk.com/punctuate"
 		body = {}
 		body['subtitle'] = subtitle
 		data = json.dumps(body)
@@ -157,24 +120,36 @@ class _StreamWorker(Thread):
 
 	def _create_subtitle_file(self, data, audio_data, duration):
 		file_path = self._get_next_filepath(subtitle=True)
-
-		subtitles = self._get_subtitle(audio_data, self.sample_rate, "es-ES")
-		# subtitles = self._get_punctuated(subtitles)
+		subtitles = self._get_subtitle(audio_data, self.sample_rate)
+		subtitles = self._get_punctuated(subtitles)
 
 		vtt = WebVTT()
 
-		words = subtitles.split()
-		num_words = len(words)
-		segments = ceil(num_words / SUB_SEG_SIZE)
-		window = duration if segments == 0 else ceil(duration / segments)
+		if len(subtitles) == 0:
+			with open(file_path, 'w') as f:
+				vtt.write(f)
+			return file_path
 
-		for i in range(0, segments - 1):
+		subtitles = subtitles.split()
+
+		max_segment_duration = duration / ceil(len(subtitles) / SUB_SEG_SIZE)
+		words_per_segment = ceil(len(subtitles) / (duration / max_segment_duration))
+
+		rem_duration = duration
+		word_index = 0
+
+		while rem_duration > 0:
+			segment_duration = min(rem_duration, max_segment_duration)
+			words_in_segment = subtitles[word_index : word_index + words_per_segment]
+
 			start_time = self._get_current_timestamp()
-			self.current_time += window
+			self.current_time += segment_duration
 			end_time = self._get_current_timestamp()
 
-			capts = " ".join(words[(i*10):((i*10)+10)])
-			vtt.captions.append(Caption(start_time, end_time, capts))
+			vtt.captions.append(Caption(start_time, end_time, " ".join(words_in_segment)))
+
+			word_index += words_per_segment
+			rem_duration -= segment_duration
 
 		with open(file_path, 'w') as f:
 			vtt.write(f)
@@ -184,9 +159,9 @@ class _StreamWorker(Thread):
 
 	def run(self):
 		while self.streaming:
-			time.sleep(WAIT_TIME)
+			time.sleep(self.wait_time)
 
-			data = self.stream_data.read(BYTES_TO_READ)
+			data = self.stream_data.read(self.bytes_to_read)
 
 			video_path = self._create_video_file(data)
 
@@ -195,9 +170,7 @@ class _StreamWorker(Thread):
 
 			audio_path = self._create_subtitle_file(data, audio_data, duration)
 
-			self._update_playlist(VIDEO_PLAYLIST, video_path, duration)
-			self._update_playlist(SUBTITLE_PLAYLIST, audio_path, duration)
-
+			self.playlist.update_all(self.count, duration)
 			self.count += 1
 
 		self.stream_data.close()
@@ -207,30 +180,45 @@ class _StreamWorker(Thread):
 
 
 class VideoStreamer(object):
-	def __init__(self, stream_url, user_dir, credentials):
+	def __init__(self, stream_url, language, user, credentials):
 		self.stream_url = stream_url
-		self.user_dir = user_dir
+		self.language = language
+		self.user = user
 		self.credentials = credentials
+		self.quality = '360p'
 		self.worker = None
+		self.available_streams = None
 
 	def _get_video_stream(self):
 		try:
-			available_streams = streamlink.streams(self.stream_url)
-		except NoPluginError:
-			raise Exception("Streamlink Unavailable: No Plugin Found")
-		except PluginError:
-			raise Exception("Streamlink Unavailable: Plugin Error")
+			self.available_streams = streamlink.streams(self.stream_url)
 		except Exception:
 			raise Exception("Streamlink Unavailable")
 
-		if STD_VIDEO_KEY not in available_streams:
-			print("Could not find 360p stream")
+		if self.quality not in self.available_streams:
+			print("Could not find " + self.quality + " stream")
 			raise Exception("Streamlink Unavailable")
 
-		return available_streams[STD_VIDEO_KEY]
+		return self.available_streams[self.quality]
 
-	def start(self):
-		print("Starting Video Streamer:")
+	def get_supported_qualities(self):
+		return list(self.available_streams.keys())
+
+	def update_quality(self, new_quality):
+		if new_quality == self.quality:
+			return
+
+		print("!Stream Quality Update!")
+
+		print("Stopping worker...", end="")
+		self.stop()
+		print("Success!")
+
+		return self.start(new_quality)
+
+	def start(self, quality='360p'):
+		print("Starting Video Streamer with quality: " + quality)
+		self.quality = quality
 
 		print("Getting Video Stream...", end="")
 		stream = self._get_video_stream()
@@ -240,11 +228,22 @@ class VideoStreamer(object):
 		data = stream.open()
 		print("Success!")
 
+		print("Creating playlist...", end="")
+		playlist = HLSPlaylist(self.user)
+		print("Success!")
+
+		(bytes_to_read, wait_time) = QUALITY_INFO[self.quality]
+
 		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(data, self.user_dir, self, self.credentials)
+		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language, 
+			self.user, playlist, self.credentials)
 		self.worker.start()
 		print("Success!")
 
+		return playlist
+
 	def stop(self):
-		self.worker.stop()
-		self.worker.join()
+		if self.worker != None:
+			self.worker.stop()
+			self.worker.join()
+			self.worker = None
