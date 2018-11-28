@@ -20,7 +20,13 @@ from server.language import *
 from server.playlist import *
 from server.stream import *
 
-QUALITY_INFO = {'360p': (1000000, 10), '480p': (2000000, 12), '720p': (3000000, 15)}
+QUALITY_INFO = {'worst': (500000, 8),
+				'144p': (500000, 8),
+				'360p': (1000000, 10), 
+				'480p': (2000000, 12), 
+				'720p': (3000000, 15),
+				'best': (3000000, 15)}
+
 SUB_SEG_SIZE  = 10
 
 VID_INPUT_FILE	= "segment"
@@ -79,8 +85,11 @@ class _StreamWorker(Thread):
 					 get_text(audio, sample_rate, self.language, self.credentials)
 		translated = translate(transcript, 'en', self.language.split('-')[0], self.credentials)
 		punctuated = self._get_punctuated(translated)
+<<<<<<< HEAD
 		print(punctuated)
 		punctuated = punctuated.replace(",,", ",").replace("..", ".")
+=======
+>>>>>>> b2d219916d6f34dbf590d944c2e9a871c2f739dd
 		return punctuated
 
 	def _get_current_timestamp(self):
@@ -117,16 +126,16 @@ class _StreamWorker(Thread):
 	def _create_subtitle_file(self, data, audio_data, duration):
 		file_path = self._get_next_filepath(subtitle=True)
 		subtitles = self._get_subtitle(audio_data, self.sample_rate)
-		# subtitles = self._get_punctuated(subtitles)
+		subtitles = self._get_punctuated(subtitles)
 
 		vtt = WebVTT()
 
-		subtitles = subtitles.split()
-
-		if len(subtitles) == 0:
+		if subtitles == None or len(subtitles) == 0:
 			with open(file_path, 'w') as f:
 				vtt.write(f)
 			return file_path
+
+		subtitles = subtitles.split()
 
 		max_segment_duration = duration / ceil(len(subtitles) / SUB_SEG_SIZE)
 		words_per_segment = ceil(len(subtitles) / (duration / max_segment_duration))
@@ -192,7 +201,7 @@ class VideoStreamer(object):
 			raise Exception("Streamlink Unavailable")
 
 		if self.quality not in self.available_streams:
-			print("Could not find 360p stream")
+			print("Could not find " + self.quality + " stream")
 			raise Exception("Streamlink Unavailable")
 
 		return self.available_streams[self.quality]
