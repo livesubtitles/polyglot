@@ -36,7 +36,9 @@ SUB_EXTENSION	= ".vtt"
 OUTPUT_WAV_FILE = "/audio.wav"
 
 class _StreamWorker(Thread):
-	def __init__(self, stream_data, bytes_to_read, wait_time, language, user, playlist, credentials):
+	def __init__(self, stream_data, bytes_to_read, wait_time, language, \
+						sub_language, user, playlist, credentials):
+
 		self.stream_data = stream_data
 		self.user_dir = 'streams/' + user
 		self.streaming = True
@@ -48,7 +50,11 @@ class _StreamWorker(Thread):
 		self.credentials = credentials
 		self.playlist = playlist
 		self.language = language
+		self.sub_language = sub_language
 		Thread.__init__(self)
+
+	def update_language(self, new_language):
+		self.sub_language = new_language
 
 	def _get_duration(self, video_file):
 		output = subprocess.check_output(["ffmpeg -i " + video_file + " 2>&1 | grep 'Duration'"], shell=True)
@@ -83,11 +89,16 @@ class _StreamWorker(Thread):
 
 		transcript = get_text_from_pcm(audio, sample_rate, self.language) if raw_pcm else \
 					 get_text(audio, sample_rate, self.language, self.credentials)
-		translated = translate(transcript, 'en', self.language.split('-')[0], self.credentials)
-		punctuated = self._get_punctuated(translated)
-		print(punctuated)
-		punctuated = punctuated.replace(",,", ",").replace("..", ".")
-		return punctuated
+
+		if self.language == self.sub_language:
+			return transcript
+
+		translated = translate(transcript, self.sub_language, self.language.split('-')[0], self.credentials)
+
+		if self.sub_language == 'en':
+			return translated
+		else:
+			return self._get_punctuated(translated)
 
 	def _get_current_timestamp(self):
 		seconds = self.current_time
@@ -118,7 +129,7 @@ class _StreamWorker(Thread):
 			print("ERROR: Could not punctuate text.")
 			return
 
-		return punctuated
+		return "" if punctuated == None else punctuated.replace(",,", ",").replace("..", ".") 
 
 	def _create_subtitle_file(self, data, audio_data, duration):
 		file_path = self._get_next_filepath(subtitle=True)
@@ -160,9 +171,9 @@ class _StreamWorker(Thread):
 		return file_path
 
 	def run(self):
-		while self.streaming:
-			time.sleep(self.wait_time)
+		time.sleep(self.wait_time)
 
+		while self.streaming:
 			data = self.stream_data.read(self.bytes_to_read)
 
 			video_path = self._create_video_file(data)
@@ -174,6 +185,8 @@ class _StreamWorker(Thread):
 
 			self.playlist.update_all(self.count, duration)
 			self.count += 1
+
+			time.sleep(self.wait_time)
 
 		self.stream_data.close()
 
@@ -188,6 +201,7 @@ class VideoStreamer(object):
 		self.user = user
 		self.credentials = credentials
 		self.quality = '360p'
+		self.sub_language = 'en'
 		self.worker = None
 		self.available_streams = None
 
@@ -206,6 +220,17 @@ class VideoStreamer(object):
 	def get_supported_qualities(self):
 		return list(self.available_streams.keys())
 
+	def update_sub_language(self, new_language):
+		if new_language == self.sub_language:
+			return
+
+		print("!Subtitle Language Update!")
+
+		print("Updating Stream Worker...", end="")
+		self.worker.update_language(new_language)
+		self.sub_language = new_language
+		print("Success!")
+
 	def update_quality(self, new_quality):
 		if new_quality == self.quality:
 			return
@@ -218,9 +243,10 @@ class VideoStreamer(object):
 
 		return self.start(new_quality)
 
-	def start(self, quality='360p'):
+	def start(self, quality='360p', sub_language='en'):
 		print("Starting Video Streamer with quality: " + quality)
 		self.quality = quality
+		self.sub_language = sub_language
 
 		print("Getting Video Stream...", end="")
 		stream = self._get_video_stream()
@@ -238,7 +264,7 @@ class VideoStreamer(object):
 
 		print("Starting stream worker...", end="")
 		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language,
-			self.user, playlist, self.credentials)
+			sub_language, self.user, playlist, self.credentials)
 		self.worker.start()
 		print("Success!")
 

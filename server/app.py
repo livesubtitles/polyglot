@@ -221,8 +221,13 @@ class StreamingSocket(Namespace):
 
 		print("~~~ Ready ~~~")
 
+	def on_language(self, data):
+		user = session['uid']
+		new_language = data['sub_lang']
+
+		self.streamers[user].update_sub_language(new_language)
+
 	def on_quality(self, data):
-		print("Recieved quality event")
 		user = session['uid']
 		new_quality = data['quality']
 		
@@ -237,7 +242,7 @@ class StreamingSocket(Namespace):
 		streamer = VideoStreamer(data['url'], data['lang'], user, credentials)
 
 		try:
-			playlist = streamer.start()
+			playlist = streamer.start(sub_language=data['sub_lang'])
 		except Exception as exe:
 			print("VideoStreamer raised an exception!")
 			emit('streamlink-error')
