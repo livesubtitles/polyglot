@@ -56,7 +56,7 @@ socket.on('connect', function() {
 });
 
 socket.on('server-ready', function() {
-    socket.emit('stream', {url: "https://www.youtube.com/watch?v=y1WY4xCuBLg", lang: "de-DE", sub_lang: "en"})
+    socket.emit('stream', {url: "https://www.youtube.com/watch?v=y1WY4xCuBLg", lang: "de-DE"})
 });
 
 socket.on('stream-response', function(data) {
@@ -69,7 +69,7 @@ socket.on('stream-response', function(data) {
 
     var manifest_url = json.media;
 
-    hls = new Hls();
+    hls = new Hls({debug: true});
 
     console.log("Available Streams: " + json.qualities)
 

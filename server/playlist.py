@@ -42,18 +42,25 @@ class HLSPlaylist(object):
 		new_video_file = self._VIDEO_FILE_NAME + str(count) + self._VIDEO_FILE_EXT
 		new_subs_file  = self._SUBTITLE_FILE_NAME + str(count) + self._SUBTITLE_FILE_EXT
 
-		self._update(self.subtitle_playlist_path, new_subs_file, duration)
-		self._update(self.video_playlist_path, new_video_file, duration)
+		removed_sub = self._update(self.subtitle_playlist_path, new_subs_file, duration)
+		removed_vid = self._update(self.video_playlist_path, new_video_file, duration)
 
 		self.playlist_length += 1
+
+		return (removed_vid, removed_sub)
 
 	def _update(self, playlist_path, file_name, duration):
 		with open(playlist_path, "r") as f:
 			lines = f.readlines()
 
+		removed_file = ""
+
 		if (self.playlist_length >= 4):
 			sequence_no = int(lines[3].split(':')[1])
 			lines[3] = self._SEQUENCE_TAG + str(sequence_no + 1) + '\n'
+
+			removed_file = lines[5].replace('\n', '')
+
 			lines = lines[0:4] + lines[6:]
 
 		with open(playlist_path, "w+") as f:
@@ -61,3 +68,5 @@ class HLSPlaylist(object):
 			# f.write(self._DISCONT_TAG)
 			f.write(self._MEDIA_TAG + str(duration) + ',\n')
 			f.write(file_name + '\n')
+
+		return removed_file

@@ -242,7 +242,7 @@ class StreamingSocket(Namespace):
 		streamer = VideoStreamer(data['url'], data['lang'], user, credentials)
 
 		try:
-			playlist = streamer.start(sub_language=data['sub_lang'])
+			playlist = streamer.start()
 		except Exception as exe:
 			print("VideoStreamer raised an exception!")
 			emit('streamlink-error')
