@@ -8,6 +8,11 @@ var button = document.getElementById('disconnect_button');
 var button360 = document.getElementById('360_button');
 var button480 = document.getElementById('480_button');
 var button720 = document.getElementById('720_button');
+
+var buttonEng = document.getElementById('eng_button');
+var buttonEsp = document.getElementById('esp_button');
+var buttonFrn = document.getElementById('frn_button');
+
 var hls = null;
 
 button.onclick = function() {
@@ -34,12 +39,24 @@ button720.onclick = function() {
     socket.emit('quality', {quality:'720p'})
 }
 
+buttonEng.onclick = function() {
+    socket.emit('language', {sub_lang: 'en'});
+}
+
+buttonEsp.onclick = function() {
+    socket.emit('language', {sub_lang: 'es'});
+}
+
+buttonFrn.onclick = function() {
+    socket.emit('language', {sub_lang: 'fr'});
+}
+
 socket.on('connect', function() {
     console.log("Socket connected");
 });
 
 socket.on('server-ready', function() {
-    socket.emit('stream', {url: "https://www.youtube.com/watch?v=mV8jp1N2fSw", lang: "es-ES"})
+    socket.emit('stream', {url: "https://www.youtube.com/watch?v=y1WY4xCuBLg", lang: "de-DE", sub_lang: "en"})
 });
 
 socket.on('stream-response', function(data) {
