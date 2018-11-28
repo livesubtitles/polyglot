@@ -80,6 +80,7 @@ class _StreamWorker(Thread):
 		translated = translate(transcript, 'en', self.language.split('-')[0], self.credentials)
 		punctuated = self._get_punctuated(translated)
 		print(punctuated)
+		punctuated = punctuated.replace(",,", ",").replace("..", ".")
 		return punctuated
 
 	def _get_current_timestamp(self):
@@ -230,7 +231,7 @@ class VideoStreamer(object):
 		(bytes_to_read, wait_time) = QUALITY_INFO[self.quality]
 
 		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language, 
+		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language,
 			self.user, playlist, self.credentials)
 		self.worker.start()
 		print("Success!")
