@@ -239,6 +239,8 @@ class StreamingSocket(Namespace):
 	def on_stream(self, data):
 		user = session['uid']
 
+		print("Creating VideoStreamer for URL: " + data['url'])
+
 		streamer = VideoStreamer(data['url'], data['lang'], user, credentials)
 
 		try:
