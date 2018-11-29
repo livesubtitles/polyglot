@@ -22,10 +22,10 @@ from oauth2client import client
 
 app = Flask(__name__)
 CORS(app)
+app.secret_key = b'\xc4Q\x8e\x10b\xafy\x10\xc0i\xb5G\x08{]\xee'
 socketio = SocketIO(app)
 streamer = None
 language = ""
-credentials = None
 
 LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
@@ -120,8 +120,9 @@ def dummyTranslate():
 @app.after_request
 def after_request(response):
   response.headers.add('Access-Control-Allow-Origin', '*')
-  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+  response.headers.add("Access-Control-Allow-Credentials", "true")
+  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers')
+  response.headers.add('Access-Control-Allow-Methods', 'GET,HEAD,PUT,POST,DELETE,OPTIONS')
   response.headers.add('Cache-Control', 'no-cache, no-store, must-revalidate')
   response.headers.add('Pragma', 'no-cache')
   response.headers.add('Expires', '0')
@@ -146,32 +147,32 @@ def getFile(user_dir, filename):
 
 @app.route("/storeauthcode", methods=['POST'])
 def get_user_access_token_google():
-	global credentials
 	auth_code = str(request.data).split("\'")[1]
-	# If this request does not have `X-Requested-With` header, this could be a CSRF
-	if not request.headers.get('X-Requested-With'):
-	    abort(403)
-	# Set path to the Web application client_secret_*.json file you downloaded from the
-	# Google API Console: https://console.developers.google.com/apis/credentials
 	CLIENT_SECRET_FILE = 'client_secret_1070969009500-4674ntngjh3dvlbcvoer0r4c7hao04dh.apps.googleusercontent.com.json'
 
 	# Exchange auth code for access token, refresh token, and ID token
 	credentials = client.credentials_from_clientsecrets_and_code(
-	    CLIENT_SECRET_FILE,
-	    ['https://www.googleapis.com/auth/drive.appdata', 'profile', 'email'],
-	    auth_code)
+		CLIENT_SECRET_FILE,
+		['https://www.googleapis.com/auth/drive.appdata', 'profile', 'email'],
+		auth_code)
 
 	# Call Google API
 	http = httplib2.Http()
 	http_auth = credentials.authorize(http)
 	resp, content = http.request(
-        'https://www.googleapis.com/language/translate/v2/?q=voiture&target=en&source=fr')
+		'https://www.googleapis.com/language/translate/v2/?q=voiture&target=en&source=fr')
 	print(resp.status)
 	print(content.decode('utf-8'))
 
 	# Get profile info from ID token
 	userid = credentials.id_token['sub']
 	email = credentials.id_token['email']
+	session['email'] = email
+	session['userid'] = userid
+	session['credentials'] = jsonpickle.dumps(credentials)
+	if not 'credentials' in session:
+		print("Credentials not saved to session")
+	session.modified = True
 	print(userid)
 	print(email)
 	return ""
@@ -183,7 +184,6 @@ class StreamingSocket(Namespace):
 	_HASH_LEN = 20
 
 	streamers = {}
-	global credentials
 
 	def _generate_user_hash(self):
 		return ''.join(random.choices(string.ascii_letters + string.digits, k=self._HASH_LEN))
@@ -191,6 +191,10 @@ class StreamingSocket(Namespace):
 	def on_connect(self):
 		print("Creating user details... ", end="")
 		new_hash = self._generate_user_hash()
+		if 'credentials' not in session:
+			print("Credentials not in session before")
+		if 'credentials' not in session:
+			print("Credentials not in session after")
 		session['uid'] = new_hash
 		os.makedirs('streams/' + new_hash)
 		print("Success!")
@@ -230,7 +234,7 @@ class StreamingSocket(Namespace):
 	def on_quality(self, data):
 		user = session['uid']
 		new_quality = data['quality']
-		
+
 		new_playlist = self.streamers[user].update_quality(new_quality)
 
 		media_url = str(SERVER_URL + new_playlist.get_master())
@@ -241,6 +245,9 @@ class StreamingSocket(Namespace):
 
 		print("Creating VideoStreamer for URL: " + data['url'])
 
+		if not 'credentials' in session:
+			print("Credentials not saved to session")
+		credentials = jsonpickle.loads(session['credentials'])
 		streamer = VideoStreamer(data['url'], data['lang'], user, credentials)
 
 		try:
