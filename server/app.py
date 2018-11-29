@@ -169,6 +169,9 @@ def get_user_access_token_google():
 	session['email'] = email
 	session['userid'] = userid
 	session['credentials'] = jsonpickle.dumps(credentials)
+	if not 'credentials' in session:
+		print("Credentials not saved to session")
+	session.modified = True
 	print(userid)
 	print(email)
 	return ""
@@ -237,6 +240,8 @@ class StreamingSocket(Namespace):
 
 		print("Creating VideoStreamer for URL: " + data['url'])
 
+		if not 'credentials' in session:
+			print("Credentials not saved to session")
 		credentials = jsonpickle.loads(session['credentials'])
 		streamer = VideoStreamer(data['url'], data['lang'], user, credentials)
 
