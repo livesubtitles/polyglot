@@ -26,6 +26,7 @@ app.secret_key = b'\xc4Q\x8e\x10b\xafy\x10\xc0i\xb5G\x08{]\xee'
 socketio = SocketIO(app)
 streamer = None
 language = ""
+credentials = None
 
 LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
@@ -147,6 +148,7 @@ def getFile(user_dir, filename):
 
 @app.route("/storeauthcode", methods=['POST'])
 def get_user_access_token_google():
+	global credentials
 	auth_code = str(request.data).split("\'")[1]
 	CLIENT_SECRET_FILE = 'client_secret_1070969009500-4674ntngjh3dvlbcvoer0r4c7hao04dh.apps.googleusercontent.com.json'
 
@@ -184,6 +186,7 @@ class StreamingSocket(Namespace):
 	_HASH_LEN = 20
 
 	streamers = {}
+	global credentials
 
 	def _generate_user_hash(self):
 		return ''.join(random.choices(string.ascii_letters + string.digits, k=self._HASH_LEN))
@@ -247,8 +250,8 @@ class StreamingSocket(Namespace):
 
 		if not 'credentials' in session:
 			print("Credentials not saved to session")
-		credentials = jsonpickle.loads(session['credentials'])
-		streamer = VideoStreamer(data['url'], data['lang'], user, credentials)
+		# credentials = jsonpickle.loads(session['credentials'])
+		streamer = VideoStreamer(data['url'], data['lang'], user, self.credentials)
 
 		try:
 			playlist = streamer.start()
