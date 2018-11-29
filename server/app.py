@@ -191,6 +191,10 @@ class StreamingSocket(Namespace):
 	def on_connect(self):
 		print("Creating user details... ", end="")
 		new_hash = self._generate_user_hash()
+		if 'credentials' not in session:
+			print("Credentials not in session before")
+		if 'credentials' not in session:
+			print("Credentials not in session after")
 		session['uid'] = new_hash
 		os.makedirs('streams/' + new_hash)
 		print("Success!")
