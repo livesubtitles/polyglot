@@ -6268,8 +6268,8 @@ module.exports = yeast;
 },{}],40:[function(require,module,exports){
 const io = require('socket.io-client');
 
-// const socket = io('https://polyglot-livesubtitles.herokuapp.com/streams')
-const socket = io('http://localhost:8000/streams');
+const socket = io('https://polyglot-livesubtitles.herokuapp.com/streams')
+// const socket = io('http://localhost:8000/streams');
 
 var video = document.getElementById('video');
 var button = document.getElementById('disconnect_button');
@@ -6324,7 +6324,7 @@ socket.on('connect', function() {
 });
 
 socket.on('server-ready', function() {
-    socket.emit('stream', {url: "https://www.youtube.com/watch?v=y1WY4xCuBLg", lang: "de-DE", sub_lang: "en"})
+    socket.emit('stream', {url: "https://www.youtube.com/watch?v=y1WY4xCuBLg", lang: "de-DE"})
 });
 
 socket.on('stream-response', function(data) {
