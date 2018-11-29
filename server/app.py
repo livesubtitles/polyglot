@@ -26,7 +26,6 @@ app.secret_key = b'\xc4Q\x8e\x10b\xafy\x10\xc0i\xb5G\x08{]\xee'
 socketio = SocketIO(app)
 streamer = None
 language = ""
-credentials = None
 
 LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
@@ -148,11 +147,6 @@ def getFile(user_dir, filename):
 @app.route("/storeauthcode", methods=['POST'])
 def get_user_access_token_google():
 	auth_code = str(request.data).split("\'")[1]
-	# If this request does not have `X-Requested-With` header, this could be a CSRF
-	if not request.headers.get('X-Requested-With'):
-		abort(403)
-	# Set path to the Web application client_secret_*.json file you downloaded from the
-	# Google API Console: https://console.developers.google.com/apis/credentials
 	CLIENT_SECRET_FILE = 'client_secret_1070969009500-4674ntngjh3dvlbcvoer0r4c7hao04dh.apps.googleusercontent.com.json'
 
 	# Exchange auth code for access token, refresh token, and ID token
