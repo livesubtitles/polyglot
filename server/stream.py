@@ -22,8 +22,8 @@ from server.stream import *
 
 QUALITY_INFO = {'worst': (500000, 8),
 				'144p': (500000, 8),
-				'360p': (1000000, 10), 
-				'480p': (2000000, 12), 
+				'360p': (1000000, 10),
+				'480p': (2000000, 12),
 				'720p': (3000000, 15),
 				'best': (3000000, 15)}
 
@@ -81,11 +81,32 @@ class _StreamWorker(Thread):
 		if self.language == '':
 			self.language = detect_language(audio)
 
-		transcript = get_text_from_pcm(audio, sample_rate, self.language) if raw_pcm else \
-					 get_text(audio, sample_rate, self.language, self.credentials)
-		translated = translate(transcript, 'en', self.language.split('-')[0], self.credentials)
-		punctuated = self._get_punctuated(translated)
-		return punctuated
+		url = "https://rumosrucml.execute-api.us-east-2.amazonaws.com/api/transcribe"
+
+		audiores = {}
+		audiores['content'] = self._convert_to_base64(audio)
+
+		body = {}
+		body['audio'] = audiores
+		body['sample_rate'] = sample_rate
+		body['lang'] = self.language
+		print(body)
+		data = json.dumps(body)
+		print(data)
+		headers = {'content-type': 'application/json'}
+		resp = requests.post(url, data=data, headers = headers)
+		print(resp.text)
+		return resp.text
+
+		# transcript = get_text_from_pcm(audio, sample_rate, self.language) if raw_pcm else \
+		# 			 get_text(audio, sample_rate, self.language, self.credentials)
+		# translated = translate(transcript, 'en', self.language.split('-')[0], self.credentials)
+		# punctuated = self._get_punctuated(translated)
+		# return punctuated
+
+	def _convert_to_base64(self, wav_file):
+	  audio_content = wav_file.getvalue()
+	  return base64.b64encode(audio_content).decode('ascii')
 
 	def _get_current_timestamp(self):
 		seconds = self.current_time
@@ -160,7 +181,6 @@ class _StreamWorker(Thread):
 	def run(self):
 		while self.streaming:
 			time.sleep(self.wait_time)
-
 			data = self.stream_data.read(self.bytes_to_read)
 
 			video_path = self._create_video_file(data)
@@ -235,7 +255,7 @@ class VideoStreamer(object):
 		(bytes_to_read, wait_time) = QUALITY_INFO[self.quality]
 
 		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language, 
+		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language,
 			self.user, playlist, self.credentials)
 		self.worker.start()
 		print("Success!")

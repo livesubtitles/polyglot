@@ -4,7 +4,7 @@ import os
 import wave
 import struct
 import array
-import requests
+from botocore.vendored import requests
 import base64
 
 # Imports the Google Cloud client library
@@ -24,32 +24,38 @@ def _send_stt_request(apiKey, lang, sample_rate, audiobase64):
     config['sampleRateHertz'] = sample_rate
     config['enableWordTimeOffsets'] = False
 
-    audio = {}
-    audio['content'] = audiobase64
+    # audio = {}
+    # audio['content'] = audiobase64
+    print("audio is: ")
+    # print(audiobase64)
 
     body = {}
     body['config'] = config
-    body['audio'] = audio
+    body['audio'] = audiobase64
     body = json.dumps(body)
 
     response = requests.post(url, headers = headers, data = body)
     return response.json()
 
+
 # Initiates and handles response from speech-to-text API
 def _speech_to_text(audio_file, sample_rate, lang):
-    apiKey = os.environ.get('APIKEY')
-    audiobase64 = _convert_to_base64(audio_file)
+    apiKey = 'AIzaSyBNxgDVkNBE712x888UvzxAyVYxGRTn2ys'
+    # For apikey: 'os.environ.get('APIKEY')'
+    # audiobase64 = _convert_to_base64(audio_file)
 
     if (lang == 'detected'):
         return ""
 
-    json_response = _send_stt_request(apiKey, lang, sample_rate, audiobase64)
+    json_response = _send_stt_request(apiKey, lang, sample_rate, audio_file)
 
     try:
         result = json_response['results'][0]['alternatives'][0]['transcript']
     except KeyError as exc:
+        print("KeyError")
         print(exc)
         result = ""
+    print(result)
     return result
 
 # Converts audio file to base64 string

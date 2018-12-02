@@ -5,8 +5,8 @@ detection = 'detect'
 languages = 'languages'
 
 # apiKey = os.environ.get('APIKEY')
-apiKey = ''
-url = 'https://www.googleapis.com/language/translate/v2/'
+# apiKey = ''
+# url = 'https://www.googleapis.com/language/translate/v2/'
 
 def detectAndTranslate(textToTranslate, targetLang, apiKeyVal):
     global apiKey
@@ -14,9 +14,12 @@ def detectAndTranslate(textToTranslate, targetLang, apiKeyVal):
     sourceLang = detect (textToTranslate)['language']
     return translate(textToTranslate, targetLang, sourceLang)
 
-def translate(textToTranslate, targetLang, sourceLang, credentials):
+def translate(textToTranslate, targetLang, sourceLang):
     if (sourceLang == 'detected'):
         return ""
+    url = 'https://www.googleapis.com/language/translate/v2/'
+    apiKey = 'AIzaSyBNxgDVkNBE712x888UvzxAyVYxGRTn2ys'
+
     payload = {'key' : apiKey, 'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
     # http = httplib2.Http()
     # http_auth = credentials.authorize(http)
@@ -26,6 +29,7 @@ def translate(textToTranslate, targetLang, sourceLang, credentials):
     # print(content.decode('utf-8'))
     r = requests.get(url, params = payload)
     data = r.json()
+    print(data)
     try:
         res = data['data']['translations'][0]['translatedText']
         print("Translation: {}".format( res ))

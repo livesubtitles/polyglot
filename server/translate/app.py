@@ -1,6 +1,5 @@
 from chalice import Chalice
 from botocore.vendored import requests
-import os
 from chalicelib.speechtotext import *
 from chalicelib.translate import *
 import json
@@ -17,7 +16,7 @@ url = 'https://www.googleapis.com/language/translate/v2/'
 
 @app.route('/')
 def index():
-    return {'Hello' : getText()}
+    return {'Hello' : 'world'}
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe_text():
@@ -27,7 +26,7 @@ def transcribe_text():
     lang = request_body['lang']
     transcript = get_text(audio, sample_rate, lang)
     translated = translate(transcript, 'en', lang.split('-')[0])
-    return {"subtitle" : translated}
+    return translated
 
 # @app.route('/translate/{name}')
 # def hello_name(name):
