@@ -251,7 +251,7 @@ class StreamingSocket(Namespace):
 		if not 'credentials' in session:
 			print("Credentials not saved to session")
 		# credentials = jsonpickle.loads(session['credentials'])
-		streamer = VideoStreamer(data['url'], data['lang'], user, self.credentials)
+		streamer = VideoStreamer(data['url'], data['lang'], user, credentials)
 
 		try:
 			playlist = streamer.start()
