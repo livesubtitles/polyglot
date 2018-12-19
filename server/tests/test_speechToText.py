@@ -19,7 +19,7 @@ class TestSpeechToText(unittest.TestCase):
         }
         responses.add(responses.POST, url,
                   json=mock_response, status=200)
-        text = server.speechtotext._speech_to_text(speech, 2000, sourceLang)
+        text = server.speechtotext._speech_to_text(speech, 2000, sourceLang, None)
         self.assertEqual( text, "French chips are good" )
         self.assertEqual( len( responses.calls ), 1 )
 
@@ -34,7 +34,7 @@ class TestSpeechToText(unittest.TestCase):
         }
         responses.add(responses.POST, url,
                   json=mock_response, status=200)
-        text = server.speechtotext._speech_to_text(speech, 2000, sourceLang)
+        text = server.speechtotext._speech_to_text(speech, 2000, sourceLang, None)
         self.assertEqual( text, "" )
         self.assertEqual( len( responses.calls ), 1 )
 
