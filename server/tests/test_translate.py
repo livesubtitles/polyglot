@@ -22,7 +22,7 @@ class TestTranslate(unittest.TestCase):
         }
         responses.add(responses.GET, url,
                   json=mock_response, status=200)
-        translation = server.translate.translate(textToTranslate, targetLang, sourceLang)
+        translation = server.translate.translate(textToTranslate, targetLang, sourceLang, None)
         self.assertEqual( translation, "Whatever" )
         self.assertEqual( len( responses.calls ), 1 )
 
