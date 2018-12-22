@@ -21,12 +21,15 @@ from server.playlist import *
 from server.stream import *
 from server.iptotime import *
 
-QUALITY_INFO = {'worst': (500000, 8),
-				'144p': (500000, 8),
+QUALITY_INFO = {'worst': (500000, 6),
+				'144p': (500000, 6),
+				'240p': (800000, 8),
 				'360p': (1000000, 10),
 				'480p': (2000000, 12),
 				'720p': (3000000, 15),
-				'best': (3000000, 15)}
+				'1080p': (4000000, 18),
+				'best': (4000000, 18),
+				'default': (1000000, 10)}
 
 SUB_SEG_SIZE  = 10
 
@@ -221,7 +224,7 @@ class VideoStreamer(object):
 		self.language = language
 		self.user = user
 		self.credentials = credentials
-		self.quality = '360p'
+		self.quality = 'best'
 		self.sub_language = 'en'
 		self.worker = None
 		self.available_streams = None
@@ -266,7 +269,7 @@ class VideoStreamer(object):
 
 		return self.start(new_quality)
 
-	def start(self, quality='360p', sub_language='en'):
+	def start(self, quality='best', sub_language='en'):
 		print("Starting Video Streamer with quality: " + quality)
 		self.quality = quality
 		self.sub_language = sub_language
@@ -283,7 +286,9 @@ class VideoStreamer(object):
 		playlist = HLSPlaylist(self.user)
 		print("Success!")
 
-		(bytes_to_read, wait_time) = QUALITY_INFO[self.quality]
+		quality_key = self.quality if (self.quality in QUALITY_INFO) else 'default'
+
+		(bytes_to_read, wait_time) = QUALITY_INFO[quality_key]
 
 		print("Starting stream worker...", end="")
 		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language,
