@@ -19,6 +19,7 @@ from server.speechtotext import *
 from server.language import *
 from server.playlist import *
 from server.stream import *
+from server.iptotime import *
 
 QUALITY_INFO = {'worst': (500000, 8),
 				'144p': (500000, 8),
@@ -37,7 +38,7 @@ OUTPUT_WAV_FILE = "/audio.wav"
 
 class _StreamWorker(Thread):
 	def __init__(self, stream_data, bytes_to_read, wait_time, language, \
-						sub_language, user, playlist, credentials):
+						sub_language, user, playlist, credentials, ip, ip_to_time):
 
 		self.stream_data = stream_data
 		self.user_dir = 'streams/' + user
@@ -51,6 +52,8 @@ class _StreamWorker(Thread):
 		self.playlist = playlist
 		self.language = language
 		self.sub_language = sub_language
+		self.ip = ip
+		self.ip_to_time = ip_to_time
 		Thread.__init__(self)
 
 	def update_language(self, new_language):
@@ -84,6 +87,10 @@ class _StreamWorker(Thread):
 			+ (SUB_EXTENSION if subtitle else VID_EXTENSION)
 
 	def _get_subtitle(self, audio, sample_rate, raw_pcm=False):
+		time_so_far = self.ip_to_time.get_time(self.ip)
+		self.ip_to_time.store_time(self.ip, time_so_far + 10)
+		if (time_so_far + 10 >= 3600):
+			print("Time exceeded")
 		if self.language == '':
 			self.language = detect_language(audio)
 
@@ -132,7 +139,7 @@ class _StreamWorker(Thread):
 			print("ERROR: Could not punctuate text.")
 			return
 
-		return "" if punctuated == None else punctuated.replace(",,", ",").replace("..", ".") 
+		return "" if punctuated == None else punctuated.replace(",,", ",").replace("..", ".")
 
 	def _create_subtitle_file(self, data, audio_data, duration):
 		file_path = self._get_next_filepath(subtitle=True)
@@ -209,7 +216,7 @@ class _StreamWorker(Thread):
 
 
 class VideoStreamer(object):
-	def __init__(self, stream_url, language, user, credentials):
+	def __init__(self, stream_url, language, user, credentials, times_map, ip):
 		self.stream_url = stream_url
 		self.language = language
 		self.user = user
@@ -218,6 +225,8 @@ class VideoStreamer(object):
 		self.sub_language = 'en'
 		self.worker = None
 		self.available_streams = None
+		self.ip = ip
+		self.ip_to_time = times_map
 
 	def _get_video_stream(self):
 		try:
@@ -278,7 +287,8 @@ class VideoStreamer(object):
 
 		print("Starting stream worker...", end="")
 		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language,
-			sub_language, self.user, playlist, self.credentials)
+			sub_language, self.user, playlist, self.credentials, self.ip,
+			self.ip_to_time)
 		self.worker.start()
 		print("Success!")
 

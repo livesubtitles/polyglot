@@ -17,6 +17,7 @@ from server.language import *
 from server.stream import *
 from server.playlist import *
 from server.support import isStreamLinkSupported
+from server.iptotime import *
 from apiclient import discovery
 from oauth2client import client
 
@@ -27,6 +28,7 @@ socketio = SocketIO(app)
 streamer = None
 language = ""
 credentials = None
+ip_to_time = IpToTimeMap()
 
 LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
@@ -55,6 +57,7 @@ def process_with_video(video, audio, sample_rate, lang):
 
 def _initialise_streamer(url):
 	global streamer
+	global ip_to_time
 
 	streamer = VideoStreamer(url)
 
@@ -187,6 +190,7 @@ class StreamingSocket(Namespace):
 
 	streamers = {}
 	global credentials
+	global ip_to_time
 
 	def _generate_user_hash(self):
 		return ''.join(random.choices(string.ascii_letters + string.digits, k=self._HASH_LEN))
@@ -194,12 +198,24 @@ class StreamingSocket(Namespace):
 	def on_connect(self):
 		print("Creating user details... ", end="")
 		new_hash = self._generate_user_hash()
+		if 'email' not in session:
+			"Email not in session"
 		if 'credentials' not in session:
 			print("Credentials not in session before")
 		if 'credentials' not in session:
 			print("Credentials not in session after")
 		session['uid'] = new_hash
 		os.makedirs('streams/' + new_hash)
+		ip_address = request.remote_addr
+		print("IP address is: ", request.remote_addr)
+		session['ip'] = ip_address
+		if ip_to_time.is_in(ip_address):
+			time = ip_to_time.get_time(ip_address)
+			if time >= 3600:
+				os.environ["MODE"] = 'paid'
+				emit('login-required')
+		else:
+			ip_to_time.store_time(ip_address, 0)
 		print("Success!")
 
 		print("Connected to client. User hash: " + new_hash)
@@ -251,7 +267,7 @@ class StreamingSocket(Namespace):
 		if not 'credentials' in session:
 			print("Credentials not saved to session")
 		# credentials = jsonpickle.loads(session['credentials'])
-		streamer = VideoStreamer(data['url'], data['lang'], user, credentials)
+		streamer = VideoStreamer(data['url'], data['lang'], user, credentials, ip_to_time, session['ip'])
 
 		try:
 			playlist = streamer.start()
