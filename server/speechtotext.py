@@ -110,6 +110,9 @@ def get_text(wav_file, sample_rate, lang, credentials):
 		return _speech_to_text(wav_file, sample_rate, lang, credentials)
 
 # Gets subtitle for given audio data
-def get_text_from_pcm(pcm_data, sample_rate, lang):
+def get_text_from_pcm(pcm_data, sample_rate, lang, credentials):
 		wav_file = _convert_to_wav(pcm_data, sample_rate)
-		return get_text(wav_file, sample_rate, lang)
+		return get_text(wav_file, sample_rate, lang, credentials)
+
+def convert_to_wav(pcm_data, sample_rate):
+	return _convert_to_wav(pcm_data, sample_rate)

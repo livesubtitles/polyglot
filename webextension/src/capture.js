@@ -4,7 +4,7 @@ const herokuUrl = "https://polyglot-livesubtitles.herokuapp.com";
 const baseUrl = localUrl;
 const captureEndpoint = "/subtitle";
 const streamEndpoint = "/stream";
-const punctuateEndpoint = "https://polyglot-punctuator.herokuapp.com/punctuate";
+const punctuateEndpoint = "http://flask-env.p5puf6mmb3.eu-west-2.elasticbeanstalk.com/punctuate";
 
 /* Definitions for capture and stream requests */
 let vid = document.getElementsByTagName("video")[0];
@@ -82,54 +82,13 @@ function setLanguage(lang_local) {
     getLanguage();
   }
 
-/* Displays subtitle after punctuation */
-let punctuateCallback = function(data) {
-  console.log("Got back punctuated: " + data.subtitle);
-  addSubtitles(data.subtitle);
-  sendStreamlinkRequest();
-}
-
 /* Runs only once the first stream response is received. */
-let firstStreamCallback = function(data) {
-    if (data.subtitle == "none") {
-      vid.play();
-      capture();
-    } else {
-      subtitle = data.subtitle;
-      lang = data.lang;
-      vid.play();
-      console.log(data.subtitle);
-      console.log(data.lang);
-      lang = data.lang;
-      if (lang != '' && first_detected) {
-        first_detected = false;
-        alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
-        setLanguage(lang);
-      }
-      addSubtitles(data.subtitle);
-      sendStreamlinkRequest();
-    }
-}
-
-/* Gets called when the result of a stream request is received (but not for
-the first stream request) */
-let subsequentStreamRequestCallback = function(data) {
-  console.log(data.subtitle);
-  console.log(data.lang);
-  console.log(data.video);
-  if (lang != '' && first_detected) {
-    first_detected = false;
-    alert('We detected the language of the video to be ' + lang + '. If this is inaccurate please adjust.');
-    console.log("About to set language to " + lang);
-    setLanguage(lang);
-  }
-  if (data.subtitle == "") {
-    sendStreamlinkRequest();
-  } else {
-    request = JSON.stringify({"subtitle": data.subtitle});
-    sendPostRequest(punctuateEndpoint, request, punctuateCallback);
-  }
-}
+// let firstStreamCallback = function(data) {
+//     if (data.subtitle == "none") {
+//       vid.play();
+//       capture();
+//     }
+// }
 
 /* Send stream request */
 async function sendStreamlinkRequest() {
@@ -186,13 +145,13 @@ function capture() {
           lang = '';
         }
         // Send request to backend
-        let jsonRrequest = {"audio": [], "sampleRate": buffersSoFar.sampleRate, "lang": lang};
+        let jsonRequest = {"audio": [], "sampleRate": buffersSoFar.sampleRate, "lang": lang};
         if (lang == '') {
           detecting_language = true;
           lang = 'detected';
           vid.pause();
         }
-        console.log(request);
+        console.log(jsonRequest);
         for (let i = 0; i < buffersSoFar.getChannelData(0).length; i++) {
           jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
         }
@@ -208,7 +167,8 @@ function capture() {
 
 /* Main program that runs every time 'Translate' is clicked */
 getLanguageFromSelector();
-vid.pause();
-console.log("Initial language passed to request " + lang);
-let request = JSON.stringify({"url": pageUrl, "lang": lang});
-sendPostRequest(urlStream, request, firstStreamCallback);
+capture();
+// vid.pause();
+// console.log("Initial language passed to request " + lang);
+// let request = JSON.stringify({"url": pageUrl, "lang": lang});
+// sendPostRequest(urlStream, request, firstStreamCallback);

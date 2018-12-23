@@ -32,14 +32,15 @@ ip_to_time = IpToTimeMap()
 
 LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
-SERVER_URL = HEROKU_URL
+SERVER_URL = LOCAL_URL
 
 # Main pipeline. Will return the JSON response with the translated text.
 def process(audio, sample_rate, lang, raw_pcm=False):
 	if lang == '':
-		lang = detect_language(audio)
+		lang = detect_language(convert_to_wav(audio, sample_rate))
 
-		transcript = get_text_from_pcm(audio, sample_rate, lang) if raw_pcm else \
+		transcript = get_text_from_pcm(audio, sample_rate,
+		              lang, None) if raw_pcm else \
 		get_text(audio, sample_rate, lang)
 
 		translated = translate(transcript, 'en', lang.split('-')[0])
