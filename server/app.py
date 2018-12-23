@@ -137,6 +137,10 @@ def after_request(response):
 def streams():
 	return send_file('media.html')
 
+@app.route("/pay")
+def pay():
+	return send_file('pay.html')
+
 @app.route("/authenticate")
 def oauth():
 	return send_file('oauth.html')
