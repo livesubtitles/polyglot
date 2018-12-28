@@ -11,7 +11,7 @@ import base64
 from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
-from server.translate import *
+from translate import *
 
 # Sets up and sends an HTTP request to Google speech-to-text
 def _send_stt_request(apiKey, lang, sample_rate, audiobase64, credentials):

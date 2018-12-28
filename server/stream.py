@@ -6,6 +6,7 @@ import streamlink
 import wave
 import sys
 import time
+import numpy as np
 from math import ceil
 from datetime import timedelta
 from webvtt import WebVTT, Caption
@@ -13,15 +14,36 @@ from ffmpy import FFmpeg
 from six.moves import queue
 from threading import Thread
 from enum import Enum
+from matplotlib import pyplot as plt
 
-from server.translate import test
-from server.speechtotext import *
-from server.language import *
-from server.playlist import *
-from server.stream import *
+from translate import test
+from speechtotext import *
+from language import *
+from playlist import *
+from stream import *
 
-QUALITY_INFO = {'360p': (1000000, 10), '480p': (2000000, 12), '720p': (3000000, 15)}
-SUB_SEG_SIZE  = 10
+QUALITY_INFO = {'144p': [(1000000, 10), (950000, 10), (900000, 10),
+						 (850000, 10), (800000, 10), (750000, 10),
+						 (700000, 10), (650000, 10), (600000, 10),
+						 (550000, 10), (500000, 10), (450000, 10),
+						 (400000, 10), (350000, 10), (300000, 10)],
+				'360p': [(1000000, 10), (950000, 10), (900000, 10),
+						 (850000, 10), (800000, 10), (750000, 10),
+						 (700000, 10), (650000, 10), (600000, 10),
+						 (550000, 10), (500000, 10), (450000, 10),
+						 (400000, 10), (350000, 10), (300000, 10)],
+				'480p': [(2000000, 12), (1950000, 12), (1900000, 12),
+						 (1850000, 12), (1800000, 12), (1750000, 12),
+						 (1700000, 12), (1650000, 12), (1600000, 12),
+						 (1550000, 12), (1500000, 12), (1450000, 12),
+						 (1400000, 12), (1350000, 12), (1300000, 12)],
+				'720p': [(3000000, 15), (2950000, 15), (2900000, 15),
+				         (2850000, 15), (2800000, 15), (2750000, 15),
+						 (2700000, 15), (2650000, 15), (2600000, 15),
+						 (2550000, 15), (2500000, 15), (2450000, 15),
+						 (2400000, 15), (2350000, 15), (2300000, 15)]
+				}
+SUB_SEG_SIZE  = 5
 
 VID_INPUT_FILE	= "segment"
 SUB_INPUT_FILE  = "subtitle"
@@ -42,6 +64,7 @@ class _StreamWorker(Thread):
 		self.credentials = credentials
 		self.playlist = playlist
 		self.language = language
+		self.durations = []
 		Thread.__init__(self)
 
 	def _get_duration(self, video_file):
@@ -120,12 +143,12 @@ class _StreamWorker(Thread):
 
 		vtt = WebVTT()
 
-		subtitles = subtitles.split()
-
 		if len(subtitles) == 0:
 			with open(file_path, 'w') as f:
 				vtt.write(f)
 			return file_path
+
+		subtitles = subtitles.split()
 
 		max_segment_duration = duration / ceil(len(subtitles) / SUB_SEG_SIZE)
 		words_per_segment = ceil(len(subtitles) / (duration / max_segment_duration))
@@ -160,12 +183,13 @@ class _StreamWorker(Thread):
 
 			video_path = self._create_video_file(data)
 
-			audio_data = self._extract_audio(video_path)
+			# audio_data = self._extract_audio(video_path)
 			duration = self._get_duration(video_path)
+			self.durations.append(duration)
 
-			audio_path = self._create_subtitle_file(data, audio_data, duration)
+			# audio_path = self._create_subtitle_file(data, audio_data, duration)
 
-			self.playlist.update_all(self.count, duration)
+			# self.playlist.update_all(self.count, duration)
 			self.count += 1
 
 		self.stream_data.close()
@@ -173,15 +197,27 @@ class _StreamWorker(Thread):
 	def stop(self):
 		self.streaming = False
 
+	def join(self):
+		super().join()
+		print ('The durations of the videos are', self.durations)
+		self.durations.sort()
+		for i in range(0, len(self.durations)):
+			self.durations[i] = self.durations[i] / self.bytes_to_read * 100000
+		upperQ = self.durations[int(len(self.durations) * 3 / 4)]
+		lowerQ = self.durations[int(len(self.durations) / 4)]
+		interQ = upperQ - lowerQ
+		print ("The interquartile range is ", interQ)
+
+		return (interQ, self.bytes_to_read)
+
 
 class VideoStreamer(object):
-	def __init__(self, stream_url, language, user, credentials):
+	def __init__(self, stream_url, language, credentials):
 		self.stream_url = stream_url
 		self.language = language
-		self.user = user
 		self.credentials = credentials
-		self.quality = '360p'
-		self.worker = None
+		self.quality = '720p'
+		self.workers = []
 		self.available_streams = None
 
 	def _get_video_stream(self):
@@ -211,34 +247,46 @@ class VideoStreamer(object):
 
 		return self.start(new_quality)
 
-	def start(self, quality='360p'):
+	def start(self, quality='720p'):
 		print("Starting Video Streamer with quality: " + quality)
 		self.quality = quality
 
-		print("Getting Video Stream...", end="")
-		stream = self._get_video_stream()
-		print("Success!")
+		settings = QUALITY_INFO[self.quality]
 
-		print("Opening stream...", end="")
-		data = stream.open()
-		print("Success!")
+		print("Starting stream workers...", end="")
+		workers = []
+		for i in range(0, len(settings)):
+			user = "test_user" + str(i)
+			os.makedirs('streams/' + user)
 
-		print("Creating playlist...", end="")
-		playlist = HLSPlaylist(self.user)
-		print("Success!")
+			print("Getting Video Stream...", end="")
+			stream = self._get_video_stream()
+			print("Success!")
 
-		(bytes_to_read, wait_time) = QUALITY_INFO[self.quality]
+			print("Opening stream...", end="")
+			data = stream.open()
+			print("Success!")
 
-		print("Starting stream worker...", end="")
-		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language, 
-			self.user, playlist, self.credentials)
-		self.worker.start()
+			print("Creating playlist...", end="")
+			playlist = HLSPlaylist(user)
+			print("Success!")
+
+			worker = _StreamWorker(data, settings[i][0], settings[i][1], self.language,
+				user, playlist, self.credentials)
+			worker.start()
+			self.workers.append(worker)
+
 		print("Success!")
 
 		return playlist
 
 	def stop(self):
-		if self.worker != None:
-			self.worker.stop()
-			self.worker.join()
-			self.worker = None
+		spread = []
+		for i in range(0, len(self.workers)):
+			worker = self.workers[i]
+			if worker != None:
+				worker.stop()
+				spread.append(worker.join())
+				worker = None
+
+		return spread

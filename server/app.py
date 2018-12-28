@@ -29,7 +29,7 @@ credentials = None
 
 LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
-SERVER_URL = HEROKU_URL
+SERVER_URL = LOCAL_URL
 
 # Main pipeline. Will return the JSON response with the translated text.
 def process(audio, sample_rate, lang, raw_pcm=False):
@@ -225,7 +225,7 @@ class StreamingSocket(Namespace):
 		print("Recieved quality event")
 		user = session['uid']
 		new_quality = data['quality']
-		
+
 		new_playlist = self.streamers[user].update_quality(new_quality)
 
 		media_url = str(SERVER_URL + new_playlist.get_master())
