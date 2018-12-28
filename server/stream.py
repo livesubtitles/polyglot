@@ -269,14 +269,18 @@ class VideoStreamer(object):
 
 		return self.start(new_quality)
 
-	def start(self, quality='best', sub_language='en'):
+	def start(self, progress_callback, quality='best', sub_language='en'):
 		print("Starting Video Streamer with quality: " + quality)
 		self.quality = quality
 		self.sub_language = sub_language
 
+		progress_callback(self.user)
+
 		print("Getting Video Stream...", end="")
 		stream = self._get_video_stream()
 		print("Success!")
+
+		progress_callback(self.user)
 
 		print("Opening stream...", end="")
 		data = stream.open()
@@ -296,6 +300,8 @@ class VideoStreamer(object):
 			self.ip_to_time)
 		self.worker.start()
 		print("Success!")
+
+		progress_callback(self.user)
 
 		return playlist
 
