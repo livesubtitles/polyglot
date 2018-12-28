@@ -29,6 +29,7 @@ streamer = None
 language = ""
 credentials = None
 ip_to_time = IpToTimeMap()
+client_sids = {}
 
 LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
@@ -198,14 +199,12 @@ class StreamingSocket(Namespace):
 	def on_connect(self):
 		print("Creating user details... ", end="")
 		new_hash = self._generate_user_hash()
-		if 'email' not in session:
-			"Email not in session"
-		if 'credentials' not in session:
-			print("Credentials not in session before")
-		if 'credentials' not in session:
-			print("Credentials not in session after")
+
 		session['uid'] = new_hash
 		os.makedirs('streams/' + new_hash)
+		print("Success!")
+
+		print("Checking IP for access...", end="")
 		ip_address = request.remote_addr
 		print("IP address is: ", request.remote_addr)
 		session['ip'] = ip_address
@@ -217,6 +216,8 @@ class StreamingSocket(Namespace):
 		else:
 			ip_to_time.store_time(ip_address, 0)
 		print("Success!")
+
+		client_sids[new_hash] = request.sid
 
 		print("Connected to client. User hash: " + new_hash)
 		emit('server-ready')
@@ -270,9 +271,9 @@ class StreamingSocket(Namespace):
 		streamer = VideoStreamer(data['url'], data['lang'], user, credentials, ip_to_time, session['ip'])
 
 		try:
-			playlist = streamer.start()
+			playlist = streamer.start(self._progress_update)
 		except Exception as exe:
-			print("VideoStreamer raised an exception!")
+			print("VideoStreamer raised an exception: " + str(exe))
 			emit('streamlink-error')
 			disconnect()
 			return
@@ -282,6 +283,9 @@ class StreamingSocket(Namespace):
 		media_url = str(SERVER_URL + playlist.get_master())
 		supported_qualities = streamer.get_supported_qualities()
 		emit('stream-response', json.dumps({'media':media_url, 'qualities':supported_qualities}))
+
+	def _progress_update(self, user):
+		emit('progress', json.dumps({'progress':10}), room=client_sids[user])
 
 
 socketio.on_namespace(StreamingSocket('/streams'))
