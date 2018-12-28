@@ -147,6 +147,10 @@ def oauth():
 def file(filename):
 	return send_file(filename)
 
+@app.route("/pay")
+def pay():
+	return send_file('pay.html')
+
 @app.route("/streams/<path:user_dir>/<path:filename>")
 def getFile(user_dir, filename):
 	return send_from_directory('streams/' + user_dir, filename)
