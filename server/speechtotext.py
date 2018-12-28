@@ -77,6 +77,7 @@ def _speech_to_text(audio_file, sample_rate, lang, credentials):
 				result = json_response['results'][0]['alternatives'][0]['transcript']
 		except KeyError as exc:
 				result = ""
+				return result
 		return result
 
 # Converts audio file to base64 string

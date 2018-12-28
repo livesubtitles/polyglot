@@ -40,12 +40,12 @@ def process(audio, sample_rate, lang, raw_pcm=False):
 	if lang == '':
 		lang = detect_language(convert_to_wav(audio, sample_rate))
 
-		transcript = get_text_from_pcm(audio, sample_rate,
-		              lang, None) if raw_pcm else \
-		get_text(audio, sample_rate, lang)
+	transcript = get_text_from_pcm(audio, sample_rate,
+		             lang, None) if raw_pcm else \
+	get_text(audio, sample_rate, lang)
 
-		translated = translate(transcript, 'en', lang.split('-')[0])
-		return jsonify(subtitle=translated, lang=lang)
+	translated = translate(transcript, 'en', lang.split('-')[0], session['credentials'] if 'credentials' in session else None)
+	return jsonify(subtitle=translated, lang=lang)
 
 def process_with_video(video, audio, sample_rate, lang):
 	if lang == '':
@@ -53,7 +53,7 @@ def process_with_video(video, audio, sample_rate, lang):
 		lang = detect_language(audio)
 
 	transcript = get_text(audio, sample_rate, lang)
-	translated = translate(transcript, 'en', lang.split('-')[0])
+	translated = translate(transcript, 'en', lang.split('-')[0], session['credentials'] if 'credentials' in session else None)
 
 	return jsonify(video=jsonpickle.encode(video), subtitle=translated, lang=lang)
 

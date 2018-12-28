@@ -23,18 +23,19 @@ def translate(textToTranslate, targetLang, sourceLang, credentials):
 	return translate_with_credentials(textToTranslate, targetLang, sourceLang, credentials)
 
 def translate_no_credentials(textToTranslate, targetLang, sourceLang):
-    if (sourceLang == 'detected'):
-        return ""
-    payload = {'key' : apiKey, 'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
-    r = requests.get(url, params = payload)
-    data = r.json()
-    try:
-        res = data['data']['translations'][0]['translatedText']
-        print("Translation: {}".format( res ))
-    except KeyError as exc:
-        print("Exception with key: {}".format( exc ))
-        res = ""
-    return res
+	if (sourceLang == 'detected'):
+		return ""
+	payload = {'key' : apiKey, 'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
+	r = requests.get(url, params = payload)
+	data = r.json()
+	try:
+		res = data['data']['translations'][0]['translatedText']
+		print("Translation: {}".format( res ))
+	except KeyError as exc:
+		print("Exception with key: {}".format( exc ))
+		res = ""
+		return res
+	return res
 
 def translate_with_credentials(textToTranslate, targetLang, sourceLang, credentials):
 	if (sourceLang == 'detected'):
