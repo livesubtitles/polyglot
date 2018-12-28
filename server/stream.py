@@ -44,6 +44,7 @@ class _StreamWorker(Thread):
 						sub_language, user, playlist, credentials, ip, ip_to_time):
 
 		self.stream_data = stream_data
+		self.user = user
 		self.user_dir = 'streams/' + user
 		self.streaming = True
 		self.count = 0

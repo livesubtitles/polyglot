@@ -268,6 +268,8 @@ class StreamingSocket(Namespace):
 	def on_stream(self, data):
 		user = session['uid']
 
+		self._progress_update(user)
+
 		print("Creating VideoStreamer for URL: " + data['url'])
 
 		if not 'credentials' in session:
@@ -285,12 +287,15 @@ class StreamingSocket(Namespace):
 
 		self.streamers[user] = streamer
 
+		self._progress_update(user)
+
 		media_url = str(SERVER_URL + playlist.get_master())
 		supported_qualities = streamer.get_supported_qualities()
 		emit('stream-response', json.dumps({'media':media_url, 'qualities':supported_qualities}))
 
 	def _progress_update(self, user):
-		emit('progress', json.dumps({'progress':10}), room=client_sids[user])
+		with app.app_context():
+			emit('progress', json.dumps({'progress':10}), room=client_sids[user])
 
 
 socketio.on_namespace(StreamingSocket('/streams'))
