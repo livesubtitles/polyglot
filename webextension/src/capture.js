@@ -1,10 +1,10 @@
 /* Url definitions */
-var localUrl = "http://127.0.0.1:8000";
-var herokuUrl = "https://polyglot-livesubtitles.herokuapp.com";
-var baseUrl = herokuUrl;
-var captureEndpoint = "/subtitle";
-var streamEndpoint = "/stream";
-var punctuateEndpoint = "http://flask-env.p5puf6mmb3.eu-west-2.elasticbeanstalk.com/punctuate";
+const localUrl = "http://127.0.0.1:8000";
+const herokuUrl = "https://polyglot-livesubtitles.herokuapp.com";
+const baseUrl = herokuUrl;
+const captureEndpoint = "/subtitle";
+const streamEndpoint = "/stream";
+const punctuateEndpoint = "http://flask-env.p5puf6mmb3.eu-west-2.elasticbeanstalk.com/punctuate";
 
 /* Definitions for capture and stream requests */
 var vid = document.getElementsByTagName("video")[0];

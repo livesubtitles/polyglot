@@ -38,11 +38,27 @@ let translateButton = document.getElementById('translateButton');
    chrome.tabs.query({active: true, currentWindow: true},
      function(tabs) {
        if (!clicked) {
-         console.log("Clicked");
-         clicked = true;
-         console.log("Calling set language from popup.js with lang = " + languageSelector.value);
-         setLanguage(languageSelector.value);
-         chrome.tabs.executeScript({file: "src/capture.js"});
+         let streamlinkSupportsIt = false;
+          const request = async () => {
+            const response = await fetch(herokuUrl + '/supports?web=' + window.location.href);
+            const json = await response.json();
+            console.log(json);
+            return json;
+          }
+
+          streamlinkSupportsIt = request().then(function(result) {
+              return result;
+          });
+         if (streamlinkSupportsIt) {
+           let reactUrl = "http://www.google.com";
+           window.open(reactUrl);
+         } else {
+           console.log("Clicked");
+           clicked = true;
+           console.log("Calling set language from popup.js with lang = " + languageSelector.value);
+           setLanguage(languageSelector.value);
+           chrome.tabs.executeScript({file: "src/capture.js"});
+         }
        } else {
          console.log("Calling set language from popup.js with lang = " + languageSelector.value);
          setLanguage(languageSelector.value);
