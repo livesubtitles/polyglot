@@ -295,7 +295,7 @@ class StreamingSocket(Namespace):
 
 	def _progress_update(self, user):
 		with app.app_context():
-			emit('progress', json.dumps({'progress':10}), room=client_sids[user])
+			emit('progress', json.dumps({'progress':3}), room=client_sids[user])
 
 
 socketio.on_namespace(StreamingSocket('/streams'))
