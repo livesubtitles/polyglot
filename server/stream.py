@@ -41,10 +41,12 @@ OUTPUT_WAV_FILE = "/audio.wav"
 
 class _StreamWorker(Thread):
 	def __init__(self, stream_data, bytes_to_read, wait_time, language, \
-						sub_language, user, playlist, credentials, ip, ip_to_time):
+						sub_language, user, playlist, credentials, ip, ip_to_time,
+						check_limit_callback):
 
 		self.stream_data = stream_data
 		self.user_dir = 'streams/' + user
+		self.user = user
 		self.streaming = True
 		self.count = 0
 		self.current_time = 0
@@ -57,6 +59,7 @@ class _StreamWorker(Thread):
 		self.sub_language = sub_language
 		self.ip = ip
 		self.ip_to_time = ip_to_time
+		self.check_limit_callback = check_limit_callback
 		Thread.__init__(self)
 
 	def update_language(self, new_language):
@@ -94,6 +97,8 @@ class _StreamWorker(Thread):
 		self.ip_to_time.store_time(self.ip, time_so_far + 10)
 		if (time_so_far + 10 >= 3600):
 			print("Time exceeded")
+			print(self.user)
+			self.check_limit_callback(self.user)
 		if self.language == '':
 			self.language = detect_language(audio)
 
@@ -219,7 +224,8 @@ class _StreamWorker(Thread):
 
 
 class VideoStreamer(object):
-	def __init__(self, stream_url, language, user, credentials, times_map, ip):
+	def __init__(self, stream_url, language, user, credentials, times_map, ip,
+	             check_limit_callback):
 		self.stream_url = stream_url
 		self.language = language
 		self.user = user
@@ -230,6 +236,7 @@ class VideoStreamer(object):
 		self.available_streams = None
 		self.ip = ip
 		self.ip_to_time = times_map
+		self.check_limit_callback = check_limit_callback
 
 	def _get_video_stream(self):
 		try:
@@ -297,7 +304,7 @@ class VideoStreamer(object):
 		print("Starting stream worker...", end="")
 		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language,
 			sub_language, self.user, playlist, self.credentials, self.ip,
-			self.ip_to_time)
+			self.ip_to_time, self.check_limit_callback)
 		self.worker.start()
 		print("Success!")
 

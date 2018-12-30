@@ -273,7 +273,8 @@ class StreamingSocket(Namespace):
 		if not 'credentials' in session:
 			print("Credentials not saved to session")
 		# credentials = jsonpickle.loads(session['credentials'])
-		streamer = VideoStreamer(data['url'], data['lang'], user, credentials, ip_to_time, session['ip'])
+		streamer = VideoStreamer(data['url'], data['lang'], user, credentials, ip_to_time, session['ip'],
+		                         self._check_time_limit)
 
 		try:
 			playlist = streamer.start(self._progress_update)
@@ -291,6 +292,9 @@ class StreamingSocket(Namespace):
 
 	def _progress_update(self, user):
 		emit('progress', json.dumps({'progress':10}), room=client_sids[user])
+
+	def _check_time_limit(self, user):
+		emit('login-required', room=client_sids[user])
 
 
 socketio.on_namespace(StreamingSocket('/streams'))
