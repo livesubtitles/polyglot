@@ -4,6 +4,7 @@ const baseUrl = herokuUrl
 
 const languageKey = "selectedLanguage";
 let languageSelector = document.getElementById('languageSelector');
+var lang = '';
 
 function setLanguage(lang) {
   chrome.storage.sync.set({'language': lang}, function() {
@@ -19,9 +20,18 @@ function updateLanguage(selectLanguage) {
   setLanguage(selectLanguage.value);
 }
 
+function getLanguage() {
+    chrome.storage.sync.get(['language'], function(result) {
+          if ('language' in result) {
+            languageSelector.value = result.language;
+            setLanguage(languageSelector.value);
+          }
+        });
+  }
+
 var url, tab;
 function init(){
-  chrome.storage.sync.set({'language': ''}, function() {
+  chrome.storage.sync.set({'language': languageSelector.value}, function() {
         chrome.tabs.query({currentWindow: true, active: true},function(tabs){
            url = tabs[0].url;
            tab = tabs[0];
@@ -36,11 +46,13 @@ function init(){
     });
   }
 
+getLanguage();
 init();
 function processTab(url, flag) {
   let clicked = false;
   let translateButton = document.getElementById('translateButton');
    translateButton.onclick = function(elem) {
+     translateButton.style.display = "none";
      chrome.tabs.query({active: true, currentWindow: true},
        function(tabs) {
          if (!clicked) {
