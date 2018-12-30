@@ -1,28 +1,25 @@
 import unittest
 import server.support
 
+import os
+data_path = os.path.abspath("server/supported_websites")
 class SupportWebsites(unittest.TestCase):
 
-    @responses.activate
-    def test_support(self):
-        webpage = extractPage("www.test.com?val=123")
-        self.assertEqual( webpage, "test" )
-        # self.assertEqual( len( responses.calls ), 1 )
+    def test_extractWebPageName(self):
+        webpage = server.support.extractPage("www.test.com?val=123")
+        self.assertEqual(webpage, "test" )
 
-    # @responses.activate
-    # def test_speechToText_exception(self):
-    #     speech = server.speechtotext._convert_to_wav([-0.9, 0.45, 0, 0.42, -0.32, 0], 2000)
-    #     sourceLang = "fr"
-    #     mock_response = {
-    #         "results": [{
-    #             "Some incorrect key": "Some incorrect response"
-    #         }]
-    #     }
-    #     responses.add(responses.POST, url,
-    #               json=mock_response, status=200)
-    #     text = server.speechtotext._speech_to_text(speech, 2000, sourceLang, None)
-    #     self.assertEqual( text, "" )
-    #     self.assertEqual( len( responses.calls ), 1 )
+    def test_extractWebPageName2(self):
+        webpage = server.support.extractPage("https://www.imperial.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=7e65a23c-4e18-4f96-864c-a96101074cbc")
+        self.assertEqual(webpage, "imperial" )
+
+    def test_allowSupportedWebsites(self):
+        allowed = server.support.isStreamLinkSupported("https://www.youtube.com/watch?v=mGIpOtncmSM", data_path)
+        self.assertEqual(allowed, True)
+
+    def test_notAllowUnsupportedWebsites(self):
+        allowed = server.support.isStreamLinkSupported("https://www.imperial.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=7e65a23c-4e18-4f96-864c-a96101074cbc", data_path)
+        self.assertEqual(allowed, False)
 
 if __name__ == '__main__':
     unittest.main()
