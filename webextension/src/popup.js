@@ -41,42 +41,7 @@ function init(){
        processTab();
     });
 }
-
-function processTab(){
-    // Use url & tab as you like
-    console.log(url);
-    console.log(tab);
-}
-
-function geatUrl() {
-  let x = "";
-  console.log("Extension starts here");
-
-  chrome.tabs.getSelected(null, function(tab) {
-    myFunction(tab.url);
-    x = tab.url
-  });
-  return x;
-}
-
-function myFunction(tablink) {
-  // do stuff here
-  console.log(tablink);
-}
-
-  // x = chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
-  //   var url = tabs[0].url;
-  //   console.log(url);
-  //   return url;
-    // x = url;
-  // });
-  // chrome.tabs.getSelected(null,function(tab) {
-  //   console.log(tab.url);
-  //   x = tab.url;
-  // });
-//   console.log("x is " + x);
-//   return x;
-// }
+ 
 init()
 function processTab() {
   let clicked = false;
@@ -97,11 +62,7 @@ function processTab() {
                 return result;
             });
            if (streamlinkSupportsIt /*&& false /*disables streamlink*/) {
-
-             let reactUrl = 'https://www.polyglot-react.herokuapp.com/#/link=' + encodeURIComponent(url)
-              + '&lang=en-US';
-            // let reactUrl = 'https://www.google.com'
-             window.open(reactUrl);
+             chrome.tabs.executeScript({file: "src/redirect.js"});
            } else {
              console.log("Clicked");
              clicked = true;
