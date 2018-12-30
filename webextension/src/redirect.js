@@ -11,7 +11,7 @@ function init() {
 function redirect(lang) {
   let vid = document.getElementsByTagName("video")[0];
   vid.pause();
-  let reactUrl = 'http://polyglot-react.herokuapp.com/#/link=' + encodeURIComponent(window.location.href)
+  let reactUrl = 'https://polyglot-react.herokuapp.com/#/link=' + encodeURIComponent(window.location.href)
     + '&lang=' + lang;
 
    window.open(reactUrl);
