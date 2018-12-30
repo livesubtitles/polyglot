@@ -83,7 +83,7 @@ def hello():
 @app.route("/supports", methods=['GET'])
 def supportsStreamlink():
 	url = request.args.get("web")
-	return json.dumps(isStreamLinkSupported(url));
+	return json.dumps(isStreamLinkSupported(url), "supported_websites");
 
 @app.route("/subtitle", methods=['POST'])
 def subtitle():
