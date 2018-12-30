@@ -32,18 +32,23 @@ function getLanguage() {
 var url, tab;
 function init(){
   chrome.storage.sync.set({'language': languageSelector.value}, function() {
-    chrome.tabs.query({currentWindow: true, active: true},function(tabs){
-       url = tabs[0].url;
-       tab = tabs[0];
-       //Now that we have the data we can proceed and do something with it
-       processTab();
+        chrome.tabs.query({currentWindow: true, active: true},function(tabs){
+           url = tabs[0].url;
+           tab = tabs[0];
+
+           flag = fetch(herokuUrl + '/supports?web=' + url)
+                   .then(resp => resp.json());
+           //Now that we have the data we can proceed and do something with it
+           flag.then(function(result) {
+              processTab(url, result.answer);
+           })
+      })
     });
-  })
-}
+  }
 
 getLanguage();
-init()
-function processTab() {
+init();
+function processTab(url, flag) {
   let clicked = false;
   let translateButton = document.getElementById('translateButton');
    translateButton.onclick = function(elem) {
@@ -51,17 +56,7 @@ function processTab() {
      chrome.tabs.query({active: true, currentWindow: true},
        function(tabs) {
          if (!clicked) {
-           let streamlinkSupportsIt = false;
-            const request = async () => {
-              const response = await fetch(herokuUrl + '/supports?web=' + url);
-              const json = await response.json();
-              console.log(json);
-              return json;
-            }
-
-            streamlinkSupportsIt = request().then(function(result) {
-                return result;
-            });
+           let streamlinkSupportsIt = flag;
            if (streamlinkSupportsIt /*&& false /*disables streamlink*/) {
              chrome.tabs.executeScript({file: "src/redirect.js"});
            } else {
