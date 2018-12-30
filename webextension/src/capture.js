@@ -1,28 +1,28 @@
 /* Url definitions */
 const localUrl = "http://127.0.0.1:8000";
 const herokuUrl = "https://polyglot-livesubtitles.herokuapp.com";
-const baseUrl = localUrl;
+const baseUrl = herokuUrl;
 const captureEndpoint = "/subtitle";
 const streamEndpoint = "/stream";
 const punctuateEndpoint = "http://flask-env.p5puf6mmb3.eu-west-2.elasticbeanstalk.com/punctuate";
 
 /* Definitions for capture and stream requests */
-let vid = document.getElementsByTagName("video")[0];
-let lang = '';
-let first_detected = true;
-let detecting_language = false;
-let urlStream = baseUrl + streamEndpoint;
-let pageUrl = window.location.href;
+var vid = document.getElementsByTagName("video")[0];
+var lang = '';
+var first_detected = true;
+var detecting_language = false;
+var urlStream = baseUrl + streamEndpoint;
+var pageUrl = window.location.href;
 
 /* Definitions for displaying subtitles */
-let track = vid.addTextTrack("captions", "English", "en");
+var track = vid.addTextTrack("captions", "English", "en");
 track.mode = "showing";
-let MAX_LENGTH = 70;
-let lorem = "Lorem ipsum dolor sit amet"
+var MAX_LENGTH = 70;
+var lorem = "Lorem ipsum dolor sit amet"
 
 function addSubtitles(text) {
-  let start = 1;
-  let end = 100000;
+  var start = 1;
+  var end = 100000;
   var prev = "";
   if (track && track.activeCues && track.activeCues.length > 0) {
     track.removeCue(track.activeCues[0]);
@@ -83,7 +83,7 @@ function setLanguage(lang_local) {
   }
 
 /* Runs only once the first stream response is received. */
-// let firstStreamCallback = function(data) {
+// var firstStreamCallback = function(data) {
 //     if (data.subtitle == "none") {
 //       vid.play();
 //       capture();
@@ -94,13 +94,13 @@ function setLanguage(lang_local) {
 async function sendStreamlinkRequest() {
     console.log("About to get language");
     getLanguageFromSelector();
-    let request = JSON.stringify({"url": pageUrl, "lang": lang});
+    var request = JSON.stringify({"url": pageUrl, "lang": lang});
     sendPostRequest(urlStream, request, subsequentStreamRequestCallback);
     await sleep(3000);
 }
 
 /* Gets called after response from 'subtitle' endpoint is received */
-let captureCallback = function(data) {
+var captureCallback = function(data) {
   console.log(data.subtitle);
   console.log(data.lang);
   if (data.lang != 'detected') {
@@ -117,13 +117,13 @@ let captureCallback = function(data) {
 
 /* Runs when streamlink is unavailable. */
 function capture() {
-  let stream = vid.captureStream();
-  let audioctx = new AudioContext();
-  let mediaStreamNode = audioctx.createMediaStreamSource(stream);
-  let numOfBufferedChunks = 0;
-  let buffersSoFar = "";
+  var stream = vid.captureStream();
+  var audioctx = new AudioContext();
+  var mediaStreamNode = audioctx.createMediaStreamSource(stream);
+  var numOfBufferedChunks = 0;
+  var buffersSoFar = "";
   // create a script processor with input of size 16384, one input (the video) and one output (the audioctx.destination)
-  let scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
+  var scriptProcessingNode = audioctx.createScriptProcessor(16384, 1, 1);
   scriptProcessingNode.onaudioprocess = function(audioProcessingEvent) {
     getLanguageFromSelector();
     if (!vid.paused) {
@@ -131,8 +131,8 @@ function capture() {
         buffersSoFar = audioProcessingEvent.inputBuffer;
       } else {
         // merge the previous buffers with the new one
-        let mergedBuffer = audioctx.createBuffer(1, buffersSoFar.length + audioProcessingEvent.inputBuffer.length, audioProcessingEvent.inputBuffer.sampleRate);
-        let channel = mergedBuffer.getChannelData(0);
+        var mergedBuffer = audioctx.createBuffer(1, buffersSoFar.length + audioProcessingEvent.inputBuffer.length, audioProcessingEvent.inputBuffer.sampleRate);
+        var channel = mergedBuffer.getChannelData(0);
         channel.set(buffersSoFar.getChannelData(0), 0);
         channel.set(audioProcessingEvent.inputBuffer.getChannelData(0), buffersSoFar.length);
         buffersSoFar = mergedBuffer;
@@ -145,18 +145,18 @@ function capture() {
           lang = '';
         }
         // Send request to backend
-        let jsonRequest = {"audio": [], "sampleRate": buffersSoFar.sampleRate, "lang": lang};
+        var jsonRequest = {"audio": [], "sampleRate": buffersSoFar.sampleRate, "lang": lang};
         if (lang == '') {
           detecting_language = true;
           lang = 'detected';
           vid.pause();
         }
         console.log(jsonRequest);
-        for (let i = 0; i < buffersSoFar.getChannelData(0).length; i++) {
+        for (var i = 0; i < buffersSoFar.getChannelData(0).length; i++) {
           jsonRequest.audio.push(buffersSoFar.getChannelData(0)[i]);
         }
         request = JSON.stringify(jsonRequest);
-        let url = baseUrl + captureEndpoint
+        var url = baseUrl + captureEndpoint
         sendPostRequest(url, request, captureCallback);
         }
       }
@@ -170,5 +170,5 @@ getLanguageFromSelector();
 capture();
 // vid.pause();
 // console.log("Initial language passed to request " + lang);
-// let request = JSON.stringify({"url": pageUrl, "lang": lang});
+// var request = JSON.stringify({"url": pageUrl, "lang": lang});
 // sendPostRequest(urlStream, request, firstStreamCallback);

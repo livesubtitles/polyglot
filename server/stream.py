@@ -45,6 +45,7 @@ class _StreamWorker(Thread):
 						check_limit_callback):
 
 		self.stream_data = stream_data
+		self.user = user
 		self.user_dir = 'streams/' + user
 		self.user = user
 		self.streaming = True

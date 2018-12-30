@@ -9,43 +9,59 @@ function setLanguage(lang) {
   chrome.storage.sync.set({'language': lang}, function() {
     console.log("Value set to " + lang);
   });
-  /*let url = "http://127.0.0.1:8000/set-language"
-  fetch(url, {method: 'post',
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      body: lang})
-  .then(
-    function(response) {
-      if (response.status !== 200) {
-        console.log('Looks like there was a problem. Status Code: ' +
-          response.status);
-        return;
-      }
-    });*/
 }
 
- languageSelector.onchange = () => {
+languageSelector.onchange = () => {
   updateLanguage(languageSelector);
 }
+
 function updateLanguage(selectLanguage) {
   setLanguage(selectLanguage.value);
 }
 
-let clicked = false;
-let translateButton = document.getElementById('translateButton');
- translateButton.onclick = function(elem) {
-   chrome.tabs.query({active: true, currentWindow: true},
-     function(tabs) {
-       if (!clicked) {
-         console.log("Clicked");
-         clicked = true;
-         console.log("Calling set language from popup.js with lang = " + languageSelector.value);
-         setLanguage(languageSelector.value);
-         chrome.tabs.executeScript({file: "src/capture.js"});
-       } else {
-         console.log("Calling set language from popup.js with lang = " + languageSelector.value);
-         setLanguage(languageSelector.value);
-       }
-       // vid.pause();
+var url, tab;
+function init(){
+  chrome.storage.sync.set({'language': ''}, function() {
+    chrome.tabs.query({currentWindow: true, active: true},function(tabs){
+       url = tabs[0].url;
+       tab = tabs[0];
+       //Now that we have the data we can proceed and do something with it
+       processTab();
+    });
+  })
+}
+
+init()
+function processTab() {
+  let clicked = false;
+  let translateButton = document.getElementById('translateButton');
+   translateButton.onclick = function(elem) {
+     chrome.tabs.query({active: true, currentWindow: true},
+       function(tabs) {
+         if (!clicked) {
+           let streamlinkSupportsIt = false;
+            const request = async () => {
+              const response = await fetch(herokuUrl + '/supports?web=' + url);
+              const json = await response.json();
+              console.log(json);
+              return json;
+            }
+
+            streamlinkSupportsIt = request().then(function(result) {
+                return result;
+            });
+           if (streamlinkSupportsIt /*&& false /*disables streamlink*/) {
+             chrome.tabs.executeScript({file: "src/redirect.js"});
+           } else {
+             console.log("Clicked");
+             clicked = true;
+             console.log("Calling set language from popup.js with lang = " + languageSelector.value);
+             setLanguage(languageSelector.value);
+             chrome.tabs.executeScript({file: "src/capture.js"});
+           }
+         } else {
+           console.log("Calling set language from popup.js with lang = " + languageSelector.value);
+           setLanguage(languageSelector.value);
+         }
   })};
+}
