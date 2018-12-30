@@ -58,6 +58,9 @@ function sendPostRequest(url, requestBody, callback) {
 function getLanguage() {
     chrome.storage.sync.get(['language'], function(result) {
           if ('language' in result) {
+            if (lang != '') {
+              first_detected = false;
+            }
             lang = result.language;
           }
         });
