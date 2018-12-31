@@ -16,7 +16,7 @@ var pageUrl = window.location.href;
 
 /* Definitions for displaying subtitles */
 var track = vid.addTextTrack("captions", "English", "en");
-track.mode = "showing";
+track.mode = "showing";s
 var MAX_LENGTH = 70;
 var lorem = "Lorem ipsum dolor sit amet"
 
@@ -59,9 +59,8 @@ function getLanguage() {
     chrome.storage.sync.get(['language'], function(result) {
           if ('language' in result) {
             if (lang != '') {
-              first_detected = false;
-            }
-            lang = result.language;
+               first_detected = false;
+             }
           }
         });
   }
