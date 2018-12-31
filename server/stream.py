@@ -103,6 +103,7 @@ class _StreamWorker(Thread):
 		if self.language == '':
 			self.language = detect_language(audio)
 
+############### gao16's
 		transcript = get_text_from_pcm(audio, sample_rate, self.language) if raw_pcm else \
 					 get_text(audio, sample_rate, self.language, self.credentials)
 
@@ -115,6 +116,44 @@ class _StreamWorker(Thread):
 			return translated
 		else:
 			return self._get_punctuated(translated)
+############## merged
+		# url = "https://rumosrucml.execute-api.us-east-2.amazonaws.com/api/transcribe"
+		# audiores = {}
+		# audiores['content'] = self._convert_to_base64(audio)
+		# body = {}
+		# body['audio'] = audiores
+		# body['sample_rate'] = sample_rate
+		# body['lang'] = self.language
+		# print(body)
+		# data = json.dumps(body)
+		# print(data)
+		# headers = {'content-type': 'application/json'}
+		# resp = requests.post(url, data=data, headers = headers)
+		# print(resp.text)
+		# return resp.text
+######## gk1016
+	# def _get_subtitle(self, audio, sample_rate, raw_pcm=False):
+	# 	if self.language == '':
+	# 		self.language = detect_language(audio)
+	#
+	# 	url = "https://rumosrucml.execute-api.us-east-2.amazonaws.com/api/transcribe"
+	#
+	# 	audiores = {}
+	# 	audiores['content'] = self._convert_to_base64(audio)
+	#
+	# 	body = {}
+	# 	body['audio'] = audiores
+	# 	body['sample_rate'] = sample_rate
+	# 	body['lang'] = self.language
+	# 	print(body)
+	# 	data = json.dumps(body)
+	# 	print(data)
+	# 	headers = {'content-type': 'application/json'}
+	# 	resp = requests.post(url, data=data, headers = headers)
+	# 	print(resp.text)
+	# 	return resp.text
+########
+
 
 	def _get_current_timestamp(self):
 		seconds = self.current_time
