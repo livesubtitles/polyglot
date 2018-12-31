@@ -10,54 +10,77 @@
         min-width: 50em;
         min-height: 50em;
       }
+      ul.dropdown-content.select-dropdown li span {
+        color: #42a5f5;
+      }
     </style>
    </head>
   <body>
-  <main>
+
     <nav>
       <div class="blue lighten-1 nav-wrapper">
         <div class="brand-logo center">Polyglot</div>
       </div>
     </nav>
+
     <br/><br/>
-    <div class="container">
-      <div class="input-field col s12">
-        <select id="languageSelector">
-          <option value="" selected>Auto</option>
-          <option value="af-ZA">Afrikaans</option>
-          <option value="am-ET">Amharic</option>
-          <option value="hy-AM">Armenian</option>
-          <option value="az-AZ">Azerbaijani</option>
-          <option value="id-ID">Indonesian</option>
-          <option value="ms-MY">Malay</option>
-          <option value="bn-BD">Bengali</option>
-          <option value="ca-ES">Catalan</option>
-          <option value="cs-CZ">Czech</option>
-          <option value="da-DK">Danish</option>
-          <option value="de-DE">German</option>
-          <option value="en-US">English</option>
-          <option value="es-ES">Spanish</option>
-          <option value="fr-FR">French</option>
-          <option value="fil-PH">Filipino</option>
-          <option value="it-IT">Italian</option>
-          <option value="pt-PT">Portuguese</option>
-          <option value="ro-RO">Romanian</option>
-          <option value="el-GR">Greek</option>
-          <option value="tr-TR">Turkish</option>
-          <option value="ru-RU">Russian</option>
-          <option value="ja-JP">Japanese</option>
-          <option value="ko-KR">Korean</option>
-        </select>
-    		<label>Select Language</label>
+          <div class="container">
+              <div class="input-field col s12">
+                <select id="languageSelector">
+                  <option value="" selected>Auto</option>
+                  <option value="af-ZA">Afrikaans</option>
+                  <option value="am-ET">Amharic</option>
+                  <option value="hy-AM">Armenian</option>
+                  <option value="az-AZ">Azerbaijani</option>
+                  <option value="id-ID">Indonesian</option>
+                  <option value="ms-MY">Malay</option>
+                  <option value="bn-BD">Bengali</option>
+                  <option value="ca-ES">Catalan</option>
+                  <option value="cs-CZ">Czech</option>
+                  <option value="da-DK">Danish</option>
+                  <option value="de-DE">German</option>
+                  <option value="en-US">English</option>
+                  <option value="es-ES">Spanish</option>
+                  <option value="fr-FR">French</option>
+                  <option value="fil-PH">Filipino</option>
+                  <option value="it-IT">Italian</option>
+                  <option value="pt-PT">Portuguese</option>
+                  <option value="ro-RO">Romanian</option>
+                  <option value="el-GR">Greek</option>
+                  <option value="tr-TR">Turkish</option>
+                  <option value="ru-RU">Russian</option>
+                  <option value="ja-JP">Japanese</option>
+                  <option value="ko-KR">Korean</option>
+                </select>
+            		<label>Select Language</label>
+              </div>
+              <br/>
+              <div class="center-align col s12">
+                <button class="center-align blue lighten-1 waves-effect waves-light btn" id="translateButton">
+                  <i class="material-icons left">language</i>
+                  Translate!
+                </button>
+              </div>
+        </div>
+
+        <br/><br/>
+      <div class="row">
+        <div class="col s12 m6">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title">What is Polyglot?</span>
+              <h6>
+                Polyglot is a live subtitling and translation system which works
+                with a variety of different websites, such as Youtube or Twitch.
+                Click on the link below for the full version.
+              </h6>
+            </div>
+            <div class="card-action">
+              <a target="_blank" href="https://polyglot-react.herokuapp.com" class="white-text blue lighten-1 waves-effect waves-light btn">Full version of Polyglot</a>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="center-align col s12">
-        <button class="center-align blue lighten-1 waves-effect waves-light btn pulse" id="translateButton">
-          <i class="material-icons left">language</i>
-          Translate!
-        </button>
-      </div>
-    </div>
-  </main>
 
   <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
   <script src="popup.js"></script>
