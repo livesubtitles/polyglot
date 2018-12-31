@@ -1,10 +1,12 @@
-const localUrl = "http://127.0.0.1:8000"
-const herokuUrl = "https://polyglot-livesubtitles.herokuapp.com"
-const baseUrl = herokuUrl
+const localUrl = "http://127.0.0.1:8000";
+const herokuUrl = "https://polyglot-livesubtitles.herokuapp.com";
+const baseUrl = herokuUrl;
 
 const languageKey = "selectedLanguage";
 let languageSelector = document.getElementById('languageSelector');
 var lang = '';
+
+M.AutoInit();
 
 function setLanguage(lang) {
   chrome.storage.sync.set({'language': lang}, function() {

@@ -1,42 +1,65 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <!--Import Google Icon Font-->
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <!--Import materialize.css-->
+      <link type="text/css" rel="stylesheet" href="materialize/css/materialize.min.css"  media="screen,projection"/>
     <style>
-      button {
-        height: 30px;
-        width: 100px;
-        outline: none;
+      body {
+        min-width: 50em;
+        min-height: 50em;
       }
     </style>
-  </head>
+   </head>
   <body>
-    <select id="languageSelector">
-      <option value="">Auto</option>
-      <option value="af-ZA">Afrikaans</option>
-      <option value="am-ET">Amharic</option>
-      <option value="hy-AM">Armenian</option>
-      <option value="az-AZ">Azerbaijani</option>
-      <option value="id-ID">Indonesian</option>
-      <option value="ms-MY">Malay</option>
-      <option value="bn-BD">Bengali</option>
-      <option value="ca-ES">Catalan</option>
-      <option value="cs-CZ">Czech</option>
-      <option value="da-DK">Danish</option>
-      <option value="de-DE">German</option>
-      <option value="en-US">English</option>
-      <option value="es-ES">Spanish</option>
-      <option value="fr-FR">French</option>
-      <option value="fil-PH">Filipino</option>
-      <option value="it-IT">Italian</option>
-      <option value="pt-PT">Portuguese</option>
-      <option value="ro-RO">Romanian</option>
-      <option value="el-GR">Greek</option>
-      <option value="tr-TR">Turkish</option>
-      <option value="ru-RU">Russian</option>
-      <option value="ja-JP">Japanese</option>
-      <option value="ko-KR">Korean</option>
-    </select>
-    <button id="translateButton">Translate!</button>
-    <script src="popup.js"></script>
+  <main>
+    <nav>
+      <div class="blue lighten-1 nav-wrapper">
+        <div class="brand-logo center">Polyglot</div>
+      </div>
+    </nav>
+    <br/><br/>
+    <div class="container">
+      <div class="input-field col s12">
+        <select id="languageSelector">
+          <option value="" selected>Auto</option>
+          <option value="af-ZA">Afrikaans</option>
+          <option value="am-ET">Amharic</option>
+          <option value="hy-AM">Armenian</option>
+          <option value="az-AZ">Azerbaijani</option>
+          <option value="id-ID">Indonesian</option>
+          <option value="ms-MY">Malay</option>
+          <option value="bn-BD">Bengali</option>
+          <option value="ca-ES">Catalan</option>
+          <option value="cs-CZ">Czech</option>
+          <option value="da-DK">Danish</option>
+          <option value="de-DE">German</option>
+          <option value="en-US">English</option>
+          <option value="es-ES">Spanish</option>
+          <option value="fr-FR">French</option>
+          <option value="fil-PH">Filipino</option>
+          <option value="it-IT">Italian</option>
+          <option value="pt-PT">Portuguese</option>
+          <option value="ro-RO">Romanian</option>
+          <option value="el-GR">Greek</option>
+          <option value="tr-TR">Turkish</option>
+          <option value="ru-RU">Russian</option>
+          <option value="ja-JP">Japanese</option>
+          <option value="ko-KR">Korean</option>
+        </select>
+    		<label>Select Language</label>
+      </div>
+      <div class="center-align col s12">
+        <button class="center-align blue lighten-1 waves-effect waves-light btn pulse" id="translateButton">
+          <i class="material-icons left">language</i>
+          Translate!
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
+  <script src="popup.js"></script>
   </body>
 </html>
