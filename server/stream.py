@@ -104,8 +104,8 @@ class _StreamWorker(Thread):
 			self.language = detect_language(audio)
 
 ############### gao16's
-		transcript = get_text_from_pcm(audio, sample_rate, self.language) if raw_pcm else \
-					 get_text(audio, sample_rate, self.language, self.credentials)
+		transcript = get_text_from_pcm(audio, sample_rate, self.language, self.sub_language) if raw_pcm else \
+					 get_text(audio, sample_rate, self.language, self.credentials, self.sub_language)
 		return transcript
 		# if self.language == self.sub_language:
 		# 	return transcript

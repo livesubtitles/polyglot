@@ -62,7 +62,7 @@ def _send_stt_request(lang, sample_rate, audiobase64):
 	return response.json()
 
 # Initiates and handles response from speech-to-text API
-def _speech_to_text(audio_file, sample_rate, lang, credentials):
+def _speech_to_text(audio_file, sample_rate, lang, credentials, sub_lang):
 		audiobase64 = _convert_to_base64(audio_file)
 
 		url = "https://rumosrucml.execute-api.us-east-2.amazonaws.com/api/transcribe"
@@ -72,6 +72,7 @@ def _speech_to_text(audio_file, sample_rate, lang, credentials):
 		body['audio'] = audiores
 		body['sample_rate'] = sample_rate
 		body['lang'] = lang
+		body['sub_lang'] = sub_lang
 		print(body)
 		data = json.dumps(body)
 		print(data)
@@ -125,13 +126,13 @@ def _convert_to_wav(pcm_data, sample_rate):
 ########### PUBLIC FUNCTIONS ###########
 
 # Main speech to text function. Given the wav audio data returns the transcript
-def get_text(wav_file, sample_rate, lang, credentials):
+def get_text(wav_file, sample_rate, lang, credentials, sub_lang):
 		return _speech_to_text(wav_file, sample_rate, lang, credentials)
 
 # Gets subtitle for given audio data
-def get_text_from_pcm(pcm_data, sample_rate, lang, credentials):
+def get_text_from_pcm(pcm_data, sample_rate, lang, credentials, sub_lang):
 		wav_file = _convert_to_wav(pcm_data, sample_rate)
-		return get_text(wav_file, sample_rate, lang, credentials)
+		return get_text(wav_file, sample_rate, lang, credentials, sub_lang)
 
 def convert_to_wav(pcm_data, sample_rate):
 	return _convert_to_wav(pcm_data, sample_rate)
