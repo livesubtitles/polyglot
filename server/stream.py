@@ -106,16 +106,16 @@ class _StreamWorker(Thread):
 ############### gao16's
 		transcript = get_text_from_pcm(audio, sample_rate, self.language) if raw_pcm else \
 					 get_text(audio, sample_rate, self.language, self.credentials)
+		return transcript
+		# if self.language == self.sub_language:
+		# 	return transcript
 
-		if self.language == self.sub_language:
-			return transcript
+		# translated = translate(transcript, self.sub_language, self.language.split('-')[0], self.credentials)
 
-		translated = translate(transcript, self.sub_language, self.language.split('-')[0], self.credentials)
-
-		if self.sub_language != 'en':
-			return translated
-		else:
-			return self._get_punctuated(translated)
+		# if self.sub_language != 'en':
+		# 	return translated
+		# else:
+		# 	return self._get_punctuated(translated)
 ############## merged
 		# url = "https://rumosrucml.execute-api.us-east-2.amazonaws.com/api/transcribe"
 		# audiores = {}
