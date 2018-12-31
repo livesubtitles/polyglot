@@ -40,21 +40,21 @@ def process(audio, sample_rate, lang, raw_pcm=False):
 	if lang == '':
 		lang = detect_language(convert_to_wav(audio, sample_rate))
 
-	transcript = get_text_from_pcm(audio, sample_rate,
-		             lang, None) if raw_pcm else \
-	get_text(audio, sample_rate, lang)
 
-	translated = translate(transcript, 'en', lang.split('-')[0], session['credentials'] if 'credentials' in session else None)
+	transcript = get_text_from_pcm(audio, sample_rate, lang, None) if raw_pcm else \
+				 get_text(audio, sample_rate, lang, None)
+
+	translated = transcript
+	# translated = get_text_from_pcm(audio, sample_rate, lang, None)
+	# translated = translate(transcript, 'en', lang.split('-')[0], session['credentials'] if 'credentials' in session else None)
 	return jsonify(subtitle=translated, lang=lang)
 
 def process_with_video(video, audio, sample_rate, lang):
 	if lang == '':
 	#TODO: Move the split into the detect_language function
 		lang = detect_language(audio)
-
 	transcript = get_text(audio, sample_rate, lang)
 	translated = translate(transcript, 'en', lang.split('-')[0], session['credentials'] if 'credentials' in session else None)
-
 	return jsonify(video=jsonpickle.encode(video), subtitle=translated, lang=lang)
 
 def _initialise_streamer(url):
@@ -109,7 +109,6 @@ def get_language():
 @app.route("/stream", methods=['POST'])
 def stream():
 	global streamer
-
 	if streamer == None:
 		_initialise_streamer(json.loads(request.data)['url'])
 
