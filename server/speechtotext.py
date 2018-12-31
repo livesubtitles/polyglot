@@ -65,19 +65,36 @@ def _send_stt_request(lang, sample_rate, audiobase64):
 def _speech_to_text(audio_file, sample_rate, lang, credentials):
 		audiobase64 = _convert_to_base64(audio_file)
 
-		if (lang == 'detected'):
-				return ""
+		url = "https://rumosrucml.execute-api.us-east-2.amazonaws.com/api/transcribe"
+		audiores = {}
+		audiores['content'] = audiobase64
+		body = {}
+		body['audio'] = audiores
+		body['sample_rate'] = sample_rate
+		body['lang'] = lang
+		print(body)
+		data = json.dumps(body)
+		print(data)
+		headers = {'content-type': 'application/json'}
+		resp = requests.post(url, data=data, headers = headers)
+		print(resp.text)
+		translated = resp.text
 
-		if os.environ.get('MODE') != 'paid':
-			json_response = _send_stt_request(lang, sample_rate, audiobase64)
-		else:
-			json_response = _send_stt_request_credentials(lang, sample_rate, audiobase64, credentials)
+		result = translated
 
-		try:
-				result = json_response['results'][0]['alternatives'][0]['transcript']
-		except KeyError as exc:
-				result = ""
-				return result
+		# if (lang == 'detected'):
+		# 		return ""
+		#
+		# if os.environ.get('MODE') != 'paid':
+		# 	json_response = _send_stt_request(lang, sample_rate, audiobase64)
+		# else:
+		# 	json_response = _send_stt_request_credentials(lang, sample_rate, audiobase64, credentials)
+		#
+		# try:
+		# 		result = json_response['results'][0]['alternatives'][0]['transcript']
+		# except KeyError as exc:
+		# 		result = ""
+		# 		return result
 		return result
 
 # Converts audio file to base64 string
