@@ -11,6 +11,9 @@ from server.transcriptionservices.google import *
 import server.language
 from server.languagedetectors.microsoft import *
 
+import server.punctuator2.punctuator
+from server.punctuator2.theanopunctuator import *
+
 class Adapter(unittest.TestCase):
 
     def test_translation(self):
@@ -41,7 +44,13 @@ class TranscriptionAdapterTest(unittest.TestCase):
 class PunctuatorAdapterTest(unittest.TestCase):
 
     def test_punctuator(self):
-        pass
+        model_file = None
+        input_text = "my name is hang li li i am studying computer science"
+        with patch.object(server.punctuator2.theanopunctuator.theanoPunctuator,
+        'punctuate', return_value='My name is Hang Li Li. I am studying Computer Science.') as mock_method:
+            result = server.punctuator2.punctuator.punctuate(input_text, model_file)
+            self.assertEqual(result, "My name is Hang Li Li. I am studying Computer Science.")
+            mock_method.assert_called_once_with(input_text)
 
 class LanguageAdapterTest(unittest.TestCase):
 
