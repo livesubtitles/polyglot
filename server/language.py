@@ -9,7 +9,7 @@ import uuid
 microsoftKey = os.environ.get('MICROSOFTKEY')
 microsoftId = os.environ.get('MICROSOFTID')
 
-_LIMIT = 10
+_LIMIT = 20
 _DEFAULT = "en-US"
 
 def _get_access_token(headers):

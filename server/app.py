@@ -43,8 +43,9 @@ def process(audio, sample_rate, lang, raw_pcm=False):
 	transcript = get_text_from_pcm(audio, sample_rate,
 		             lang, None) if raw_pcm else \
 	get_text(audio, sample_rate, lang)
-
-	translated = translate(transcript, 'en', lang.split('-')[0], session['credentials'] if 'credentials' in session else None)
+	#TODO: Rename variables
+	translated = transcript
+#	translated = translate(transcript, 'en', lang.split('-')[0], session['credentials'] if 'credentials' in session else None)
 	return jsonify(subtitle=translated, lang=lang)
 
 def process_with_video(video, audio, sample_rate, lang):
@@ -83,7 +84,7 @@ def hello():
 @app.route("/supports", methods=['GET'])
 def supportsStreamlink():
 	url = request.args.get("web")
-	return json.dumps(isStreamLinkSupported(url));
+	return jsonify(answer=isStreamLinkSupported(url,  "supported_websites"));
 
 @app.route("/subtitle", methods=['POST'])
 def subtitle():
@@ -275,7 +276,8 @@ class StreamingSocket(Namespace):
 		if not 'credentials' in session:
 			print("Credentials not saved to session")
 		# credentials = jsonpickle.loads(session['credentials'])
-		streamer = VideoStreamer(data['url'], data['lang'], user, credentials, ip_to_time, session['ip'])
+		streamer = VideoStreamer(data['url'], data['lang'], user, credentials, ip_to_time, session['ip'],
+		                         self._check_time_limit)
 
 		try:
 			playlist = streamer.start(self._progress_update)
@@ -295,7 +297,10 @@ class StreamingSocket(Namespace):
 
 	def _progress_update(self, user):
 		with app.app_context():
-			emit('progress', json.dumps({'progress':10}), room=client_sids[user])
+			emit('progress', json.dumps({'progress':3}), room=client_sids[user])
+
+	def _check_time_limit(self, user):
+		emit('login-required', room=client_sids[user])
 
 
 socketio.on_namespace(StreamingSocket('/streams'))

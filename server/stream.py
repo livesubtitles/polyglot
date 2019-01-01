@@ -41,11 +41,13 @@ OUTPUT_WAV_FILE = "/audio.wav"
 
 class _StreamWorker(Thread):
 	def __init__(self, stream_data, bytes_to_read, wait_time, language, \
-						sub_language, user, playlist, credentials, ip, ip_to_time):
+						sub_language, user, playlist, credentials, ip, ip_to_time,
+						check_limit_callback):
 
 		self.stream_data = stream_data
 		self.user = user
 		self.user_dir = 'streams/' + user
+		self.user = user
 		self.streaming = True
 		self.count = 0
 		self.current_time = 0
@@ -58,6 +60,7 @@ class _StreamWorker(Thread):
 		self.sub_language = sub_language
 		self.ip = ip
 		self.ip_to_time = ip_to_time
+		self.check_limit_callback = check_limit_callback
 		Thread.__init__(self)
 
 	def update_language(self, new_language):
@@ -95,21 +98,62 @@ class _StreamWorker(Thread):
 		self.ip_to_time.store_time(self.ip, time_so_far + 10)
 		if (time_so_far + 10 >= 3600):
 			print("Time exceeded")
+			print(self.user)
+			self.check_limit_callback(self.user)
 		if self.language == '':
 			self.language = detect_language(audio)
 
+############### gao16's
 		transcript = get_text_from_pcm(audio, sample_rate, self.language) if raw_pcm else \
 					 get_text(audio, sample_rate, self.language, self.credentials)
+		return transcript
+		# if self.language == self.sub_language:
+		# 	return transcript
 
-		if self.language == self.sub_language:
-			return transcript
+		# translated = translate(transcript, self.sub_language, self.language.split('-')[0], self.credentials)
 
-		translated = translate(transcript, self.sub_language, self.language.split('-')[0], self.credentials)
+		# if self.sub_language != 'en':
+		# 	return translated
+		# else:
+		# 	return self._get_punctuated(translated)
+############## merged
+		# url = "https://rumosrucml.execute-api.us-east-2.amazonaws.com/api/transcribe"
+		# audiores = {}
+		# audiores['content'] = self._convert_to_base64(audio)
+		# body = {}
+		# body['audio'] = audiores
+		# body['sample_rate'] = sample_rate
+		# body['lang'] = self.language
+		# print(body)
+		# data = json.dumps(body)
+		# print(data)
+		# headers = {'content-type': 'application/json'}
+		# resp = requests.post(url, data=data, headers = headers)
+		# print(resp.text)
+		# return resp.text
+######## gk1016
+	# def _get_subtitle(self, audio, sample_rate, raw_pcm=False):
+	# 	if self.language == '':
+	# 		self.language = detect_language(audio)
+	#
+	# 	url = "https://rumosrucml.execute-api.us-east-2.amazonaws.com/api/transcribe"
+	#
+	# 	audiores = {}
+	# 	audiores['content'] = self._convert_to_base64(audio)
+	#
+	# 	body = {}
+	# 	body['audio'] = audiores
+	# 	body['sample_rate'] = sample_rate
+	# 	body['lang'] = self.language
+	# 	print(body)
+	# 	data = json.dumps(body)
+	# 	print(data)
+	# 	headers = {'content-type': 'application/json'}
+	# 	resp = requests.post(url, data=data, headers = headers)
+	# 	print(resp.text)
+	# 	return resp.text
+########
 
-		if self.sub_language != 'en':
-			return translated
-		else:
-			return self._get_punctuated(translated)
 
 	def _get_current_timestamp(self):
 		seconds = self.current_time
@@ -220,7 +264,8 @@ class _StreamWorker(Thread):
 
 
 class VideoStreamer(object):
-	def __init__(self, stream_url, language, user, credentials, times_map, ip):
+	def __init__(self, stream_url, language, user, credentials, times_map, ip,
+	             check_limit_callback):
 		self.stream_url = stream_url
 		self.language = language
 		self.user = user
@@ -231,6 +276,7 @@ class VideoStreamer(object):
 		self.available_streams = None
 		self.ip = ip
 		self.ip_to_time = times_map
+		self.check_limit_callback = check_limit_callback
 
 	def _get_video_stream(self):
 		try:
@@ -298,7 +344,7 @@ class VideoStreamer(object):
 		print("Starting stream worker...", end="")
 		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language,
 			sub_language, self.user, playlist, self.credentials, self.ip,
-			self.ip_to_time)
+			self.ip_to_time, self.check_limit_callback)
 		self.worker.start()
 		print("Success!")
 
