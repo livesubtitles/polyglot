@@ -32,7 +32,7 @@ def translate_no_credentials(textToTranslate, targetLang, sourceLang):
 		res = data['data']['translations'][0]['translatedText']
 		print("Translation: {}".format( res ))
 	except KeyError as exc:
-		print("Exception with key: {}".format( exc ))
+		print("No Translation Found!")
 		res = ""
 		return res
 	return res
