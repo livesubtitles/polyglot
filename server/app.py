@@ -33,7 +33,7 @@ client_sids = {}
 
 LOCAL_URL  = 'http://localhost:8000/'
 HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
-SERVER_URL = HEROKU_URL
+SERVER_URL = LOCAL_URL
 
 # Main pipeline. Will return the JSON response with the translated text.
 def process(audio, sample_rate, lang, raw_pcm=False):
@@ -211,7 +211,7 @@ class StreamingSocket(Namespace):
 
 		print("Checking IP for access...", end="")
 		ip_address = request.remote_addr
-		print("IP address is: ", request.remote_addr)
+		print("IP address is: ", request.remote_addr + "...", end="")
 		session['ip'] = ip_address
 		if ip_to_time.is_in(ip_address):
 			time = ip_to_time.get_time(ip_address)
