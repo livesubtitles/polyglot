@@ -1,6 +1,6 @@
 const io = require('socket.io-client');
-const socket = io('https://polyglot-livesubtitles.herokuapp.com/streams')
-// const socket = io('http://localhost:8000/streams');
+// const socket = io('https://polyglot-livesubtitles.herokuapp.com/streams')
+const socket = io('http://localhost:8000/streams');
 
 console.log(socket);
 

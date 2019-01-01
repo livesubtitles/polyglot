@@ -2,11 +2,12 @@ import unittest
 import responses
 import os
 import server.translate
-
+from server.translationservices.google import *
 
 apiKey = os.environ.get('APIKEY')
 url = 'https://www.googleapis.com/language/translate/v2/'
 
+translationservice = googleTranslationService()
 
 class TestTranslate(unittest.TestCase):
 
@@ -22,9 +23,9 @@ class TestTranslate(unittest.TestCase):
         }
         responses.add(responses.GET, url,
                   json=mock_response, status=200)
-        translation = server.translate.translate(textToTranslate, targetLang, sourceLang, None)
-        self.assertEqual( translation, "Whatever" )
-        self.assertEqual( len( responses.calls ), 1 )
+        translation = translationservice.translate_no_credentials(textToTranslate, targetLang, sourceLang)
+        self.assertEqual(translation, "Whatever")
+        self.assertEqual(len(responses.calls ), 1)
 
     @responses.activate
     def test_translate_exception(self):
@@ -38,9 +39,9 @@ class TestTranslate(unittest.TestCase):
         }
         responses.add(responses.GET, url,
                   json=mock_response, status=200)
-        translation = server.translate.translate(textToTranslate, targetLang, sourceLang, None)
-        self.assertEqual( translation, "" )
-        self.assertEqual( len( responses.calls ), 1 )
+        translation = translationservice.translate_no_credentials(textToTranslate, targetLang, sourceLang)
+        self.assertEqual(translation, "")
+        self.assertEqual(len(responses.calls ), 1)
 
 if __name__ == '__main__':
     unittest.main()

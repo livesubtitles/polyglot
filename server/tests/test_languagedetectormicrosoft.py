@@ -5,6 +5,7 @@ import server.language
 import server.speechtotext
 import urllib
 import unittest.mock
+from server.languagedetectors.microsoft import *
 
 microsoftKey = os.environ.get('MICROSOFTKEY')
 microsoftId = os.environ.get('MICROSOFTID')
@@ -13,6 +14,7 @@ headers = {
 }
 
 urlOfAPIKey = "https://api.videoindexer.ai/auth/trial/Accounts/" + microsoftId + "/AccessToken?allowEdit=true"
+microsoftlanguagedetector = microsoftLanguageDetector()
 
 class TestDetectLanguage(unittest.TestCase):
 
@@ -20,7 +22,7 @@ class TestDetectLanguage(unittest.TestCase):
     def test_getAccessToken(self):
         mock_response = "at123"
         responses.add(responses.GET, urlOfAPIKey, json=mock_response, status=200)
-        accessToken = server.language._get_access_token(headers)
+        accessToken = microsoftlanguagedetector._get_access_token(headers)
         self.assertEqual(accessToken, "at123")
         self.assertEqual(len(responses.calls), 1)
 
@@ -45,7 +47,7 @@ class TestDetectLanguage(unittest.TestCase):
         responses.add(responses.POST, urlOfLan, json=mock_response1, status=200)
         responses.add(responses.GET, urlOfAPIKey, json=mock_response0, status=200)
         responses.add(responses.GET, urlOfGettingLan, json=mock_response2, status=200)
-        languageDetected = server.language.detect_language(speech)
+        languageDetected = microsoftlanguagedetector.detect_language(speech)
         self.assertEqual(languageDetected, "FR-fr")
         self.assertEqual(len(responses.calls), 3)
 
@@ -71,7 +73,7 @@ class TestDetectLanguage(unittest.TestCase):
         responses.add(responses.POST, urlOfLan, json=mock_response1, status=200)
         responses.add(responses.GET, urlOfAPIKey, json=mock_response0, status=200)
         responses.add(responses.GET, urlOfGettingLan, json=mock_response2, status=200)
-        languageDetected = server.language.detect_language(speech)
+        languageDetected = microsoftlanguagedetector.detect_language(speech)
         self.assertEqual(languageDetected, "en-US")
         self.assertEqual(len(responses.calls), 3)
 
