@@ -71,7 +71,7 @@ class googleTranscriptionService(object):
     # 	return response.json()
 
     # Initiates and handles response from speech-to-text API
-    def _speech_to_text(self, audiobase64, sample_rate, lang, credentials):
+    def _speech_to_text(self, audiobase64, sample_rate, lang, credentials, sub_lang):
     	# if (lang == 'detected'):
     	# 		return ""
     	#
@@ -92,6 +92,7 @@ class googleTranscriptionService(object):
     	body['audio'] = audiores
     	body['sample_rate'] = sample_rate
     	body['lang'] = lang
+        body['sub_lang'] = sub_lang
     	print(body)
     	data = json.dumps(body)
     	print(data)
