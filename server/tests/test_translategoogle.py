@@ -25,7 +25,7 @@ class TestTranslate(unittest.TestCase):
                   json=mock_response, status=200)
         translation = translationservice.translate_no_credentials(textToTranslate, targetLang, sourceLang)
         self.assertEqual(translation, "Whatever")
-        self.assertEqual(len(responses.calls ), 1)
+        self.assertEqual(len(responses.calls), 1)
 
     @responses.activate
     def test_translate_exception(self):
@@ -41,7 +41,7 @@ class TestTranslate(unittest.TestCase):
                   json=mock_response, status=200)
         translation = translationservice.translate_no_credentials(textToTranslate, targetLang, sourceLang)
         self.assertEqual(translation, "")
-        self.assertEqual(len(responses.calls ), 1)
+        self.assertEqual(len(responses.calls), 1)
 
 if __name__ == '__main__':
     unittest.main()
