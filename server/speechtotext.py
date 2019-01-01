@@ -18,9 +18,9 @@ from google.cloud.speech import types
 
 transcriptionservice = googleTranscriptionService()
 
-def _speech_to_text(audio_file, sample_rate, lang, credentials):
+def _speech_to_text(audio_file, sample_rate, lang, credentials, sub_lang):
 	audiobase64 = _convert_to_base64(audio_file)
-	return transcriptionservice._speech_to_text(audiobase64, sample_rate, lang, credentials)
+	return transcriptionservice._speech_to_text(audiobase64, sample_rate, lang, credentials, sub_lang)
 
 # Converts audio file to base64 string
 def _convert_to_base64(wav_file):

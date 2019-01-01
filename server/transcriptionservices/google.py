@@ -72,33 +72,19 @@ class googleTranscriptionService(object):
 
     # Initiates and handles response from speech-to-text API
     def _speech_to_text(self, audiobase64, sample_rate, lang, credentials, sub_lang):
-    	# if (lang == 'detected'):
-    	# 		return ""
-    	#
-    	# if os.environ.get('MODE') != 'paid':
-    	# 	json_response = _send_stt_request(lang, sample_rate, audiobase64)
-    	# else:
-    	# 	json_response = _send_stt_request_credentials(lang, sample_rate, audiobase64, credentials)
-    	#
-    	# try:
-    	# 		result = json_response['results'][0]['alternatives'][0]['transcript']
-    	# except KeyError as exc:
-    	# 		result = ""
-    	# 		return result
-    	url = "https://rumosrucml.execute-api.us-east-2.amazonaws.com/api/transcribe"
-    	audiores = {}
-    	audiores['content'] = audiobase64
-    	body = {}
-    	body['audio'] = audiores
-    	body['sample_rate'] = sample_rate
-    	body['lang'] = lang
+        url = "https://rumosrucml.execute-api.us-east-2.amazonaws.com/api/transcribe"
+        audiores = {}
+        audiores['content'] = audiobase64
+        body = {}
+        body['audio'] = audiores
+        body['sample_rate'] = sample_rate
         body['sub_lang'] = sub_lang
-    	print(body)
-    	data = json.dumps(body)
-    	print(data)
-    	headers = {'content-type': 'application/json'}
-    	resp = requests.post(url, data=data, headers = headers)
-    	print(resp.text)
-    	translated = resp.text
-
-    	return translated
+        body['lang'] = lang
+        print(body)
+        data = json.dumps(body)
+        print(data)
+        headers = {'content-type': 'application/json'}
+        resp = requests.post(url, data=data, headers = headers)
+        print(resp.text)
+        translated = resp.text
+        return translated
