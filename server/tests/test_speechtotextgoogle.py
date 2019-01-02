@@ -35,7 +35,7 @@ class TestSpeechToText(unittest.TestCase):
         sourceLang = "fr"
         mock_response = 'French chips are good'
         responses.add(responses.POST, url, body=mock_response, status=200)
-        text = googletranscriptionservice._speech_to_text(audiobase64, 2000, sourceLang, None)
+        text = googletranscriptionservice._speech_to_text(audiobase64, 2000, sourceLang, None, "en")
         self.assertEqual(text, "French chips are good")
         self.assertEqual(len(responses.calls), 1)
 

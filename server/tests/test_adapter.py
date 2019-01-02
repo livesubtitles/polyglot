@@ -37,9 +37,9 @@ class TranscriptionAdapterTest(unittest.TestCase):
         sourceLang = "fr"
         with patch.object(server.transcriptionservices.google.googleTranscriptionService,
         '_speech_to_text', return_value='French chips are good') as mock_method:
-            result = server.speechtotext.get_text_from_pcm(pcm_data, sample_rate, sourceLang, None)
+            result = server.speechtotext.get_text_from_pcm(pcm_data, sample_rate, sourceLang, None, "en")
             self.assertEqual(result, "French chips are good")
-            mock_method.assert_called_once_with(audiobase64, sample_rate, sourceLang, None)
+            mock_method.assert_called_once_with(audiobase64, sample_rate, sourceLang, None, "en")
 
 class PunctuatorAdapterTest(unittest.TestCase):
 
