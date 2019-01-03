@@ -107,7 +107,7 @@ class _StreamWorker(Thread):
 		return transcript
 		# if self.language == self.sub_language:
 		# 	return transcript
-		# 
+		#
 		# translated = translate(transcript, self.sub_language, self.language.split('-')[0], self.credentials)
 		#
 		# if self.sub_language != 'en':
