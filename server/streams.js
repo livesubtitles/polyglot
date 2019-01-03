@@ -82,6 +82,25 @@ socket.on('stream-response', function(data) {
         console.log("Hls Supported. Got manifest url: " + manifest_url);
 
         var hls = new Hls({debug:true});
+
+        // video.addEventListener('error', function() {
+        //     console.log("*** ERROR ON VIDEO *** KILLING HLS ***")
+        //     hls.destroy();
+        // });
+
+        hls.on(Hls.Events.ERROR, function(event, data) {
+            if (data.type == Hls.ErrorTypes.MEDIA_ERROR) {
+                switch (data.details) {
+                    case Hls.ErrorDetails.BUFFER_APPENDING_ERROR:
+                    case Hls.ErrorDetails.BUFFER_APPEND_ERROR:
+                        console.log(" ******** FUUUUUUUCK!!!");
+                        break;
+                    default:
+                        console.log("Other media error of type: " + data.details);
+                }
+            }
+        });
+
         console.log("Loading manifest url...");
         hls.loadSource(manifest_url);
         console.log("Attatching Media...")
@@ -90,7 +109,6 @@ socket.on('stream-response', function(data) {
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
             console.log("Manifest Loaded");
         });
-
     }
 
 });

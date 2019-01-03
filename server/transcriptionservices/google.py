@@ -80,11 +80,11 @@ class googleTranscriptionService(object):
         body['sample_rate'] = sample_rate
         body['sub_lang'] = sub_lang
         body['lang'] = lang
-        print(body)
+        # print(body)
         data = json.dumps(body)
-        print(data)
+        # print(data)
         headers = {'content-type': 'application/json'}
         resp = requests.post(url, data=data, headers = headers)
-        print(resp.text)
+        # print(resp.text)
         translated = resp.text
         return translated
