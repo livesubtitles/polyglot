@@ -22,8 +22,8 @@ class googleTranslationService(object):
         pass
 
     def detectAndTranslate(self, textToTranslate, targetLang):
-    	sourceLang = detect (textToTranslate)['language']
-    	return translate(textToTranslate, targetLang, sourceLang)
+    	sourceLang = self.detect(textToTranslate)['language']
+    	return self.translate_no_credentials(textToTranslate, targetLang, sourceLang)
 
     def translate_no_credentials(self, textToTranslate, targetLang, sourceLang):
     	if (sourceLang == 'detected'):
