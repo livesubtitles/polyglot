@@ -230,7 +230,7 @@ class StreamingSocket(Namespace):
 
 	def on_disconnect(self):
 		user = session['uid']
-		print("Disconneting from user: " + user)
+		print("Disconnecting from user: " + user)
 		print("Stopping worker...")
 		if user in self.streamers:
 			self.streamers[user].stop()
@@ -256,6 +256,9 @@ class StreamingSocket(Namespace):
 		new_language = data['sub_lang']
 
 		self.streamers[user].update_sub_language(new_language)
+
+	def on_timeupdate(self):
+		print("Time update for ip address: {}".format(request.remote_addr));
 
 	def on_quality(self, data):
 		user = session['uid']
