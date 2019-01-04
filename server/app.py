@@ -257,8 +257,9 @@ class StreamingSocket(Namespace):
 
 		self.streamers[user].update_sub_language(new_language)
 
-	def on_timeupdate(self):
-		print("Time update for ip address: {}".format(request.remote_addr));
+	def on_timeupdate(self, data):
+		print("Time update for ip address: {}".format(request.remote_addr))
+		print("Time interval in seconds: {}".format(data.interval_seconds))
 
 	def on_quality(self, data):
 		user = session['uid']
