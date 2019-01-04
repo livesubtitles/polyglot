@@ -10,7 +10,7 @@ import re
 from flask import Flask, request, jsonify, send_from_directory, send_file, session
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, Namespace, disconnect
-      
+
 from server.translate import test
 from server.speechtotext import *
 from server.language import *
@@ -259,7 +259,7 @@ class StreamingSocket(Namespace):
 
 	def on_timeupdate(self, data):
 		print("Time update for ip address: {}".format(request.remote_addr))
-		print("Time interval in seconds: {}".format(data.interval_seconds))
+		print("Time interval in seconds: {}".format(data["interval_seconds"]))
 
 	def on_quality(self, data):
 		user = session['uid']
