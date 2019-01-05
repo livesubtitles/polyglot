@@ -36,13 +36,12 @@ HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
 SERVER_URL = HEROKU_URL
 
 # Main pipeline. Will return the JSON response with the translated text.
-def process(audio, sample_rate, lang, raw_pcm=False):
+def process(audio, sample_rate, lang, raw_pcm=False, sub_lang="En-en"):
 	if lang == '':
 		lang = detect_language(convert_to_wav(audio, sample_rate))
 
 	transcript = get_text_from_pcm(audio, sample_rate,
-		             lang, None) if raw_pcm else \
-	get_text(audio, sample_rate, lang)
+		             lang, None, sub_lang) if raw_pcm else get_text(audio, sample_rate, lang, None, sub_lang)
 	#TODO: Rename variables
 	translated = transcript
 #	translated = translate(transcript, 'en', lang.split('-')[0], session['credentials'] if 'credentials' in session else None)
@@ -53,7 +52,7 @@ def process_with_video(video, audio, sample_rate, lang):
 	#TODO: Move the split into the detect_language function
 		lang = detect_language(audio)
 
-	transcript = get_text(audio, sample_rate, lang)
+	transcript = get_text(audio, sample_rate, lang, credentials, "En-en")
 	translated = translate(transcript, 'en', lang.split('-')[0], session['credentials'] if 'credentials' in session else None)
 
 	return jsonify(video=jsonpickle.encode(video), subtitle=translated, lang=lang)
@@ -62,7 +61,7 @@ def _initialise_streamer(url):
 	global streamer
 	global ip_to_time
 
-	streamer = VideoStreamer(url)
+	streamer = VideoStreamer(url, language, None, credentials)
 
 	try:
 		streamer.start()
@@ -107,18 +106,18 @@ def get_language():
 	global language
 	return language
 
-@app.route("/stream", methods=['POST'])
-def stream():
-	global streamer
-
-	if streamer == None:
-		_initialise_streamer(json.loads(request.data)['url'])
-
-	lang = json.loads(request.data)['lang']
-	(video, audio) = streamer.get_data()
-	sample_rate    = streamer.get_sample_rate()
-
-	return process_with_video(video, audio, sample_rate, lang)
+# @app.route("/stream", methods=['POST'])
+# def stream():
+# 	global streamer
+#
+# 	if streamer == None:
+# 		_initialise_streamer(json.loads(request.data)['url'])
+#
+# 	lang = json.loads(request.data)['lang']
+# 	(video, audio) = streamer.get_data()
+# 	sample_rate    = streamer.get_sample_rate()
+#
+# 	return process_with_video(video, audio, sample_rate, lang)
 
 @app.route("/translate-test")
 def dummyTranslate():
@@ -176,15 +175,15 @@ def get_user_access_token_google():
 	print(resp.status)
 	print(content.decode('utf-8'))
 
-	# Get profile info from ID token
+	# # Get profile info from ID token
 	userid = credentials.id_token['sub']
 	email = credentials.id_token['email']
 	session['email'] = email
 	session['userid'] = userid
-	session['credentials'] = jsonpickle.dumps(credentials)
-	if not 'credentials' in session:
-		print("Credentials not saved to session")
-	session.modified = True
+	# session['credentials'] = jsonpickle.dumps(credentials)
+	# if not 'credentials' in session:
+	# 	print("Credentials not saved to session")
+	# session.modified = True
 	print(userid)
 	print(email)
 	return ""
@@ -205,6 +204,7 @@ class StreamingSocket(Namespace):
 	def on_connect(self):
 		print("Creating user details... ", end="")
 		new_hash = self._generate_user_hash()
+		print ("The new hash is ", new_hash)
 
 		session['uid'] = new_hash
 		os.makedirs('streams/' + new_hash)

@@ -50,12 +50,12 @@ def _convert_to_wav(pcm_data, sample_rate):
 
 # Main speech to text function. Given the wav audio data returns the transcript
 def get_text(wav_file, sample_rate, lang, credentials, sub_lang):
-		return _speech_to_text(wav_file, sample_rate, lang, credentials, sub_lang)
+	return _speech_to_text(wav_file, sample_rate, lang, credentials, sub_lang)
 
 # Gets subtitle for given audio data
 def get_text_from_pcm(pcm_data, sample_rate, lang, credentials, sub_lang):
-		wav_file = _convert_to_wav(pcm_data, sample_rate)
-		return get_text(wav_file, sample_rate, lang, credentials, sub_lang)
+	wav_file = _convert_to_wav(pcm_data, sample_rate)
+	return get_text(wav_file, sample_rate, lang, credentials, sub_lang)
 
 def convert_to_wav(pcm_data, sample_rate):
 	return _convert_to_wav(pcm_data, sample_rate)
