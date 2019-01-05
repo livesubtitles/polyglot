@@ -14,9 +14,9 @@ function setLanguage(lang) {
   });
 }
 
-languageSelector.onchange = () => {
+languageSelector.addEventListener("change", () => {
   updateLanguage(languageSelector);
-}
+});
 
 function updateLanguage(selectLanguage) {
   setLanguage(selectLanguage.value);
@@ -26,10 +26,12 @@ function getLanguage() {
     chrome.storage.sync.get(['language'], function(result) {
           if ('language' in result) {
             languageSelector.value = result.language;
+            // reinitialise language selector, materialize requires it
+            $("#languageSelector").formSelect();
             setLanguage(languageSelector.value);
           }
         });
-  }
+}
 
 var url, tab;
 function init(){

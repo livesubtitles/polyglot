@@ -1,5 +1,6 @@
 import io
 import json
+import jsonpickle
 import os
 import wave
 import struct
@@ -83,6 +84,13 @@ class googleTranscriptionService(object):
         # print(body)
         data = json.dumps(body)
         # print(data)
+        if credentials == None:
+            body['paid'] = False
+        else:
+            body['paid'] = True
+        body['credentials'] = jsonpickle.encode(credentials)
+        data = json.dumps(body)
+
         headers = {'content-type': 'application/json'}
         resp = requests.post(url, data=data, headers = headers)
         # print(resp.text)

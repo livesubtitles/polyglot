@@ -1,20 +1,25 @@
 import unittest
 import responses
 import os
-import mock
-from mock import *
 import server.playlist
 from server.playlist import *
 from pathlib import Path
+import shutil
+
+username = "test_user"
+user_dir_prefix = "streams/"
+user_dir = user_dir_prefix + username
 
 class TestPlaylist(unittest.TestCase):
 
-    def test_creatingPlaylist(self):
-        username = "test_user"
-        user_dir = 'streams/' + username
+    def setUp(self):
         if not os.path.exists(user_dir):
             os.makedirs(user_dir)
 
+    def tearDown(self):
+        shutil.rmtree(user_dir_prefix)
+
+    def test_creatingPlaylist(self):
         playlist = HLSPlaylist(username)
 
         streams_folder = Path("streams/")
@@ -43,10 +48,6 @@ class TestPlaylist(unittest.TestCase):
         self.assertEqual(playlist.get_subtitle(), "streams/test_user/subtitles.m3u8")
 
     def test_updateAllPlaylist(self):
-        username = "test_user"
-        user_dir = 'streams/' + username
-        if not os.path.exists(user_dir):
-            os.makedirs(user_dir)
 
         playlist = HLSPlaylist(username)
 
