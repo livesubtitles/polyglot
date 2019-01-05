@@ -33,7 +33,7 @@ class googleTranslationService(object):
     	data = r.json()
     	try:
     		res = data['data']['translations'][0]['translatedText']
-    		print("Translation: {}".format( res ))
+    		# print("Translation: {}".format( res ))
     	except KeyError as exc:
     		print("No Translation Found!")
     		res = ""
@@ -46,11 +46,11 @@ class googleTranslationService(object):
     	payload = {'q' : textToTranslate, 'target' : targetLang, 'source' : sourceLang}
     	http = httplib2.Http()
     	http_auth = credentials.authorize(http)
-    	print(url + '?q='+ textToTranslate + '&target=en&source='+sourceLang)
+    	# print(url + '?q='+ textToTranslate + '&target=en&source='+sourceLang)
     	resp, content = http.request(
     		url + '?q='+ urllib.parse.quote_plus(textToTranslate) + '&target=en&source='+sourceLang)
-    	print(resp.status)
-    	print(content.decode('utf-8'))
+    	# print(resp.status)
+    	# print(content.decode('utf-8'))
     	json_response = json.loads(content.decode('utf-8'))
     	return json_response['data']['translations'][0]['translatedText']
 
@@ -58,12 +58,12 @@ class googleTranslationService(object):
     	payload = {'key' : apiKey}
     	r = requests.get((url + languages), params = payload)
     	data = r.json()
-    	print (data['data']['languages'])
+    	# print (data['data']['languages'])
     	return (data['data']['languages'])
 
     def detect(self, textToTranslate):
     	payload = {'key' : apiKey, 'q' : textToTranslate}
     	r = requests.get((url + detection), params = payload)
     	data = r.json()
-    	print (data['data']['detections'][0][0])
+    	# print (data['data']['detections'][0][0])
     	return (data['data']['detections'][0][0])

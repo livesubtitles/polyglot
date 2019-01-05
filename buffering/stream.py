@@ -13,4 +13,3 @@ for i in range(1, 10):
 
 f.close()
 fd.close()
-
