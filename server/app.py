@@ -260,6 +260,13 @@ class StreamingSocket(Namespace):
 	def on_timeupdate(self, data):
 		print("Time update for ip address: {}".format(request.remote_addr))
 		print("Time interval in seconds: {}".format(data["interval_seconds"]))
+		ip_address = request.remote_addr
+		if ip_to_time.is_in(ip_address):
+			time = ip_to_time.get_time(ip_address)
+			ip_to_time.store_time(ip_address, time + data["interval_seconds"])
+		else:
+			ip_to_time.store_time(ip_address, data["interval_seconds"])
+
 
 	def on_quality(self, data):
 		user = session['uid']
@@ -280,8 +287,7 @@ class StreamingSocket(Namespace):
 		if not 'credentials' in session:
 			print("Credentials not saved to session")
 		# credentials = jsonpickle.loads(session['credentials'])
-		streamer = VideoStreamer(data['url'], data['lang'], user, credentials, ip_to_time, session['ip'],
-		                         self._check_time_limit)
+		streamer = VideoStreamer(data['url'], data['lang'], user, credentials)
 
 		try:
 			playlist = streamer.start(self._progress_update)

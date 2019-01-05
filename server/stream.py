@@ -41,8 +41,7 @@ OUTPUT_WAV_FILE = "/audio.wav"
 
 class _StreamWorker(Thread):
 	def __init__(self, stream_data, bytes_to_read, wait_time, language, \
-						sub_language, user, playlist, credentials, ip, ip_to_time,
-						check_limit_callback):
+						sub_language, user, playlist, credentials):
 
 		self.stream_data = stream_data
 		self.user = user
@@ -58,9 +57,6 @@ class _StreamWorker(Thread):
 		self.playlist = playlist
 		self.language = language
 		self.sub_language = sub_language
-		self.ip = ip
-		self.ip_to_time = ip_to_time
-		self.check_limit_callback = check_limit_callback
 		Thread.__init__(self)
 
 	def update_language(self, new_language):
@@ -94,12 +90,6 @@ class _StreamWorker(Thread):
 			+ (SUB_EXTENSION if subtitle else VID_EXTENSION)
 
 	def _get_subtitle(self, audio, sample_rate, raw_pcm=False):
-		time_so_far = self.ip_to_time.get_time(self.ip)
-		self.ip_to_time.store_time(self.ip, time_so_far + 10)
-		if (time_so_far + 10 >= 3600):
-			print("Time exceeded")
-			print(self.user)
-			self.check_limit_callback(self.user)
 		if self.language == '':
 			self.language = detect_language(audio)
 		transcript = get_text_from_pcm(audio, sample_rate, self.language, self.sub_language) if raw_pcm else \
@@ -224,8 +214,7 @@ class _StreamWorker(Thread):
 
 
 class VideoStreamer(object):
-	def __init__(self, stream_url, language, user, credentials, times_map, ip,
-	             check_limit_callback):
+	def __init__(self, stream_url, language, user, credentials):
 		self.stream_url = stream_url
 		self.language = language
 		self.user = user
@@ -234,9 +223,6 @@ class VideoStreamer(object):
 		self.sub_language = 'en'
 		self.worker = None
 		self.available_streams = None
-		self.ip = ip
-		self.ip_to_time = times_map
-		self.check_limit_callback = check_limit_callback
 
 	def _get_video_stream(self):
 		try:
@@ -303,8 +289,7 @@ class VideoStreamer(object):
 
 		print("Starting stream worker...", end="")
 		self.worker = _StreamWorker(data, bytes_to_read, wait_time, self.language,
-			sub_language, self.user, playlist, self.credentials, self.ip,
-			self.ip_to_time, self.check_limit_callback)
+			sub_language, self.user, playlist, self.credentials)
 		self.worker.start()
 		print("Success!")
 
