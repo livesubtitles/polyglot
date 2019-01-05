@@ -41,7 +41,7 @@ def process(audio, sample_rate, lang, raw_pcm=False):
 		lang = detect_language(convert_to_wav(audio, sample_rate))
 
 	transcript = get_text_from_pcm(audio, sample_rate,
-		             lang, None) if raw_pcm else \
+		             lang, None, "en") if raw_pcm else \
 	get_text(audio, sample_rate, lang)
 	#TODO: Rename variables
 	translated = transcript
