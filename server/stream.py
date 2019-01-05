@@ -90,7 +90,6 @@ class _StreamWorker(Thread):
 			+ (SUB_EXTENSION if subtitle else VID_EXTENSION)
 
 	def _get_subtitle(self, audio, sample_rate, raw_pcm=False):
-<<<<<<< HEAD
 		time_so_far = self.ip_to_time.get_time(self.ip)
 		self.ip_to_time.store_time(self.ip, time_so_far + 10)
 
@@ -98,8 +97,6 @@ class _StreamWorker(Thread):
 			print("Time exceeded for user: " + self.user)
 			self.check_limit_callback(self.user)
 
-=======
->>>>>>> 8f962863eb365bcdb07b8b421311720029b81ec5
 		if self.language == '':
 			self.language = detect_language(audio)
 
