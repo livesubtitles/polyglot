@@ -36,7 +36,7 @@ HEROKU_URL = 'https://polyglot-livesubtitles.herokuapp.com/'
 SERVER_URL = HEROKU_URL
 
 # Main pipeline. Will return the JSON response with the translated text.
-def process(audio, sample_rate, lang, raw_pcm=False, sub_lang="En-en"):
+def process(audio, sample_rate, lang, raw_pcm=False, sub_lang="en"):
     if lang == '':
         lang = detect_language(convert_to_wav(audio, sample_rate))
 
@@ -50,7 +50,7 @@ def process_with_video(video, audio, sample_rate, lang):
     #TODO: Move the split into the detect_language function
         lang = detect_language(audio)
 
-    transcript = get_text(audio, sample_rate, lang, credentials, "En-en")
+    transcript = get_text(audio, sample_rate, lang, credentials, "en")
     translated = translate(transcript, 'en', lang.split('-')[0], session['credentials'] if 'credentials' in session else None)
 
     return jsonify(video=jsonpickle.encode(video), subtitle=translated, lang=lang)
