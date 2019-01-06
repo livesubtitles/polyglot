@@ -187,7 +187,7 @@ class AppTest(unittest.TestCase):
                 with patch.object(httplib2.Http, 'request', return_value=(MockResponse(200), "translated_text".encode('utf-8'))) as mock_method2:
                     response = self.app.post("/storeauthcode", data="auth_code")
                     self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response.get_data().decode("utf-8"), "")
+                    self.assertEqual(response.get_data().decode("utf-8"), "user123@email.com")
                     self.assertEqual(credentials.call_count, 1)
 
     # SOCKETS TESTS
