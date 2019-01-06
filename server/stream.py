@@ -124,22 +124,22 @@ class _StreamWorker(Thread):
 
 		return file_path
 
-	def _get_punctuated(self, subtitle):
-		if subtitle == None or subtitle == "":
-			return ""
+	# def _get_punctuated(self, subtitle):
+	# 	if subtitle == None or subtitle == "":
+	# 		return ""
 
-		url = "http://flask-env.p5puf6mmb3.eu-west-2.elasticbeanstalk.com/punctuate"
-		body = {}
-		body['subtitle'] = subtitle
-		data = json.dumps(body)
-		response = requests.post(url, data=data)
-		try:
-			punctuated = response.json()['subtitle']
-		except Exception:
-			print("ERROR: Could not punctuate text.")
-			return
+	# 	url = "http://flask-env.p5puf6mmb3.eu-west-2.elasticbeanstalk.com/punctuate"
+	# 	body = {}
+	# 	body['subtitle'] = subtitle
+	# 	data = json.dumps(body)
+	# 	response = requests.post(url, data=data)
+	# 	try:
+	# 		punctuated = response.json()['subtitle']
+	# 	except Exception:
+	# 		print("ERROR: Could not punctuate text.")
+	# 		return
 
-		return "" if punctuated == None else punctuated.replace(",,", ",").replace("..", ".")
+	# 	return "" if punctuated == None else punctuated.replace(",,", ",").replace("..", ".")
 
 	def _create_subtitle_file(self, data, audio_data, duration):
 		file_path = self._get_next_filepath(subtitle=True)

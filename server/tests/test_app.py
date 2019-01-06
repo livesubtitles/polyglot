@@ -289,6 +289,53 @@ class AppTest(unittest.TestCase):
                 self.assertEqual(socket.streamers, {})
                 cleanup_mock.assert_called_with(user)
 
+    def test_socket_timeupdate_ipin(self):
+        data = {"interval_seconds":10}
+
+        with app.test_request_context():
+            socket = StreamingSocket()
+
+            with patch('server.app.ip_to_time.is_in', return_value=True) as is_in_mock:
+                with patch('server.app.ip_to_time.get_time') as get_time_mock:
+                    with patch('server.app.ip_to_time.store_time') as store_time_mock:
+                        socket.on_timeupdate(data)
+
+                        is_in_mock.assert_called_with(ANY)
+                        get_time_mock.assert_called_with(ANY)
+                        store_time_mock.assert_called_with(ANY, ANY)
+
+    def test_socket_timeupdate_ipnotin(self):
+        data = {"interval_seconds":10}
+
+        with app.test_request_context():
+            socket = StreamingSocket()
+
+            with patch('server.app.ip_to_time.is_in', return_value=False) as is_in_mock:
+                with patch('server.app.ip_to_time.get_time') as get_time_mock:
+                    with patch('server.app.ip_to_time.store_time') as store_time_mock:
+                        socket.on_timeupdate(data)
+
+                        is_in_mock.assert_called_with(ANY)
+                        store_time_mock.assert_called_with(ANY, ANY)
+
+    # def test_socket_quality(self):
+    #     with app.test_request_context():
+    #         socket = StreamingSocket()
+
+    #         data = {'quality':'360p'}
+    #         user = "test_user"
+    #         server.app.session["uid"] = user
+
+    #         streamer = Mock()
+    #         socket.streamers = {'test_user':streamer}
+    #         playlist = HLSPlaylist(user)
+
+    #         with patch.object(VideoStreamer, 'update_quality', return_value=playlist) as streamer_update_mock:
+    #             socket.on_quality(data)
+
+    #             streamer_update_mock.assert_called_with('360p')
+
+
     # @patch('server.app.session', dict())
     # @patch('server.app.random.choices', return_value="user123")
     # def test_socket_disconnect_and_cleanup(self, random):
