@@ -13,20 +13,20 @@ googletranscriptionservice = googleTranscriptionService()
 
 class TestSpeechToText(unittest.TestCase):
 
-        	# url = "https://rumosrucml.execute-api.us-east-2.amazonaws.com/api/transcribe"
-        	# audiores = {}
-        	# audiores['content'] = audiobase64
-        	# body = {}
-        	# body['audio'] = audiores
-        	# body['sample_rate'] = sample_rate
-        	# body['lang'] = lang
-        	# print(body)
-        	# data = json.dumps(body)
-        	# print(data)
-        	# headers = {'content-type': 'application/json'}
-        	# resp = requests.post(url, data=data, headers = headers)
-        	# print(resp.text)
-        	# translated = resp.text
+            # url = "https://rumosrucml.execute-api.us-east-2.amazonaws.com/api/transcribe"
+            # audiores = {}
+            # audiores['content'] = audiobase64
+            # body = {}
+            # body['audio'] = audiores
+            # body['sample_rate'] = sample_rate
+            # body['lang'] = lang
+            # print(body)
+            # data = json.dumps(body)
+            # print(data)
+            # headers = {'content-type': 'application/json'}
+            # resp = requests.post(url, data=data, headers = headers)
+            # print(resp.text)
+            # translated = resp.text
 
     @responses.activate
     def test_speechToText(self):

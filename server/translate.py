@@ -10,12 +10,12 @@ from server.translationservices.google import *
 translationService = googleTranslationService()
 
 def detectAndTranslate(textToTranslate, targetLang):
-	return translationService.detectAndTranslate(textToTranslate, targetLang)
+    return translationService.detectAndTranslate(textToTranslate, targetLang)
 
 def translate(textToTranslate, targetLang, sourceLang, credentials):
-	if os.environ.get('MODE') != 'paid':
-		return translationService.translate_no_credentials(textToTranslate, targetLang, sourceLang)
-	return translationService.translate_with_credentials(textToTranslate, targetLang, sourceLang, credentials)
+    if os.environ.get('MODE') != 'paid':
+        return translationService.translate_no_credentials(textToTranslate, targetLang, sourceLang)
+    return translationService.translate_with_credentials(textToTranslate, targetLang, sourceLang, credentials)
 
 def test():
-	return detectAndTranslate("Estoy bebiendo agua.", "en")
+    return detectAndTranslate("Estoy bebiendo agua.", "en")
