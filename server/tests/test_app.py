@@ -66,9 +66,6 @@ class AppTest(unittest.TestCase):
 
         self.assertNotEqual(hash1, hash2)
 
-    def test_dummy(self):
-        server.app.dummyTranslate()
-
     def test_index_html(self):
         response = self.app.get("/")
         self.assertEqual(response.status_code, 200)

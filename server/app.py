@@ -117,10 +117,6 @@ def get_language():
 #
 #   return process_with_video(video, audio, sample_rate, lang)
 
-@app.route("/translate-test")
-def dummyTranslate():
-    return test()
-
 @app.after_request
 def after_request(response):
   response.headers.add('Access-Control-Allow-Origin', '*')
