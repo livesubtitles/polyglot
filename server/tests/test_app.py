@@ -179,16 +179,26 @@ class AppTest(unittest.TestCase):
             self.assertEqual(response.get_data().decode("utf-8"), "A html document")
 
     @patch('server.app.session', dict())
-    @patch('server.app.client.credentials_from_clientsecrets_and_code', return_value= MagicMock())
-    def test_store_auth_code_html(self, credentials):
-        credentials.id_token = {'sub':"user123", 'email':"user123@email.com"}
+    def test_store_auth_code_html(self):
         with app.test_request_context():
-            with patch.object(client.Credentials, 'authorize', return_value="http_auth") as mock_method1:
+
+            class MockCredentials(object):
+                def __init__(self, *args, **kwargs):
+                    self.id_token =  {'sub':"user123", 'email':"user123@email.com"}
+
+                def authorize(self, *args, **kwargs):
+                    self.authorize_called = True
+                    return "http_auth"
+
+            m_credentials = MockCredentials()
+            with patch("server.app.client.credentials_from_clientsecrets_and_code", return_value=m_credentials):
                 with patch.object(httplib2.Http, 'request', return_value=(MockResponse(200), "translated_text".encode('utf-8'))) as mock_method2:
                     response = self.app.post("/storeauthcode", data="auth_code")
                     self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response.get_data().decode("utf-8"), "user123@email.com")
-                    self.assertEqual(credentials.call_count, 1)
+                    print("*****")
+                    print(response.get_data().decode("utf-8"))
+                    self.assertEqual(json.loads(response.get_data())["email"], "user123@email.com")
+                    self.assertEqual(m_credentials.authorize_called, True)
 
     # SOCKETS TESTS
     @patch('server.app.session', dict())
