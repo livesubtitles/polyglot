@@ -193,7 +193,7 @@ class AppTest(unittest.TestCase):
             m_credentials = MockCredentials()
             with patch("server.app.client.credentials_from_clientsecrets_and_code", return_value=m_credentials):
                 with patch.object(httplib2.Http, 'request', return_value=(MockResponse(200), "translated_text".encode('utf-8'))) as mock_method2:
-                    response = self.app.post("/storeauthcode", json={"authcode": "auth_code"})
+                    response = self.app.post("/storeauthcode", data="auth_code")
                     self.assertEqual(response.status_code, 200)
                     print("*****")
                     print(response.get_data().decode("utf-8"))
