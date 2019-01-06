@@ -7,7 +7,7 @@ import wave
 import sys
 import time
 from math import ceil
-from datetime import timedelta
+from datetime import timedelta, datetime
 from webvtt import WebVTT, Caption
 from ffmpy import FFmpeg
 from six.moves import queue
@@ -39,6 +39,11 @@ VID_EXTENSION   = ".ts"
 SUB_EXTENSION   = ".vtt"
 OUTPUT_WAV_FILE = "/audio.wav"
 
+############# Logging utility #############
+def current_time():
+    return int(round(time.time() * 1000))
+###########################################
+
 class _StreamWorker(Thread):
     def __init__(self, stream_data, bytes_to_read, wait_time, language, \
                         sub_language, user, playlist, credentials):
@@ -51,6 +56,7 @@ class _StreamWorker(Thread):
         self.count = 0
         self.current_time = 0
         self.sample_rate = 0
+        self.pipeline_wait = 0
         self.bytes_to_read = bytes_to_read
         self.wait_time = wait_time
         self.credentials = credentials
@@ -93,19 +99,19 @@ class _StreamWorker(Thread):
         if self.language == '':
             self.language = detect_language(audio)
 
+        print("Fetching subtitles...", end="")
+        start_time = current_time()
+
         transcript = get_text_from_pcm(audio, sample_rate, self.language, self.sub_language) if raw_pcm else \
                      get_text(audio, sample_rate, self.language, self.credentials, self.sub_language)
 
+        end_time = current_time()
+        wait_time_ms = end_time - start_time
+
+        self.pipeline_wait = int(wait_time_ms / 1000)
+        print("Success! Time taken: " + str(wait_time_ms) + "ms") 
+
         return transcript
-        # if self.language == self.sub_language:
-        #   return transcript
-        #
-        # translated = translate(transcript, self.sub_language, self.language.split('-')[0], self.credentials)
-        #
-        # if self.sub_language != 'en':
-        #   return translated
-        # else:
-        #   return self._get_punctuated(translated)
 
     def _get_current_timestamp(self):
         seconds = self.current_time
@@ -123,23 +129,6 @@ class _StreamWorker(Thread):
         self.current_video_file = file_path
 
         return file_path
-
-    # def _get_punctuated(self, subtitle):
-    #   if subtitle == None or subtitle == "":
-    #       return ""
-
-    #   url = "http://flask-env.p5puf6mmb3.eu-west-2.elasticbeanstalk.com/punctuate"
-    #   body = {}
-    #   body['subtitle'] = subtitle
-    #   data = json.dumps(body)
-    #   response = requests.post(url, data=data)
-    #   try:
-    #       punctuated = response.json()['subtitle']
-    #   except Exception:
-    #       print("ERROR: Could not punctuate text.")
-    #       return
-
-    #   return "" if punctuated == None else punctuated.replace(",,", ",").replace("..", ".")
 
     def _create_subtitle_file(self, data, audio_data, duration):
         file_path = self._get_next_filepath(subtitle=True)
@@ -207,7 +196,7 @@ class _StreamWorker(Thread):
             self._cleanup_files(removed)
 
             self.count += 1
-            time.sleep(self.wait_time)
+            time.sleep(max(0, self.wait_time - self.pipeline_wait))
 
         self.stream_data.close()
 

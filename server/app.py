@@ -300,9 +300,9 @@ class StreamingSocket(Namespace):
         self._progress_update(user)
 
         media_url = str(SERVER_URL + playlist.get_master())
-        print ("********The master url is", media_url)
+        print ("\tMaster URL: ", media_url)
         supported_qualities = streamer.get_supported_qualities()
-        print ("********The supported qualities are", supported_qualities)
+        print ("\tSupported qualities: ", supported_qualities)
         emit('stream-response', json.dumps({'media':media_url, 'qualities':supported_qualities}))
 
     def _progress_update(self, user):
