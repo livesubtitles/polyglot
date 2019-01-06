@@ -75,7 +75,7 @@ def _generate_user_hash():
 	return ''.join(random.choices(string.ascii_letters + string.digits, k=20))
 
  ################# REST ENDPOINTS #################
-
+   
 @app.route("/")
 def hello():
 	return "Polyglot - Live Subtitles - ICL"
