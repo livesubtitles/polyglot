@@ -104,7 +104,6 @@ class _StreamWorker(Thread):
 					 get_text(audio, sample_rate, self.language, self.credentials, self.sub_language)
 
 		return transcript
-		
 		# if self.language == self.sub_language:
 		# 	return transcript
 		#

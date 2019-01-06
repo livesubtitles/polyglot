@@ -193,22 +193,37 @@ class AppTest(unittest.TestCase):
     # SOCKETS TESTS
     @patch('server.app.session', dict())
     @patch('server.app.random.choices', return_value="user123")
-    def test_socket_on_connect(self, random):
+    def test_socket_on_connect_and_stream(self, random):
         with app.test_request_context():
-            m = mock.MagicMock()
-            m.remote_addr = "127.0.0.1"
-            m.sids = "123456789"
-            m.namespace = "123"
-            with mock.patch("server.app.request", m):
-                with mock.patch("flask.request", m):
-                    streaming_socket = StreamingSocket()
-                    streaming_socket.on_connect()
-                    streams_folder = Path("streams/user123")
+            request_mock = MagicMock()
+            request_mock.remote_addr = "127.0.0.1"
+            request_mock.sids = "123456789"
+            request_mock.namespace = "123"
 
-                    self.assertEqual(streams_folder.is_dir(), True)
-                    self.assertEqual(random.call_count, 1)
-                    self.assertEqual(server.app.session["uid"], "user123")
-                    self.assertEqual(server.app.session["ip"], "127.0.0.1")
+            playlist_mock = MagicMock()
+
+            streamer_mock = MagicMock()
+            streamer_mock().start.return_value = playlist_mock
+            streamer_mock().get_supported_qualities.return_value = ['360p', '480p', '720p']
+
+            with patch("server.app.request", request_mock):
+                with patch("flask.request", request_mock):
+                    with patch('server.app.VideoStreamer', streamer_mock):
+                        with patch('server.playlist.HLSPlaylist', playlist_mock):
+                            with patch.object(server.playlist.HLSPlaylist, 'get_master', return_value='example/video1') as mock_get_master:
+                                streaming_socket = StreamingSocket()
+                                streaming_socket.on_connect()
+                                streaming_socket.on_stream({'url': "https://www.twitch.tv/valkia", 'lang': "Fr-fr"})
+                                streams_folder = Path("streams/user123")
+
+                                self.assertEqual(streams_folder.is_dir(), True)
+                                self.assertEqual(random.call_count, 1)
+                                self.assertEqual(server.app.session["uid"], "user123")
+                                self.assertEqual(server.app.session["ip"], "127.0.0.1")
+
+                                self.assertEqual(streamer_mock().start.call_count, 1)
+                                self.assertEqual(streamer_mock().get_supported_qualities.call_count, 1)
+                                self.assertEqual(mock_get_master.call_count, 1)
 
     @patch('server.app.session', dict())
     @patch('server.app.random.choices', return_value="user123")
@@ -232,6 +247,29 @@ class AppTest(unittest.TestCase):
                     streaming_socket.on_disconnect()
                     self.assertEqual(streams_folder.is_dir(), False)
                     self.assertEqual("127.0.0.1" in streaming_socket.streamers, False)
+
+    # @patch('server.app.session', dict())
+    # @patch('server.app.random.choices', return_value="user123")
+    # def test_socket_disconnect_and_cleanup(self, random):
+    #     with app.test_request_context():
+    #         m = mock.MagicMock()
+    #         m.remote_addr = "127.0.0.1"
+    #         m.sids = "123456789"
+    #         m.namespace = "123"
+    #         with mock.patch("server.app.request", m):
+    #             with mock.patch("flask.request", m):
+    #                 streaming_socket = StreamingSocket()
+    #                 streaming_socket.on_connect()
+    #                 streams_folder = Path("streams/user123")
+    #
+    #                 self.assertEqual(streams_folder.is_dir(), True)
+    #                 self.assertEqual(random.call_count, 1)
+    #                 self.assertEqual(server.app.session["uid"], "user123")
+    #                 self.assertEqual(server.app.session["ip"], "127.0.0.1")
+    #
+    #                 streaming_socket.on_language({'sub_lang':'Fr-fr'})
+    #                 self.assertEqual(streams_folder.is_dir(), False)
+    #                 self.assertEqual("127.0.0.1" in streaming_socket.streamers, False)
 
 if __name__ == '__main__':
     unittest.main()

@@ -204,7 +204,7 @@ class StreamingSocket(Namespace):
 	def on_connect(self):
 		print("Creating user details... ", end="")
 		new_hash = self._generate_user_hash()
-		print ("The new hash is ", new_hash)
+		print ("The new hash is", new_hash)
 
 		session['uid'] = new_hash
 		os.makedirs('streams/' + new_hash)
@@ -302,7 +302,9 @@ class StreamingSocket(Namespace):
 		self._progress_update(user)
 
 		media_url = str(SERVER_URL + playlist.get_master())
+		print ("********The master url is", media_url)
 		supported_qualities = streamer.get_supported_qualities()
+		print ("********The supported qualities are", supported_qualities)
 		emit('stream-response', json.dumps({'media':media_url, 'qualities':supported_qualities}))
 
 	def _progress_update(self, user):
