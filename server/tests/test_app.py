@@ -77,9 +77,9 @@ class AppTest(unittest.TestCase):
         self.assertEqual(SERVER_URL, HEROKU_URL)
 
     @patch('server.app.detect_language', return_value="Fr-fr")
-    @patch('server.app.get_text', return_value="French chips are good")
+    @patch('server.app.get_text', return_value="Les frites françaises sont bonnes")
     @patch('server.app.translate', return_value="French chips are good")
-    def test_process_with_language_not_set(self, detect_language, get_text):
+    def test_process_with_language_not_set(self, detect_language, get_text, translate):
         with app.test_request_context():
             translated_in_json = server.app.process([-0.9, 0.45, 0, 0.42, -0.32, 0], 2000, '')
             self.assertEqual(json.loads(translated_in_json.get_data().decode("utf-8")), {'lang': 'Fr-fr', 'subtitle': 'French chips are good'})
