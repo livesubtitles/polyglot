@@ -60,6 +60,15 @@ class AppTest(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_two_hashes_not_equal(self):
+        hash1 = server.app._generate_user_hash()
+        hash2 = server.app._generate_user_hash()
+
+        self.assertNotEqual(hash1, hash2)
+
+    def test_dummy(self):
+        server.app.dummyTranslate()
+
     def test_index_html(self):
         response = self.app.get("/")
         self.assertEqual(response.status_code, 200)
@@ -262,6 +271,23 @@ class AppTest(unittest.TestCase):
                     streaming_socket.on_disconnect()
                     self.assertEqual(streams_folder.is_dir(), False)
                     self.assertEqual("127.0.0.1" in streaming_socket.streamers, False)
+
+    def test_socket_disconnect_user_in_streamers(self):
+        with app.test_request_context():
+            socket = StreamingSocket()
+
+            user = "test_user"
+            server.app.session["uid"] = user
+
+            streamer = Mock()
+            socket.streamers = {'test_user':streamer}
+
+            with patch.object(StreamingSocket, '_cleanup') as cleanup_mock:
+                socket.on_disconnect()
+
+                streamer.stop.assert_called_with()
+                self.assertEqual(socket.streamers, {})
+                cleanup_mock.assert_called_with(user)
 
     # @patch('server.app.session', dict())
     # @patch('server.app.random.choices', return_value="user123")
