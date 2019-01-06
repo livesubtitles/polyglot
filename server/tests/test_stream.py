@@ -95,6 +95,24 @@ class StreamWorkerTests(unittest.TestCase):
 			subprocess_mock.assert_called_with(["ffmpeg -i " + video_file + " 2>&1 | grep 'Duration'"], shell=True)
 			subprocess_mock.return_value.decode.assert_called_with('ascii')
 
+	@patch('io.BytesIO')
+	@patch('builtins.open')
+	@patch('wave.open')
+	@patch('ffmpy.FFmpeg.run')
+	@patch('ffmpy.FFmpeg.__init__', return_value=None)
+	def test_extract_audio(self, mock_ffmpeg, mock_ffmpeg_run, wave_mock, open_mock, bytesIO_mock):
+		file_name = "file.ts"
+		output_file = self.worker.user_dir + "/audio.wav"
+
+		self.worker._extract_audio(file_name)
+
+		mock_ffmpeg.assert_called_with(inputs={file_name:ANY}, outputs={output_file:ANY})
+		mock_ffmpeg_run.assert_called_with()
+		wave_mock.assert_called_with(output_file, 'rb')
+		open_mock.assert_called_with(output_file, 'rb')
+
+
+
 	# @patch('os.remove')
 	# @patch('server.playlist')
 	# @patch('webvtt.WebVTT')
