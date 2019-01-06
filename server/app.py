@@ -158,7 +158,8 @@ def getFile(user_dir, filename):
 @app.route("/storeauthcode", methods=['POST'])
 def get_user_access_token_google():
 	global credentials
-	auth_code = str(request.data).split("\'")[1]
+	auth_code = json.loads(request.data)["authcode"]
+	print(auth_code)
 	CLIENT_SECRET_FILE = 'client_secret_1070969009500-4674ntngjh3dvlbcvoer0r4c7hao04dh.apps.googleusercontent.com.json'
 
 	# Exchange auth code for access token, refresh token, and ID token
