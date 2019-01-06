@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock, MagicMock, patch, ANY
+from unittest.mock import Mock, MagicMock, patch, ANY, call
 from server.stream import VideoStreamer, _StreamWorker, QUALITY_INFO
 from server.playlist import HLSPlaylist
 import streamlink
@@ -134,7 +134,8 @@ class StreamWorkerTests(unittest.TestCase):
                 
                 self.worker.streaming = true_once
                 self.worker.run()
-                sleep_mock.assert_called_with(self.worker.wait_time)
+                
+                sleep_mock.assert_has_calls([call(self.worker.wait_time)] * 2)
                 self.worker.stream_data.close.assert_called_with()
 
         # @patch('os.remove')
