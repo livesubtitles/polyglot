@@ -43,7 +43,8 @@ def process(audio, sample_rate, lang, raw_pcm=False, sub_lang="En-en"):
 	transcript = get_text_from_pcm(audio, sample_rate,
 		             lang, None, sub_lang) if raw_pcm else get_text(audio, sample_rate, lang, None, sub_lang)
 	#TODO: Rename variables
-	translated = translate(transcript, 'en', lang.split('-')[0], session['credentials'] if 'credentials' in session else None)
+	translated=transcript
+	# translated = translate(transcript, 'en', lang.split('-')[0], session['credentials'] if 'credentials' in session else None)
 	return jsonify(subtitle=translated, lang=lang)
 
 def process_with_video(video, audio, sample_rate, lang):
