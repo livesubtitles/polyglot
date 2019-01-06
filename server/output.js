@@ -6329,7 +6329,7 @@ socket.on('connect', function() {
 });
 
 socket.on('server-ready', function() {
-    socket.emit('stream', {url: "https://www.youtube.com/watch?v=XOacA3RYrXk", lang: "en-GB"})
+    socket.emit('stream', {url: "https://www.youtube.com/watch?v=JsLeCN1U8Eo", lang: "en-GB"})
 });
 
 socket.on('progress', function(data) {
@@ -6361,7 +6361,7 @@ socket.on('stream-response', function(data) {
                 switch (data.details) {
                     case Hls.ErrorDetails.BUFFER_APPENDING_ERROR:
                     case Hls.ErrorDetails.BUFFER_APPEND_ERROR:
-                        console.log(" ******** FUUUUUUUCK!!!");
+                        console.log("HLS IS BROKE");
                         break;
                     default:
                         console.log("Other media error of type: " + data.details);
