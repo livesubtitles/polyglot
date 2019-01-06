@@ -205,6 +205,7 @@ class AppTest(unittest.TestCase):
             streamer_mock = MagicMock()
             streamer_mock().start.return_value = playlist_mock
             streamer_mock().get_supported_qualities.return_value = ['360p', '480p', '720p']
+            streamer_mock().update_sub_language.return_value = "en"
 
             with patch("server.app.request", request_mock):
                 with patch("flask.request", request_mock):
@@ -224,6 +225,10 @@ class AppTest(unittest.TestCase):
                                 self.assertEqual(streamer_mock().start.call_count, 1)
                                 self.assertEqual(streamer_mock().get_supported_qualities.call_count, 1)
                                 self.assertEqual(mock_get_master.call_count, 1)
+
+                                streaming_socket.on_language({'sub_lang':'es'})
+                                self.assertEqual(streamer_mock().update_sub_language.call_count, 1)
+
 
     @patch('server.app.session', dict())
     @patch('server.app.random.choices', return_value="user123")
