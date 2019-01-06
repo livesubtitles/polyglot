@@ -233,6 +233,7 @@ class VideoStreamer(object):
 		self.sub_language = 'en'
 		self.worker = None
 		self.available_streams = None
+		self.progress_callback = None
 
 	def _get_video_stream(self):
 		try:
@@ -270,12 +271,13 @@ class VideoStreamer(object):
 		self.stop()
 		print("Success!")
 
-		return self.start(new_quality)
+		return self.start(self.progress_callback, new_quality)
 
 	def start(self, progress_callback, quality='best', sub_language='en'):
 		print("Starting Video Streamer with quality: " + quality)
 		self.quality = quality
 		self.sub_language = sub_language
+		self.progress_callback = progress_callback
 
 		progress_callback(self.user)
 
