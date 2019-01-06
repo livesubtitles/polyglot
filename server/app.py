@@ -261,7 +261,9 @@ class StreamingSocket(Namespace):
 	def on_timeupdate(self, data):
 		print("Time update for ip address: {}".format(request.remote_addr))
 		print("Time interval in seconds: {}".format(data["interval_seconds"]))
+
 		ip_address = request.remote_addr
+
 		if ip_to_time.is_in(ip_address):
 			time = ip_to_time.get_time(ip_address)
 			ip_to_time.store_time(ip_address, time + data["interval_seconds"])
