@@ -116,7 +116,7 @@ class AppTest(unittest.TestCase):
         with app.test_request_context():
             response = self.app.get("/supports")
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(json.loads(response.get_data().decode("utf-8")), {'answer': 'Supported websites'})
+            self.assertEqual(json.loads(response.get_data().decode("utf-8")), {'answer': False})
 
     @patch('server.app.process', return_value=json.dumps({"subtitle": "This is testing", "lang": "Fr-fr"}), status_code=200)
     def test_subtitle_html(self, process):

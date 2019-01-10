@@ -16,7 +16,7 @@ from server.speechtotext import *
 from server.language import *
 from server.stream import *
 from server.playlist import *
-from server.support import isStreamLinkSupported
+from server.support import isStreamLinkSupported, streamLinkFails
 from server.iptotime import *
 from apiclient import discovery
 from oauth2client import client
@@ -81,7 +81,7 @@ def hello():
 @app.route("/supports", methods=['GET'])
 def supportsStreamlink():
     url = request.args.get("web")
-    return jsonify(answer=isStreamLinkSupported(url,  "supported_websites"));
+    return jsonify(answer=streamLinkFails(url));
 
 @app.route("/subtitle", methods=['POST'])
 def subtitle():
