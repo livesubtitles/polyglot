@@ -109,7 +109,7 @@ class _StreamWorker(Thread):
         wait_time_ms = end_time - start_time
 
         self.pipeline_wait = int(wait_time_ms / 1000)
-        print("Success! Time taken: " + str(wait_time_ms) + "ms") 
+        print("Success! Time taken: " + str(wait_time_ms) + "ms")
 
         return transcript
 
@@ -289,6 +289,25 @@ class VideoStreamer(object):
         progress_callback(self.user)
 
         return playlist
+
+    def check_if_available(self, progress_callback, quality='best', sub_language='en'):
+        print("Starting Video Streamer with quality: " + quality)
+        self.quality = quality
+        self.sub_language = sub_language
+        self.progress_callback = progress_callback
+
+        progress_callback(self.user)
+
+        print("Getting Video Stream...", end="")
+        stream = self._get_video_stream()
+        print("Success!")
+
+        progress_callback(self.user)
+
+        print("Opening stream...", end="")
+        data = stream.open()
+        print("Success!")
+        return True
 
     def stop(self):
         if self.worker != None:
