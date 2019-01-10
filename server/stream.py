@@ -222,6 +222,8 @@ class VideoStreamer(object):
         except Exception:
             raise Exception("Streamlink Unavailable")
 
+        print("Available Streams: " + self.available_streams)
+
         if self.quality not in self.available_streams:
             print("Could not find " + self.quality + " stream")
             raise Exception("Streamlink Unavailable")
