@@ -61,7 +61,7 @@ socket.on('connect', function() {
 });
 
 socket.on('server-ready', function() {
-    socket.emit('stream', {url: "https://www.youtube.com/watch?v=JsLeCN1U8Eo", lang: "en-GB"})
+    socket.emit('stream', {url: "http://www.rtve.es/directo/canal-24h/", lang: "es-ES"})
 });
 
 socket.on('progress', function(data) {
